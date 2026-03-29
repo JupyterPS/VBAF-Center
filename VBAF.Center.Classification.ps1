@@ -41,10 +41,10 @@ $script:VBAFCenterAgentMap = @{
     "BUSINESS-LOGISTICS-FLEET"     = @{ Agent="FleetDispatch";         Phase=28; Description="Fleet dispatch optimisation" }
 
     # Future
-    "BUSINESS-HEALTH"              = @{ Agent="Custom";                Phase=0;  Description="Healthcare — custom pillar needed" }
-    "BUSINESS-FINANCE"             = @{ Agent="Custom";                Phase=0;  Description="Finance — custom pillar needed" }
-    "BUSINESS-MANUFACTURING"       = @{ Agent="Custom";                Phase=0;  Description="Manufacturing — custom pillar needed" }
-    "BUSINESS-RETAIL"              = @{ Agent="Custom";                Phase=0;  Description="Retail — custom pillar needed" }
+    "BUSINESS-HEALTH"           = @{ Agent="HealthcareMonitor";    Phase=29; Description="Healthcare patient flow and resource management" }
+    "BUSINESS-FINANCE"          = @{ Agent="SecurityMonitor";      Phase=30; Description="Financial security and fraud detection" }
+    "BUSINESS-MANUFACTURING" = @{ Agent="PredictiveMaintenance"; Phase=31; Description="Manufacturing predictive maintenance" }
+    "BUSINESS-RETAIL"           = @{ Agent="SupplyChain";          Phase=32; Description="Retail supply chain optimisation" }
 }
 
 # ============================================================
@@ -99,6 +99,19 @@ $script:KeywordMap = @{
     "trading"     = "BUSINESS-FINANCE"
     "factory"     = "BUSINESS-MANUFACTURING"
     "production"  = "BUSINESS-MANUFACTURING"
+    "hospital"    = "BUSINESS-HEALTH"
+    "patient"     = "BUSINESS-HEALTH"
+    "healthcare"  = "BUSINESS-HEALTH"
+    "fraud"       = "BUSINESS-FINANCE"
+    "trading"     = "BUSINESS-FINANCE"
+    "finance"     = "BUSINESS-FINANCE"
+    "factory"     = "BUSINESS-MANUFACTURING"
+    "machinery"   = "BUSINESS-MANUFACTURING"
+    "production"  = "BUSINESS-MANUFACTURING"
+    "maintenance" = "BUSINESS-MANUFACTURING"
+    "retail"      = "BUSINESS-RETAIL"
+    "inventory"   = "BUSINESS-RETAIL"
+    "supply"      = "BUSINESS-RETAIL"
     "retail"      = "BUSINESS-RETAIL"
     "inventory"   = "BUSINESS-RETAIL"
 }
@@ -231,3 +244,4 @@ Write-Host "  Get-VBAFCenterClassification  — classify a problem"  -Foreground
 Write-Host "  Get-VBAFCenterAgentMap        — show agent mappings" -ForegroundColor White
 Write-Host "  Set-VBAFCenterAgentMap        — add custom mapping"  -ForegroundColor White
 Write-Host ""
+

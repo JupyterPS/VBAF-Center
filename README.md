@@ -65,7 +65,7 @@ Install-Module VBAF -Scope CurrentUser
 Install-Module VBAF-Center -Scope CurrentUser
 
 # Load everything
-. .\VBAF.Center.LoadAll.ps1
+. .\VBAF-Center\VBAF.Center.LoadAll.ps1
 
 # Onboard your first customer (interactive wizard)
 Start-VBAFCenterOnboarding
@@ -171,3 +171,4 @@ MIT License — see [LICENSE](LICENSE) for details.
 Built with Claude (Anthropic) · PowerShell ISE · PS 5.1
 
 *"Tell us your problem. We know the right doctor."*
+
