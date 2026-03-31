@@ -1,6 +1,6 @@
-# VBAF-Center — Welcome Center
+ï»¿# VBAF-Center ï¿½ Welcome Center
 
-> **v1.0.0** · PowerShell 5.1 · Enterprise AI Gateway · Built on VBAF v4.0.0
+> **v1.0.0** ï¿½ PowerShell 5.1 ï¿½ Enterprise AI Gateway ï¿½ Built on VBAF v4.0.0
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-blue.svg)](https://github.com/PowerShell/PowerShell)
@@ -36,16 +36,16 @@ Your systems (GPS, TMS, ERP, SAP...)
          | live signals (any format)
          v
 +---------------------------------+
-¦       VBAF-Center               ¦
-¦                                 ¦
-¦  Phase 1: WHO are you?          ¦
-¦  Phase 2: WHAT is the problem?  ¦
-¦  Phase 3: WHERE is your data?   ¦
-¦  Phase 4: Normalise to 0.0-1.0  ¦
-¦  Phase 5: Route to right agent  ¦
-¦  Phase 6: Interpret action      ¦
-¦  Phase 7: Onboarding UI         ¦
-¦  Phase 8: Schedule checks       ¦
+ï¿½       VBAF-Center               ï¿½
+ï¿½                                 ï¿½
+ï¿½  Phase 1: WHO are you?          ï¿½
+ï¿½  Phase 2: WHAT is the problem?  ï¿½
+ï¿½  Phase 3: WHERE is your data?   ï¿½
+ï¿½  Phase 4: Normalise to 0.0-1.0  ï¿½
+ï¿½  Phase 5: Route to right agent  ï¿½
+ï¿½  Phase 6: Interpret action      ï¿½
+ï¿½  Phase 7: Onboarding UI         ï¿½
+ï¿½  Phase 8: Schedule checks       ï¿½
 +---------------------------------+
          |
          | action in YOUR language
@@ -92,22 +92,22 @@ Invoke-VBAFCenterRun -CustomerID "YourCustomerID"
 | 4 | Normalisation | Convert raw figures to 0.0-1.0 |
 | 5 | Agent Router | Send to the right VBAF doctor |
 | 6 | Action Interpreter | Translate action to business command |
-| 7 | Customer Onboarding UI | Interactive setup wizard — set once, run forever |
-| 8 | Scheduling Engine | How often to check — configurable per customer |
+| 7 | Customer Onboarding UI | Interactive setup wizard ï¿½ set once, run forever |
+| 8 | Scheduling Engine | How often to check ï¿½ configurable per customer |
 
 ---
 
-## NordLogistik — Proof of Concept
+## NordLogistik ï¿½ Proof of Concept
 ```
 Problem  : Trucks idle 30%, late deliveries, lost biggest client
 Signals  : Fleet idle rate + Delivery urgency
 Agent    : VBAF FleetDispatch (Phase 28)
 Result   : +97% improvement over random dispatcher
 
-Action 0 : Monitor   — Fleet healthy, watch and wait
-Action 1 : Reassign  — Move idle truck to pending delivery
-Action 2 : Reroute   — Switch to faster routes
-Action 3 : Escalate  — Emergency, deploy all trucks
+Action 0 : Monitor   ï¿½ Fleet healthy, watch and wait
+Action 1 : Reassign  ï¿½ Move idle truck to pending delivery
+Action 2 : Reroute   ï¿½ Switch to faster routes
+Action 3 : Escalate  ï¿½ Emergency, deploy all trucks
 ```
 
 ---
@@ -135,8 +135,8 @@ Action 3 : Escalate  — Emergency, deploy all trucks
 
 ## Business Model
 ```
-VBAF         — free, open source, PSGallery
-VBAF-Center  — commercial service
+VBAF         ï¿½ free, open source, PSGallery
+VBAF-Center  ï¿½ commercial service
 
 Onboarding   : one-time setup fee
 Running      : monthly subscription per customer
@@ -148,7 +148,7 @@ Custom pillars: project rate
 ## Relationship to VBAF
 
 VBAF-Center uses VBAF as its AI engine.
-VBAF does not change — it is the stable foundation.
+VBAF does not change ï¿½ it is the stable foundation.
 VBAF-Center is the commercial layer on top.
 ```
 Install-Module VBAF          # the doctors
@@ -167,15 +167,16 @@ Install-Module VBAF-Center   # the hospital
 
 ## License
 
-MIT License — see [LICENSE](LICENSE) for details.
+MIT License ï¿½ see [LICENSE](LICENSE) for details.
 
 ---
 
 ## Author
 
-**Henning** · Roskilde, Denmark ????
-Built with Claude (Anthropic) · PowerShell ISE · PS 5.1
+**Henning** ï¿½ Roskilde, Denmark ðŸ‡©ðŸ‡°
+Built with Claude (Anthropic) ï¿½ PowerShell ISE ï¿½ PS 5.1
 
 *"Tell us your problem. We know the right doctor."*
+
 
 
