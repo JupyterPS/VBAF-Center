@@ -1,0 +1,81 @@
+﻿<svg width="100%" viewBox="0 0 680 820" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="#888780" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+
+<!-- Background -->
+<rect width="680" height="820" fill="#ffffff"/>
+
+<!-- Title -->
+<text font-family="Arial, sans-serif" font-weight="500" font-size="16" x="340" y="36" text-anchor="middle" fill="#2C2C2A">VBAF-Center — 8-phase pipeline</text>
+<text font-family="Arial, sans-serif" font-size="12" x="340" y="56" text-anchor="middle" fill="#5F5E5A">Customer problem to AI recommendation</text>
+
+<!-- INPUT -->
+<rect x="240" y="72" width="200" height="44" rx="8" fill="#D3D1C7" stroke="#888780" stroke-width="0.5"/>
+<text font-family="Arial, sans-serif" font-weight="500" font-size="14" x="340" y="99" text-anchor="middle" fill="#2C2C2A">Customer problem</text>
+<line x1="340" y1="116" x2="340" y2="134" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+<!-- Phase 1 -->
+<rect x="200" y="136" width="280" height="56" rx="8" fill="#CECBF6" stroke="#534AB7" stroke-width="0.5"/>
+<text font-family="Arial, sans-serif" font-weight="500" font-size="14" x="340" y="160" text-anchor="middle" fill="#26215C">Phase 1 — Customer profile</text>
+<text font-family="Arial, sans-serif" font-size="12" x="340" y="178" text-anchor="middle" fill="#3C3489">Company info · contact · business type</text>
+<line x1="340" y1="192" x2="340" y2="210" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+<!-- Phase 2 -->
+<rect x="200" y="212" width="280" height="56" rx="8" fill="#CECBF6" stroke="#534AB7" stroke-width="0.5"/>
+<text font-family="Arial, sans-serif" font-weight="500" font-size="14" x="340" y="236" text-anchor="middle" fill="#26215C">Phase 2 — Problem classification</text>
+<text font-family="Arial, sans-serif" font-size="12" x="340" y="254" text-anchor="middle" fill="#3C3489">Keywords map problem to AI agent</text>
+<line x1="340" y1="268" x2="340" y2="286" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+<!-- Phase 3 -->
+<rect x="200" y="288" width="280" height="56" rx="8" fill="#9FE1CB" stroke="#0F6E56" stroke-width="0.5"/>
+<text font-family="Arial, sans-serif" font-weight="500" font-size="14" x="340" y="312" text-anchor="middle" fill="#04342C">Phase 3 — Signal acquisition</text>
+<text font-family="Arial, sans-serif" font-size="12" x="340" y="330" text-anchor="middle" fill="#085041">Simulated · REST · CSV · Manual</text>
+<line x1="340" y1="344" x2="340" y2="362" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+<!-- Phase 4 -->
+<rect x="200" y="364" width="280" height="56" rx="8" fill="#9FE1CB" stroke="#0F6E56" stroke-width="0.5"/>
+<text font-family="Arial, sans-serif" font-weight="500" font-size="14" x="340" y="388" text-anchor="middle" fill="#04342C">Phase 4 — Normalisation</text>
+<text font-family="Arial, sans-serif" font-size="12" x="340" y="406" text-anchor="middle" fill="#085041">Scale raw values 0-100 for AI</text>
+<line x1="340" y1="420" x2="340" y2="438" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+<!-- Phase 5 -->
+<rect x="200" y="440" width="280" height="56" rx="8" fill="#B5D4F4" stroke="#185FA5" stroke-width="0.5"/>
+<text font-family="Arial, sans-serif" font-weight="500" font-size="14" x="340" y="464" text-anchor="middle" fill="#042C53">Phase 5 — Agent router</text>
+<text font-family="Arial, sans-serif" font-size="12" x="340" y="482" text-anchor="middle" fill="#0C447C">Load correct VBAF agent</text>
+<line x1="340" y1="496" x2="340" y2="514" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+<!-- Phase 6 -->
+<rect x="200" y="516" width="280" height="56" rx="8" fill="#B5D4F4" stroke="#185FA5" stroke-width="0.5"/>
+<text font-family="Arial, sans-serif" font-weight="500" font-size="14" x="340" y="540" text-anchor="middle" fill="#042C53">Phase 6 — Action interpreter</text>
+<text font-family="Arial, sans-serif" font-size="12" x="340" y="558" text-anchor="middle" fill="#0C447C">AI decision to plain business language</text>
+<line x1="340" y1="572" x2="340" y2="590" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+<!-- Phase 7 -->
+<rect x="200" y="592" width="280" height="56" rx="8" fill="#FAC775" stroke="#854F0B" stroke-width="0.5"/>
+<text font-family="Arial, sans-serif" font-weight="500" font-size="14" x="340" y="616" text-anchor="middle" fill="#412402">Phase 7 — Onboarding wizard</text>
+<text font-family="Arial, sans-serif" font-size="12" x="340" y="634" text-anchor="middle" fill="#633806">Interactive setup · no code needed</text>
+<line x1="340" y1="648" x2="340" y2="666" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+<!-- Phase 8 -->
+<rect x="200" y="668" width="280" height="56" rx="8" fill="#FAC775" stroke="#854F0B" stroke-width="0.5"/>
+<text font-family="Arial, sans-serif" font-weight="500" font-size="14" x="340" y="692" text-anchor="middle" fill="#412402">Phase 8 — Scheduling engine</text>
+<text font-family="Arial, sans-serif" font-size="12" x="340" y="710" text-anchor="middle" fill="#633806">Auto-run every 5 · 10 · 30 minutes</text>
+<line x1="340" y1="724" x2="340" y2="742" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+<!-- OUTPUT -->
+<rect x="240" y="744" width="200" height="44" rx="8" fill="#5DCAA5" stroke="#0F6E56" stroke-width="0.5"/>
+<text font-family="Arial, sans-serif" font-weight="500" font-size="14" x="340" y="771" text-anchor="middle" fill="#04342C">Business recommendation</text>
+
+<!-- Legend -->
+<rect x="60" y="136" width="12" height="12" rx="2" fill="#CECBF6" stroke="#534AB7" stroke-width="0.5"/>
+<text font-family="Arial, sans-serif" font-size="12" x="78" y="147" fill="#5F5E5A">Customer setup</text>
+<rect x="60" y="156" width="12" height="12" rx="2" fill="#9FE1CB" stroke="#0F6E56" stroke-width="0.5"/>
+<text font-family="Arial, sans-serif" font-size="12" x="78" y="167" fill="#5F5E5A">Data processing</text>
+<rect x="60" y="176" width="12" height="12" rx="2" fill="#B5D4F4" stroke="#185FA5" stroke-width="0.5"/>
+<text font-family="Arial, sans-serif" font-size="12" x="78" y="187" fill="#5F5E5A">AI engine</text>
+<rect x="60" y="196" width="12" height="12" rx="2" fill="#FAC775" stroke="#854F0B" stroke-width="0.5"/>
+<text font-family="Arial, sans-serif" font-size="12" x="78" y="207" fill="#5F5E5A">Operations</text>
+</svg>
