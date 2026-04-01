@@ -1,6 +1,6 @@
-﻿# VBAF-Center � Welcome Center
+﻿# VBAF-Center - Welcome Center
 
-> **v1.0.0** � PowerShell 5.1 � Enterprise AI Gateway � Built on VBAF v4.0.0
+> **v1.0.0** - PowerShell 5.1 - Enterprise AI Gateway - Built on VBAF v4.0.0 5.1 - Enterprise AI Gateway - Built on VBAF v4.0.0
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-blue.svg)](https://github.com/PowerShell/PowerShell)
@@ -8,7 +8,7 @@
 
 ---
 
-## What is VBAF-Center?
+## What is VBAF-Center-
 
 VBAF-Center is the commercial gateway between your business systems
 and the VBAF AI agent engine. It receives your live data, normalises it,
@@ -36,16 +36,16 @@ Your systems (GPS, TMS, ERP, SAP...)
          | live signals (any format)
          v
 +---------------------------------+
-�       VBAF-Center               �
-�                                 �
-�  Phase 1: WHO are you?          �
-�  Phase 2: WHAT is the problem?  �
-�  Phase 3: WHERE is your data?   �
-�  Phase 4: Normalise to 0.0-1.0  �
-�  Phase 5: Route to right agent  �
-�  Phase 6: Interpret action      �
-�  Phase 7: Onboarding UI         �
-�  Phase 8: Schedule checks       �
+-       VBAF-Center               -
+-                                 -
+-  Phase 1: WHO are you-          -
+-  Phase 2: WHAT is the problem-  -
+-  Phase 3: WHERE is your data-   -
+-  Phase 4: Normalise to 0.0-1.0  -
+-  Phase 5: Route to right agent  -
+-  Phase 6: Interpret action      -
+-  Phase 7: Onboarding UI         -
+-  Phase 8: Schedule checks       -
 +---------------------------------+
          |
          | action in YOUR language
@@ -86,28 +86,28 @@ Invoke-VBAFCenterRun -CustomerID "YourCustomerID"
 
 | Phase | Name | What it does |
 |-------|------|-------------|
-| 1 | Customer Profile | WHO are you? |
-| 2 | Problem Classification | WHAT is your emergency? |
-| 3 | Signal Acquisition | WHERE is your data? REST/WMI/CSV/Manual |
+| 1 | Customer Profile | WHO are you- |
+| 2 | Problem Classification | WHAT is your emergency- |
+| 3 | Signal Acquisition | WHERE is your data- REST/WMI/CSV/Manual |
 | 4 | Normalisation | Convert raw figures to 0.0-1.0 |
 | 5 | Agent Router | Send to the right VBAF doctor |
 | 6 | Action Interpreter | Translate action to business command |
-| 7 | Customer Onboarding UI | Interactive setup wizard � set once, run forever |
-| 8 | Scheduling Engine | How often to check � configurable per customer |
+| 7 | Customer Onboarding UI | Interactive setup wizard - set once, run forever |
+| 8 | Scheduling Engine | How often to check - configurable per customer |
 
 ---
 
-## NordLogistik � Proof of Concept
+## NordLogistik - Proof of Concept
 ```
 Problem  : Trucks idle 30%, late deliveries, lost biggest client
 Signals  : Fleet idle rate + Delivery urgency
 Agent    : VBAF FleetDispatch (Phase 28)
 Result   : +97% improvement over random dispatcher
 
-Action 0 : Monitor   � Fleet healthy, watch and wait
-Action 1 : Reassign  � Move idle truck to pending delivery
-Action 2 : Reroute   � Switch to faster routes
-Action 3 : Escalate  � Emergency, deploy all trucks
+Action 0 : Monitor   - Fleet healthy, watch and wait
+Action 1 : Reassign  - Move idle truck to pending delivery
+Action 2 : Reroute   - Switch to faster routes
+Action 3 : Escalate  - Emergency, deploy all trucks
 ```
 
 ---
@@ -135,8 +135,8 @@ Action 3 : Escalate  � Emergency, deploy all trucks
 
 ## Business Model
 ```
-VBAF         � free, open source, PSGallery
-VBAF-Center  � commercial service
+VBAF         - free, open source, PSGallery
+VBAF-Center  - commercial service
 
 Onboarding   : one-time setup fee
 Running      : monthly subscription per customer
@@ -148,7 +148,7 @@ Custom pillars: project rate
 ## Relationship to VBAF
 
 VBAF-Center uses VBAF as its AI engine.
-VBAF does not change � it is the stable foundation.
+VBAF does not change - it is the stable foundation.
 VBAF-Center is the commercial layer on top.
 ```
 Install-Module VBAF          # the doctors
@@ -167,16 +167,18 @@ Install-Module VBAF-Center   # the hospital
 
 ## License
 
-MIT License � see [LICENSE](LICENSE) for details.
+MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
 ## Author
 
-**Henning** � Roskilde, Denmark 🇩🇰
-Built with Claude (Anthropic) � PowerShell ISE � PS 5.1
+**Henning** - Roskilde, Denmark 🇩🇰
+Built with Claude (Anthropic) - PowerShell ISE - PS 5.1
 
 *"Tell us your problem. We know the right doctor."*
+
+
 
 
 
