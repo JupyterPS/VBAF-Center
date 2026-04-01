@@ -135,3 +135,4 @@ Write-Host "  Invoke-VBAFCenterNormalise        — normalise signals"    -Foreg
 Write-Host "  Get-VBAFCenterNormalisationReport — detailed report"      -ForegroundColor White
 Write-Host "  Methods: MinMax | Standard | Robust | PassThrough"       -ForegroundColor White
 Write-Host ""
+

@@ -242,3 +242,4 @@ Write-Host "  Get-VBAFCenterSignal         — get one live signal"  -Foreground
 Write-Host "  Get-VBAFCenterAllSignals     — get all signals"      -ForegroundColor White
 Write-Host "  Test-VBAFCenterSignalConfig  — test configuration"   -ForegroundColor White
 Write-Host ""
+

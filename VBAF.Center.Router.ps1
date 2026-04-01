@@ -132,3 +132,4 @@ Write-Host "  Invoke-VBAFCenterRoute      — route signals to agent"   -Foregro
 Write-Host "  Register-VBAFCenterAgent    — register a trained agent" -ForegroundColor White
 Write-Host "  Get-VBAFCenterRouteStatus   — show loaded agents"       -ForegroundColor White
 Write-Host ""
+

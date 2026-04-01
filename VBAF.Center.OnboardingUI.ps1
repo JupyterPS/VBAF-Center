@@ -278,3 +278,4 @@ Write-Host "VBAF-Center Phase 7 loaded  [Customer Onboarding UI]"    -Foreground
 Write-Host "  Start-VBAFCenterOnboarding  — full setup wizard"        -ForegroundColor White
 Write-Host "  Show-VBAFCenterSummary      — show customer setup"      -ForegroundColor White
 Write-Host ""
+

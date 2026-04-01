@@ -205,3 +205,4 @@ Write-Host "  Invoke-VBAFCenterRun         — run pipeline once"     -Foregroun
 Write-Host "  Start-VBAFCenterSchedule     — start auto-checking"   -ForegroundColor White
 Write-Host "  Get-VBAFCenterRunHistory     — show recent results"   -ForegroundColor White
 Write-Host ""
+
