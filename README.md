@@ -1,6 +1,6 @@
 ﻿# VBAF-Center - Welcome Center
 
-> **v1.0.0** - PowerShell 5.1 - Enterprise AI Gateway - Built on VBAF v4.0.0 5.1 - Enterprise AI Gateway - Built on VBAF v4.0.0
+> **v1.0.0** - PowerShell 5.1 - Enterprise AI Gateway - Built on VBAF v4.0.0
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-blue.svg)](https://github.com/PowerShell/PowerShell)
@@ -177,6 +177,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 Built with Claude (Anthropic) - PowerShell ISE - PS 5.1
 
 *"Tell us your problem. We know the right doctor."*
+
 
 
 
