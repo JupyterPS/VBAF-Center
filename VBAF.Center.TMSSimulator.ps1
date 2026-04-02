@@ -1,33 +1,33 @@
 ﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
-    VBAF-Center TMS Simulator � Real World Test Engine
+    VBAF-Center TMS Simulator - Real World Test Engine
 .DESCRIPTION
     Simulates a Transport Management System feeding live data into VBAF-Center.
     2 signals. 3 events. 4 modes. Fully connected to VBAF-Center pipeline.
 
     Signals:
-      Signal1 � Empty Driving %
-      Signal2 � On-Time Delivery %
+      Signal1 — Empty Driving %
+      Signal2 — On-Time Delivery %
 
     Events:
-      WeatherEvent     � On-Time drops, Cost rises
-      TrafficJam       � ETA drops, Cost rises
-      VehicleBreakdown � Fleet drops, Cost spikes
+      WeatherEvent     — On-Time drops, Cost rises
+      TrafficJam       — ETA drops, Cost rises
+      VehicleBreakdown — Fleet drops, Cost spikes
 
     Modes:
-      Shadow    � every 30 minutes  (48 episodes/day)
-      GoLive    � every 10 minutes  (144 episodes/day)
-      Autonomy  � every 5 minutes   (288 episodes/day)
-      RealTime  � continuous demo/stress test
+      Shadow    — every 30 minutes  (48 episodes/day)
+      GoLive    — every 10 minutes  (144 episodes/day)
+      Autonomy  — every 5 minutes   (288 episodes/day)
+      RealTime  — continuous demo/stress test
 
     Functions:
-      Get-VBAFTMSSignal        � get one signal value (time-aware)
-      Get-VBAFTMSAllSignals    � get both signals as snapshot
-      Invoke-VBAFTMSEvent      � fire a named or random event
-      Show-VBAFTMSStatus       � dashboard view of current state
-      Invoke-VBAFTMSDayReplay  � run full day compressed
-      Start-VBAFTMSSchedule    � run in chosen mode continuously
+      Get-VBAFTMSSignal        — get one signal value (time-aware)
+      Get-VBAFTMSAllSignals    — get both signals as snapshot
+      Invoke-VBAFTMSEvent      — fire a named or random event
+      Show-VBAFTMSStatus       — dashboard view of current state
+      Invoke-VBAFTMSDayReplay  — run full day compressed
+      Start-VBAFTMSSchedule    — run in chosen mode continuously
 #>
 
 # ============================================================
@@ -48,9 +48,9 @@ $script:TMSState = @{
 function Get-TMSTimeCurve {
     param([int]$Hour)
     switch ($Hour) {
-        {$_ -lt 5}            { return 0.3 }   # Night � low activity
+        {$_ -lt 5}            { return 0.3 }   # Night — low activity
         {$_ -in 5..7}         { return 0.6 }   # Morning start
-        {$_ -in 8..11}        { return 1.0 }   # Morning peak � best performance
+        {$_ -in 8..11}        { return 1.0 }   # Morning peak — best performance
         {$_ -in 12..14}       { return 0.9 }   # Midday plateau
         {$_ -in 15..17}       { return 0.8 }   # Afternoon pressure
         {$_ -in 18..20}       { return 0.6 }   # Evening wind-down
@@ -188,13 +188,13 @@ function Show-VBAFTMSStatus {
 
     Write-Host ""
     Write-Host "  +--------------------------------------+" -ForegroundColor Cyan
-    Write-Host "  �     VBAF TMS Simulator � Status      �" -ForegroundColor Cyan
-    Write-Host "  �--------------------------------------�" -ForegroundColor Cyan
-    Write-Host ("  �  Time   : {0,-27}�" -f $s.Timestamp)   -ForegroundColor White
-    Write-Host ("  �  Event  : {0,-27}�" -f $s.ActiveEvent) -ForegroundColor Yellow
-    Write-Host "  �--------------------------------------�" -ForegroundColor Cyan
-    Write-Host ("  �  Empty Driving    : {0,6} %           �" -f $s.EmptyDriving)   -ForegroundColor $emptyColor
-    Write-Host ("  �  On-Time Delivery : {0,6} %           �" -f $s.OnTimeDelivery) -ForegroundColor $ontimeColor
+    Write-Host "  —     VBAF TMS Simulator — Status      —" -ForegroundColor Cyan
+    Write-Host "  —--------------------------------------—" -ForegroundColor Cyan
+    Write-Host ("  —  Time   : {0,-27}—" -f $s.Timestamp)   -ForegroundColor White
+    Write-Host ("  —  Event  : {0,-27}—" -f $s.ActiveEvent) -ForegroundColor Yellow
+    Write-Host "  —--------------------------------------—" -ForegroundColor Cyan
+    Write-Host ("  —  Empty Driving    : {0,6} %           —" -f $s.EmptyDriving)   -ForegroundColor $emptyColor
+    Write-Host ("  —  On-Time Delivery : {0,6} %           —" -f $s.OnTimeDelivery) -ForegroundColor $ontimeColor
     Write-Host "  +--------------------------------------+" -ForegroundColor Cyan
     Write-Host ""
 
@@ -203,7 +203,7 @@ function Show-VBAFTMSStatus {
 
 # ============================================================
 # INVOKE-VBAFTMSDAYREPLAY
-# Full day compressed � 48 episodes at 30-min intervals
+# Full day compressed — 48 episodes at 30-min intervals
 # ============================================================
 function Invoke-VBAFTMSDayReplay {
     param(
@@ -260,7 +260,7 @@ function Invoke-VBAFTMSDayReplay {
     }
 
     Write-Host ""
-    Write-Host "  [TMS] Day Replay complete � 48 episodes done." -ForegroundColor Cyan
+    Write-Host "  [TMS] Day Replay complete — 48 episodes done." -ForegroundColor Cyan
 
     # Summary
     $avgEmpty  = [Math]::Round(($results | Measure-Object -Property EmptyDriving  -Average).Average, 1)
@@ -269,11 +269,11 @@ function Invoke-VBAFTMSDayReplay {
 
     Write-Host ""
     Write-Host "  +--------------------------------------+" -ForegroundColor Cyan
-    Write-Host "  �         Day Replay Summary           �" -ForegroundColor Cyan
-    Write-Host "  �--------------------------------------�" -ForegroundColor Cyan
-    Write-Host ("  �  Avg Empty Driving    : {0,5} %       �" -f $avgEmpty)   -ForegroundColor White
-    Write-Host ("  �  Avg On-Time Delivery : {0,5} %       �" -f $avgOnTime)  -ForegroundColor White
-    Write-Host ("  �  Alert Episodes       : {0,5}         �" -f $redEpisodes) -ForegroundColor Yellow
+    Write-Host "  —         Day Replay Summary           —" -ForegroundColor Cyan
+    Write-Host "  —--------------------------------------—" -ForegroundColor Cyan
+    Write-Host ("  —  Avg Empty Driving    : {0,5} %       —" -f $avgEmpty)   -ForegroundColor White
+    Write-Host ("  —  Avg On-Time Delivery : {0,5} %       —" -f $avgOnTime)  -ForegroundColor White
+    Write-Host ("  —  Alert Episodes       : {0,5}         —" -f $redEpisodes) -ForegroundColor Yellow
     Write-Host "  +--------------------------------------+" -ForegroundColor Cyan
     Write-Host ""
 
@@ -296,7 +296,7 @@ function Start-VBAFTMSSchedule {
         "Shadow"   { 1800 }   # 30 minutes
         "GoLive"   { 600  }   # 10 minutes
         "Autonomy" { 300  }   # 5 minutes
-        "RealTime" { 5    }   # 5 seconds � demo mode
+        "RealTime" { 5    }   # 5 seconds — demo mode
     }
 
     Write-Host ""
@@ -334,13 +334,13 @@ function Start-VBAFTMSSchedule {
 # ============================================================
 Write-Host ""
 Write-Host "  +------------------------------------------+" -ForegroundColor Cyan
-Write-Host "  �   VBAF-Center TMS Simulator  v1.0.0     �" -ForegroundColor Cyan
-Write-Host "  �   2 Signals � 3 Events � 4 Modes        �" -ForegroundColor Cyan
+Write-Host "  —   VBAF-Center TMS Simulator  v1.0.0     —" -ForegroundColor Cyan
+Write-Host "  —   2 Signals — 3 Events — 4 Modes        —" -ForegroundColor Cyan
 Write-Host "  +------------------------------------------+" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "  Signals : EmptyDriving % � OnTimeDelivery %"        -ForegroundColor White
-Write-Host "  Events  : WeatherEvent � TrafficJam � VehicleBreakdown" -ForegroundColor White
-Write-Host "  Modes   : Shadow(30m) � GoLive(10m) � Autonomy(5m) � RealTime" -ForegroundColor White
+Write-Host "  Signals : EmptyDriving % — OnTimeDelivery %"        -ForegroundColor White
+Write-Host "  Events  : WeatherEvent — TrafficJam — VehicleBreakdown" -ForegroundColor White
+Write-Host "  Modes   : Shadow(30m) — GoLive(10m) — Autonomy(5m) — RealTime" -ForegroundColor White
 Write-Host ""
 Write-Host "  Quick start:"                                                    -ForegroundColor Yellow
 Write-Host "  Show-VBAFTMSStatus"                                              -ForegroundColor Green
