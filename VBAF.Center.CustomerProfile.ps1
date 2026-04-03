@@ -38,8 +38,8 @@ function New-VBAFCenterCustomer {
         [Parameter(Mandatory)] [string] $Problem,
         [Parameter(Mandatory)] [string] $Agent,
         [string] $Country   = "Denmark",
-        [string] $Contact   = "",
-        [string] $Notes     = ""
+        [Parameter(Mandatory)] [string] $Contact,
+        [Parameter(Mandatory)] [string] $Notes
     )
 
     Initialize-VBAFCenterCustomerStore
@@ -214,4 +214,6 @@ Write-Host "  Get-VBAFCenterAllCustomers  — list all"        -ForegroundColor 
 Write-Host "  Update-VBAFCenterCustomer   — update profile"  -ForegroundColor White
 Write-Host "  Remove-VBAFCenterCustomer   — remove profile"  -ForegroundColor White
 Write-Host ""
+
+
 
