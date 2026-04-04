@@ -12,7 +12,7 @@
 RootModule = 'VBAF.Center.LoadAll.ps1'
 
 # Version number of this module.
-ModuleVersion = '1.0.2'
+ModuleVersion = '1.0.4'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -30,7 +30,7 @@ CompanyName = 'VBAF'
 Copyright = '(c) 2026 Henning. All rights reserved.'
 
 # Description of the functionality provided by this module
-Description = 'VBAF-Center — Welcome Center gateway connecting business problems to the right VBAF AI agent'
+Description = 'VBAF-Center - Welcome Center gateway connecting business problems to the right VBAF AI agent'
 
 # Minimum version of the Windows PowerShell engine required by this module
 PowerShellVersion = '5.1'
@@ -120,4 +120,7 @@ PrivateData = @{
 # DefaultCommandPrefix = ''
 
 }
+
+
+
 
