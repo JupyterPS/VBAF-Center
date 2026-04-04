@@ -45,7 +45,11 @@ Your systems (GPS, TMS, ERP, SAP...)
 -  Phase 5: Route to right agent  -
 -  Phase 6: Interpret action      -
 -  Phase 7: Onboarding UI         -
--  Phase 8: Schedule checks       -
+-  Phase 8: Schedule checks
+-  Phase 9: Web portal - browser dashboard        -
+-  Phase 10: Auto-connector - any system          -
+-  Phase 11: Multi-customer dashboard             -
+-  Phase 12: Billing - automatic invoices         -       -
 +---------------------------------+
          |
          | action in YOUR language
@@ -82,7 +86,7 @@ Invoke-VBAFCenterRun -CustomerID "YourCustomerID"
 
 ---
 
-## The 8 Phases
+## The 12 Phases
 
 | Phase | Name | What it does |
 |-------|------|-------------|
@@ -94,6 +98,10 @@ Invoke-VBAFCenterRun -CustomerID "YourCustomerID"
 | 6 | Action Interpreter | Translate action to business command |
 | 7 | Customer Onboarding UI | Interactive setup wizard - set once, run forever |
 | 8 | Scheduling Engine | How often to check - configurable per customer |
+| 9 | Web Portal | Browser dashboard - live signals and recommendations |
+| 10 | Auto-Connector | Connect any system in minutes - REST/CSV/WMI/Manual |
+| 11 | Multi-Customer Dashboard | All customers on one screen - green/yellow/red status |
+| 12 | Billing Engine | Automatic monthly invoice generation per customer |
 
 ---
 
@@ -177,6 +185,8 @@ MIT License - see [LICENSE](LICENSE) for details.
 Built with Claude (Anthropic) - PowerShell ISE - PS 5.1
 
 *"Tell us your problem. We know the right doctor."*
+
+
 
 
 
