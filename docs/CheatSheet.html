@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VBAF-Center — Complete Cheat Sheet</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
+.title{font-size:20px;font-weight:500;padding:0 0 4px;color:#2C2C2A}
+.subtitle{font-size:13px;color:#5F5E5A;padding-bottom:20px}
+.phase{background:#fff;border:0.5px solid #D3D1C7;border-radius:12px;margin-bottom:14px;overflow:hidden}
+.phase-header{padding:10px 16px;display:flex;align-items:center;gap:10px}
+.phase-num{font-size:11px;font-weight:500;padding:3px 8px;border-radius:20px}
+.phase-title{font-size:14px;font-weight:500}
+.phase-body{padding:0 16px 14px}
+.fn{font-size:12px;font-weight:500;color:#5F5E5A;margin:10px 0 4px;text-transform:uppercase;letter-spacing:0.4px}
+.args{background:#F1EFE8;border-radius:8px;padding:10px 12px;font-size:12px;font-family:monospace;line-height:1.8;border:0.5px solid #D3D1C7}
+.arg-row{display:flex;gap:8px}
+.arg-key{color:#5F5E5A;min-width:130px;flex-shrink:0}
+.arg-val{color:#2C2C2A;font-weight:500}
+.note{font-size:11px;color:#888780;margin-top:6px;font-style:italic}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.ref-table{width:100%;font-size:12px;border-collapse:collapse}
+.ref-table th{text-align:left;padding:6px 8px;background:#F1EFE8;color:#5F5E5A;font-weight:500;border-bottom:0.5px solid #D3D1C7}
+.ref-table td{padding:6px 8px;border-bottom:0.5px solid #D3D1C7;color:#2C2C2A}
+.ref-table tr:last-child td{border-bottom:none}
+.commercial{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:4px}
+.com-card{background:#F1EFE8;border-radius:8px;padding:12px;border:0.5px solid #D3D1C7}
+.com-label{font-size:11px;color:#5F5E5A;margin-bottom:4px}
+.com-value{font-size:13px;font-weight:500;color:#2C2C2A}
+</style>
+</head>
+<body>
+<div class="title">VBAF-Center — complete onboarding cheat sheet</div>
+<div class="subtitle">Every prompt · Every argument · Every command · All 12 phases</div>
+
+<div class="phase">
+  <div class="phase-header" style="background:#EEEDFE;border-bottom:0.5px solid #AFA9EC">
+    <span class="phase-num" style="background:#CECBF6;color:#26215C">Load first</span>
+    <span class="phase-title" style="color:#26215C">Always load before anything else</span>
+  </div>
+  <div class="phase-body">
+    <div class="args" style="margin-top:10px">. .\VBAF-Center\VBAF.Center.LoadAll.ps1</div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="phase-header" style="background:#EEEDFE;border-bottom:0.5px solid #AFA9EC">
+    <span class="phase-num" style="background:#CECBF6;color:#26215C">Phase 1</span>
+    <span class="phase-title" style="color:#26215C">Customer profile</span>
+  </div>
+  <div class="phase-body">
+    <div class="fn">New-VBAFCenterCustomer</div>
+    <div class="args">
+      <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
+      <div class="arg-row"><span class="arg-key">CompanyName</span><span class="arg-val">Truck Company DK</span></div>
+      <div class="arg-row"><span class="arg-key">BusinessType</span><span class="arg-val">Logistics</span></div>
+      <div class="arg-row"><span class="arg-key">Problem</span><span class="arg-val">Too many idle trucks and late deliveries</span></div>
+      <div class="arg-row"><span class="arg-key">Agent</span><span class="arg-val">FleetDispatch</span></div>
+      <div class="arg-row"><span class="arg-key">Contact</span><span class="arg-val">ceo@truckcompanydk.dk</span></div>
+      <div class="arg-row"><span class="arg-key">Notes</span><span class="arg-val">First real customer</span></div>
+    </div>
+    <div class="note">Country defaults to Denmark — not prompted</div>
+    <div class="cols" style="margin-top:10px">
+      <div>
+        <div class="fn">Get-VBAFCenterCustomer</div>
+        <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
+      </div>
+      <div>
+        <div class="fn">Update-VBAFCenterCustomer</div>
+        <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div><div style="font-size:11px;color:#888780;margin-top:4px">Press Enter to keep each value</div></div>
+      </div>
+    </div>
+    <div class="cols" style="margin-top:10px">
+      <div>
+        <div class="fn">Get-VBAFCenterAllCustomers</div>
+        <div class="args" style="color:#888780;font-size:11px">(no arguments)</div>
+      </div>
+      <div>
+        <div class="fn">Remove-VBAFCenterCustomer</div>
+        <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="phase-header" style="background:#EEEDFE;border-bottom:0.5px solid #AFA9EC">
+    <span class="phase-num" style="background:#CECBF6;color:#26215C">Phase 2</span>
+    <span class="phase-title" style="color:#26215C">Problem classification</span>
+  </div>
+  <div class="phase-body">
+    <div class="cols">
+      <div>
+        <div class="fn">Get-VBAFCenterClassification</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
+          <div class="arg-row"><span class="arg-key">ProblemText</span><span class="arg-val">[Enter for profile problem]</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="fn">Set-VBAFCenterAgentMap</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">ClassificationCode</span><span class="arg-val">BUSINESS-LOGISTICS-FLEET</span></div>
+          <div class="arg-row"><span class="arg-key">Agent</span><span class="arg-val">FleetDispatch</span></div>
+          <div class="arg-row"><span class="arg-key">Description</span><span class="arg-val">Fleet dispatch optimisation</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="fn">Get-VBAFCenterAgentMap</div>
+    <div class="args" style="color:#888780;font-size:11px">(no arguments)</div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="phase-header" style="background:#E1F5EE;border-bottom:0.5px solid #5DCAA5">
+    <span class="phase-num" style="background:#9FE1CB;color:#04342C">Phase 3</span>
+    <span class="phase-title" style="color:#04342C">Signal acquisition</span>
+  </div>
+  <div class="phase-body">
+    <div class="cols">
+      <div>
+        <div class="fn">New-VBAFCenterSignalConfig — signal 1</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
+          <div class="arg-row"><span class="arg-key">SignalName</span><span class="arg-val">Empty Driving</span></div>
+          <div class="arg-row"><span class="arg-key">SignalIndex</span><span class="arg-val">Signal1</span></div>
+          <div class="arg-row"><span class="arg-key">SourceType</span><span class="arg-val">Simulated</span></div>
+          <div class="arg-row"><span class="arg-key">RawMin</span><span class="arg-val">0</span></div>
+          <div class="arg-row"><span class="arg-key">RawMax</span><span class="arg-val">100</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="fn">New-VBAFCenterSignalConfig — signal 2</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
+          <div class="arg-row"><span class="arg-key">SignalName</span><span class="arg-val">On-Time Delivery</span></div>
+          <div class="arg-row"><span class="arg-key">SignalIndex</span><span class="arg-val">Signal2</span></div>
+          <div class="arg-row"><span class="arg-key">SourceType</span><span class="arg-val">Simulated</span></div>
+          <div class="arg-row"><span class="arg-key">RawMin</span><span class="arg-val">0</span></div>
+          <div class="arg-row"><span class="arg-key">RawMax</span><span class="arg-val">100</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="cols" style="margin-top:10px">
+      <div>
+        <div class="fn">Get-VBAFCenterSignal</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
+          <div class="arg-row"><span class="arg-key">SignalIndex</span><span class="arg-val">Signal1</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="fn">Test-VBAFCenterSignalConfig</div>
+        <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
+      </div>
+    </div>
+    <div class="fn">Get-VBAFCenterAllSignals</div>
+    <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="phase-header" style="background:#E1F5EE;border-bottom:0.5px solid #5DCAA5">
+    <span class="phase-num" style="background:#9FE1CB;color:#04342C">Phase 4</span>
+    <span class="phase-title" style="color:#04342C">Normalisation</span>
+  </div>
+  <div class="phase-body">
+    <div class="cols">
+      <div>
+        <div class="fn">Invoke-VBAFCenterNormalise</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
+          <div class="arg-row"><span class="arg-key">RawSignals[0]</span><span class="arg-val">27.0</span></div>
+          <div class="arg-row"><span class="arg-key">RawSignals[1]</span><span class="arg-val">64.0</span></div>
+          <div class="arg-row"><span class="arg-key">RawSignals[2]</span><span class="arg-val">[Enter to stop]</span></div>
+          <div class="arg-row"><span class="arg-key">Method</span><span class="arg-val">MinMax</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="fn">Get-VBAFCenterNormalisationReport</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
+          <div class="arg-row"><span class="arg-key">RawSignals[0]</span><span class="arg-val">27.0</span></div>
+          <div class="arg-row"><span class="arg-key">RawSignals[1]</span><span class="arg-val">64.0</span></div>
+          <div class="arg-row"><span class="arg-key">RawSignals[2]</span><span class="arg-val">[Enter to stop]</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="note">Methods: MinMax | Standard | Robust | PassThrough — use MinMax for 0-100% logistics signals</div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="phase-header" style="background:#E6F1FB;border-bottom:0.5px solid #85B7EB">
+    <span class="phase-num" style="background:#B5D4F4;color:#042C53">Phase 5</span>
+    <span class="phase-title" style="color:#042C53">Agent router</span>
+  </div>
+  <div class="phase-body">
+    <div class="cols">
+      <div>
+        <div class="fn">Invoke-VBAFCenterRoute</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
+          <div class="arg-row"><span class="arg-key">NormalisedSignals[0]</span><span class="arg-val">0.27</span></div>
+          <div class="arg-row"><span class="arg-key">NormalisedSignals[1]</span><span class="arg-val">0.64</span></div>
+          <div class="arg-row"><span class="arg-key">NormalisedSignals[2]</span><span class="arg-val">[Enter to stop]</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="fn">Register-VBAFCenterAgent</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
+          <div class="arg-row"><span class="arg-key">AgentName</span><span class="arg-val">FleetDispatch</span></div>
+          <div class="arg-row"><span class="arg-key">Agent</span><span class="arg-val">[just press Enter]</span></div>
+        </div>
+        <div class="fn" style="margin-top:10px">Get-VBAFCenterRouteStatus</div>
+        <div class="args" style="color:#888780;font-size:11px">(no arguments)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="phase-header" style="background:#E6F1FB;border-bottom:0.5px solid #85B7EB">
+    <span class="phase-num" style="background:#B5D4F4;color:#042C53">Phase 6</span>
+    <span class="phase-title" style="color:#042C53">Action interpreter</span>
+  </div>
+  <div class="phase-body">
+    <div class="fn">New-VBAFCenterActionMap</div>
+    <div class="args">
+      <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
+      <div class="arg-row"><span class="arg-key">Action0Name</span><span class="arg-val">Monitor</span></div>
+      <div class="arg-row"><span class="arg-key">Action0Command</span><span class="arg-val">Watch and log — fleet healthy</span></div>
+      <div class="arg-row"><span class="arg-key">Action1Name</span><span class="arg-val">Reassign</span></div>
+      <div class="arg-row"><span class="arg-key">Action1Command</span><span class="arg-val">Move idle truck to pending delivery</span></div>
+      <div class="arg-row"><span class="arg-key">Action2Name</span><span class="arg-val">Reroute</span></div>
+      <div class="arg-row"><span class="arg-key">Action2Command</span><span class="arg-val">Switch to faster route</span></div>
+      <div class="arg-row"><span class="arg-key">Action3Name</span><span class="arg-val">Escalate</span></div>
+      <div class="arg-row"><span class="arg-key">Action3Command</span><span class="arg-val">Call operations manager immediately</span></div>
+    </div>
+    <div class="cols" style="margin-top:10px">
+      <div>
+        <div class="fn">Invoke-VBAFCenterInterpret</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
+          <div class="arg-row"><span class="arg-key">ActionNumber</span><span class="arg-val">1</span></div>
+        </div>
+        <div class="note">0=Monitor 1=Reassign 2=Reroute 3=Escalate</div>
+      </div>
+      <div>
+        <div class="fn">Get-VBAFCenterActionMap</div>
+        <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="phase-header" style="background:#FAEEDA;border-bottom:0.5px solid #EF9F27">
+    <span class="phase-num" style="background:#FAC775;color:#412402">Phase 7</span>
+    <span class="phase-title" style="color:#412402">Onboarding wizard — full argument list</span>
+  </div>
+  <div class="phase-body">
+    <div class="fn">Start-VBAFCenterOnboarding</div>
+    <div class="args">
+      <div class="arg-row"><span class="arg-key">Press Enter to start</span><span class="arg-val">[just press Enter]</span></div>
+      <div style="height:6px"></div>
+      <div style="font-size:11px;color:#888780;margin-bottom:2px">Step 1/6 — Customer profile</div>
+      <div class="arg-row"><span class="arg-key">Customer ID</span><span class="arg-val">TruckCompanyDK</span></div>
+      <div class="arg-row"><span class="arg-key">Company name</span><span class="arg-val">Truck Company DK</span></div>
+      <div class="arg-row"><span class="arg-key">Country</span><span class="arg-val">Denmark</span></div>
+      <div class="arg-row"><span class="arg-key">Business type</span><span class="arg-val">Logistics</span></div>
+      <div class="arg-row"><span class="arg-key">Problem</span><span class="arg-val">Too many idle trucks and late deliveries</span></div>
+      <div class="arg-row"><span class="arg-key">Contact email</span><span class="arg-val">ceo@truckcompanydk.dk</span></div>
+      <div style="height:6px"></div>
+      <div style="font-size:11px;color:#888780;margin-bottom:2px">Step 2/6 — Classification</div>
+      <div class="arg-row"><span class="arg-key">Accept agent? Y/N</span><span class="arg-val">N</span></div>
+      <div class="arg-row"><span class="arg-key">Enter agent name</span><span class="arg-val">FleetDispatch</span></div>
+      <div style="height:6px"></div>
+      <div style="font-size:11px;color:#888780;margin-bottom:2px">Step 3/6 — Signals</div>
+      <div class="arg-row"><span class="arg-key">Signal 1 name</span><span class="arg-val">Empty Driving</span></div>
+      <div class="arg-row"><span class="arg-key">Source type</span><span class="arg-val">Simulated</span></div>
+      <div class="arg-row"><span class="arg-key">Raw minimum</span><span class="arg-val">0</span></div>
+      <div class="arg-row"><span class="arg-key">Raw maximum</span><span class="arg-val">100</span></div>
+      <div class="arg-row"><span class="arg-key">Signal 2 name</span><span class="arg-val">On-Time Delivery</span></div>
+      <div class="arg-row"><span class="arg-key">Source type</span><span class="arg-val">Simulated</span></div>
+      <div class="arg-row"><span class="arg-key">Raw minimum</span><span class="arg-val">0</span></div>
+      <div class="arg-row"><span class="arg-key">Raw maximum</span><span class="arg-val">100</span></div>
+      <div class="arg-row"><span class="arg-key">Signal 3 name</span><span class="arg-val">[Enter to skip]</span></div>
+      <div class="arg-row"><span class="arg-key">Signal 4 name</span><span class="arg-val">[Enter to skip]</span></div>
+      <div style="height:6px"></div>
+      <div style="font-size:11px;color:#888780;margin-bottom:2px">Step 4/6 — Normalisation</div>
+      <div class="arg-row"><span class="arg-key">Method</span><span class="arg-val">MinMax</span></div>
+      <div style="height:6px"></div>
+      <div style="font-size:11px;color:#888780;margin-bottom:2px">Step 5/6 — Action map</div>
+      <div class="arg-row"><span class="arg-key">Action 0 name</span><span class="arg-val">Monitor</span></div>
+      <div class="arg-row"><span class="arg-key">Action 0 command</span><span class="arg-val">Watch and log — fleet healthy</span></div>
+      <div class="arg-row"><span class="arg-key">Action 1 name</span><span class="arg-val">Reassign</span></div>
+      <div class="arg-row"><span class="arg-key">Action 1 command</span><span class="arg-val">Move idle truck to pending delivery</span></div>
+      <div class="arg-row"><span class="arg-key">Action 2 name</span><span class="arg-val">Reroute</span></div>
+      <div class="arg-row"><span class="arg-key">Action 2 command</span><span class="arg-val">Switch to faster route</span></div>
+      <div class="arg-row"><span class="arg-key">Action 3 name</span><span class="arg-val">Escalate</span></div>
+      <div class="arg-row"><span class="arg-key">Action 3 command</span><span class="arg-val">Call operations manager immediately</span></div>
+      <div style="height:6px"></div>
+      <div style="font-size:11px;color:#888780;margin-bottom:2px">Step 6/6 — Schedule</div>
+      <div class="arg-row"><span class="arg-key">Check interval</span><span class="arg-val">10</span></div>
+    </div>
+    <div class="fn" style="margin-top:10px">Show-VBAFCenterSummary</div>
+    <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="phase-header" style="background:#FAEEDA;border-bottom:0.5px solid #EF9F27">
+    <span class="phase-num" style="background:#FAC775;color:#412402">Phase 8</span>
+    <span class="phase-title" style="color:#412402">Scheduling engine</span>
+  </div>
+  <div class="phase-body">
+    <div class="cols">
+      <div>
+        <div class="fn">Invoke-VBAFCenterRun — once</div>
+        <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
+        <div class="fn" style="margin-top:10px">Get-VBAFCenterRunHistory</div>
+        <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
+      </div>
+      <div>
+        <div class="fn">Start-VBAFCenterSchedule — shadow (24h)</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
+          <div class="arg-row"><span class="arg-key">MaxRuns</span><span class="arg-val">48</span></div>
+          <div class="note">Use 3 for quick testing</div>
+        </div>
+        <div class="fn" style="margin-top:10px">Start-VBAFCenterSchedule — go live</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
+          <div style="font-size:11px;color:#888780;margin-top:4px">Ctrl+C to stop</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="phase-header" style="background:#EAF3DE;border-bottom:0.5px solid #97C459">
+    <span class="phase-num" style="background:#C0DD97;color:#173404">Phase 9-12</span>
+    <span class="phase-title" style="color:#173404">Web portal · Auto-connector · Dashboard · Billing</span>
+  </div>
+  <div class="phase-body">
+    <div class="cols">
+      <div>
+        <div class="fn">Phase 9 — web portal</div>
+        <div class="args">Start-VBAFCenterPortal<div style="font-size:11px;color:#888780">Opens at http://localhost:8080</div></div>
+        <div class="fn" style="margin-top:10px">Phase 11 — dashboard</div>
+        <div class="args">Start-VBAFCenterDashboard<div style="font-size:11px;color:#888780">Opens at http://localhost:8081</div></div>
+      </div>
+      <div>
+        <div class="fn">Phase 10 — auto-connector</div>
+        <div class="args">Start-VBAFCenterAutoConnect<div class="arg-row"><span class="arg-key">-CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
+        <div class="fn" style="margin-top:10px">Phase 12 — billing</div>
+        <div class="args">New-VBAFCenterInvoice<div class="arg-row"><span class="arg-key">-CustomerID</span><span class="arg-val">TruckCompanyDK</span></div><div class="arg-row"><span class="arg-key">-InvoiceType</span><span class="arg-val">Monthly</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="phase-header" style="background:#F1EFE8;border-bottom:0.5px solid #B4B2A9">
+    <span class="phase-num" style="background:#D3D1C7;color:#2C2C2A">Reference</span>
+    <span class="phase-title" style="color:#2C2C2A">Agents · Sources · Actions · Commercial</span>
+  </div>
+  <div class="phase-body">
+    <div class="cols">
+      <div>
+        <div class="fn">Agent reference</div>
+        <table class="ref-table">
+          <tr><th>Business type</th><th>Agent</th></tr>
+          <tr><td>Logistics / Fleet</td><td>FleetDispatch</td></tr>
+          <tr><td>Healthcare</td><td>HealthcareMonitor</td></tr>
+          <tr><td>Finance / Fraud</td><td>SecurityMonitor</td></tr>
+          <tr><td>Manufacturing</td><td>PredictiveMaintenance</td></tr>
+          <tr><td>Retail / Supply</td><td>SupplyChain</td></tr>
+          <tr><td>IT Security</td><td>AnomalyDetector</td></tr>
+          <tr><td>IT Operations</td><td>IncidentResponder</td></tr>
+          <tr><td>Full automation</td><td>AutoPilot</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="fn">Source type reference</div>
+        <table class="ref-table">
+          <tr><th>Type</th><th>When to use</th></tr>
+          <tr><td>Simulated</td><td>Demo and shadow mode</td></tr>
+          <tr><td>REST</td><td>Customer has API endpoint</td></tr>
+          <tr><td>CSV</td><td>Customer exports to file</td></tr>
+          <tr><td>WMI</td><td>Windows IT data</td></tr>
+          <tr><td>Manual</td><td>Customer types the number</td></tr>
+        </table>
+        <div class="fn" style="margin-top:10px">Action numbers</div>
+        <table class="ref-table">
+          <tr><th>No.</th><th>Name</th><th>Meaning</th></tr>
+          <tr><td>0</td><td>Monitor</td><td>All good</td></tr>
+          <tr><td>1</td><td>Reassign</td><td>Move resource</td></tr>
+          <tr><td>2</td><td>Reroute</td><td>Change approach</td></tr>
+          <tr><td>3</td><td>Escalate</td><td>Call human now</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="fn" style="margin-top:12px">Commercial</div>
+    <div class="commercial">
+      <div class="com-card">
+        <div class="com-label">Onboarding fee</div>
+        <div class="com-value">DKK 15.000 - 25.000</div>
+        <div class="com-label" style="margin-top:4px">One time</div>
+      </div>
+      <div class="com-card">
+        <div class="com-label">Monthly subscription</div>
+        <div class="com-value">DKK 3.000 - 8.000</div>
+        <div class="com-label" style="margin-top:4px">Per customer per month</div>
+      </div>
+      <div class="com-card">
+        <div class="com-label">Custom pillar</div>
+        <div class="com-value">DKK 20.000 - 40.000</div>
+        <div class="com-label" style="margin-top:4px">Per project</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;color:#888780;font-size:12px;padding:24px 0">
+  VBAF-Center v1.0.2 · Roskilde, Denmark · Built with PowerShell 5.1
+</div>
+</body>
+</html>
