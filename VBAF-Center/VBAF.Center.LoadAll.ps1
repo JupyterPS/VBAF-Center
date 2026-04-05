@@ -49,7 +49,8 @@ Write-Host "║  Phase 8  Scheduling Engine      — loaded          ║" -Foreg
 Write-Host "╠═════════════════════════════════════════════════════╣" -ForegroundColor Cyan
 Write-Host "║  Quick start:                                       ║" -ForegroundColor White
 Write-Host "║  Start-VBAFCenterOnboarding                        ║" -ForegroundColor Yellow
-Write-Host "║  Invoke-VBAFCenterRun -CustomerID ""NordLogistik""  ║" -ForegroundColor Yellow
+Write-Host "║  Invoke-VBAFCenterRun -CustomerID 'NordLogistik'  ║" -ForegroundColor Yellow
 Write-Host "╚═════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
+
 

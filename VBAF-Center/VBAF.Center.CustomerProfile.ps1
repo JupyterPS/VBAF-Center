@@ -38,8 +38,8 @@ function New-VBAFCenterCustomer {
         [Parameter(Mandatory)] [string] $Problem,
         [Parameter(Mandatory)] [string] $Agent,
         [string] $Country   = "Denmark",
-        [string] $Contact   = "",
-        [string] $Notes     = ""
+        [Parameter(Mandatory)] [string] $Contact,
+        [Parameter(Mandatory)] [string] $Notes
     )
 
     Initialize-VBAFCenterCustomerStore
@@ -154,11 +154,7 @@ function Get-VBAFCenterAllCustomers {
 # ============================================================
 function Update-VBAFCenterCustomer {
     param(
-        [Parameter(Mandatory)] [string] $CustomerID,
-        [string] $Status,
-        [string] $Contact,
-        [string] $Notes,
-        [string] $Agent
+        [Parameter(Mandatory)] [string] $CustomerID
     )
 
     Initialize-VBAFCenterCustomerStore
@@ -172,14 +168,24 @@ function Update-VBAFCenterCustomer {
 
     $profile = Get-Content $path -Raw | ConvertFrom-Json
 
-    if ($Status)  { $profile.Status  = $Status  }
-    if ($Contact) { $profile.Contact = $Contact  }
-    if ($Notes)   { $profile.Notes   = $Notes    }
-    if ($Agent)   { $profile.Agent   = $Agent    }
+    Write-Host ""
+    Write-Host "Current values for: $CustomerID" -ForegroundColor Cyan
+    Write-Host "  Press Enter to keep current value." -ForegroundColor DarkGray
+    Write-Host ""
+
+    $fields = @("CompanyName","Country","BusinessType","Problem","Agent","Contact","Notes","Status")
+
+    foreach ($field in $fields) {
+        $current = $profile.$field
+        $input = Read-Host "  $field [$current]"
+        if ($input -ne "") { $profile.$field = $input }
+    }
 
     $profile | ConvertTo-Json -Depth 5 | Set-Content $path -Encoding UTF8
 
+    Write-Host ""
     Write-Host "Customer updated: $CustomerID" -ForegroundColor Green
+    Write-Host ""
     return $profile
 }
 
@@ -214,4 +220,7 @@ Write-Host "  Get-VBAFCenterAllCustomers  — list all"        -ForegroundColor 
 Write-Host "  Update-VBAFCenterCustomer   — update profile"  -ForegroundColor White
 Write-Host "  Remove-VBAFCenterCustomer   — remove profile"  -ForegroundColor White
 Write-Host ""
+
+
+
 
