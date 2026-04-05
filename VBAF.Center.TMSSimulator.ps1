@@ -346,5 +346,6 @@ Write-Host "  Quick start:"                                                    -
 Write-Host "  Show-VBAFTMSStatus"                                              -ForegroundColor Green
 Write-Host "  Invoke-VBAFTMSDayReplay -CustomerID 'NordLogistik' -FireEvents"  -ForegroundColor Green
 Write-Host "  Start-VBAFTMSSchedule   -CustomerID 'NordLogistik' -Mode Shadow -MaxRuns 10" -ForegroundColor Green
+Write-Host "  Start-VBAFTMSSchedule   -CustomerID 'NordLogistik' -Mode RealTime -MaxRuns 2" -ForegroundColor Green
 Write-Host ""
 
