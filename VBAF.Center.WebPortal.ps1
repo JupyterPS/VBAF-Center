@@ -92,7 +92,7 @@ function Get-PortalCustomerData {
     }
 
     # Calculate recommendation
-    $avg    = if ($signals.Count -gt 0) { ($signals | Measure-Object -Property Normalised -Average).Average } else { 0.5 }
+    $avg = if ($signals.Count -gt 0) { $total = 0; foreach ($sig in $signals) { $total += $sig.Normalised }; [Math]::Round($total / $signals.Count, 2) } else { 0 }
     $action = if ($avg -lt 0.25) { 0 } elseif ($avg -lt 0.50) { 1 } elseif ($avg -lt 0.75) { 2 } else { 3 }
     $actionName = if ($actions.Count -gt $action) { $actions[$action] } else { @("Monitor","Reassign","Reroute","Escalate")[$action] }
     $actionColor = @("#1D9E75","#EF9F27","#EF9F27","#E24B4A")[$action]
@@ -354,3 +354,6 @@ Write-Host ""
 Write-Host "  Quick start:" -ForegroundColor Yellow
 Write-Host "  Start-VBAFCenterPortal" -ForegroundColor Green
 Write-Host ""
+
+
+
