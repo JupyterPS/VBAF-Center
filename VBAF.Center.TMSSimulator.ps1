@@ -207,7 +207,7 @@ function Show-VBAFTMSStatus {
 # ============================================================
 function Invoke-VBAFTMSDayReplay {
     param(
-        [string] $CustomerID = "NordLogistik",
+        [string] $CustomerID = "TruckCompanyDK",
         [switch] $FireEvents
     )
 
@@ -344,8 +344,8 @@ Write-Host "  Modes   : Shadow(30m) — GoLive(10m) — Autonomy(5m) — RealTim
 Write-Host ""
 Write-Host "  Quick start:"                                                    -ForegroundColor Yellow
 Write-Host "  Show-VBAFTMSStatus"                                              -ForegroundColor Green
-Write-Host "  Invoke-VBAFTMSDayReplay -CustomerID 'NordLogistik' -FireEvents"  -ForegroundColor Green
-Write-Host "  Start-VBAFTMSSchedule   -CustomerID 'NordLogistik' -Mode Shadow -MaxRuns 10" -ForegroundColor Green
-Write-Host "  Start-VBAFTMSSchedule   -CustomerID 'NordLogistik' -Mode RealTime -MaxRuns 2" -ForegroundColor Green
+Write-Host "  Invoke-VBAFTMSDayReplay -CustomerID 'TruckCompanyDK' -FireEvents"  -ForegroundColor Green
+Write-Host "  Start-VBAFTMSSchedule   -CustomerID 'TruckCompanyDK' -Mode Shadow -MaxRuns 10" -ForegroundColor Green
+Write-Host "  Start-VBAFTMSSchedule   -CustomerID 'TruckCompanyDK' -Mode RealTime -MaxRuns 2" -ForegroundColor Green
 Write-Host ""
 

@@ -141,7 +141,7 @@ function Start-VBAFCenterSchedule {
     }
 
     $sched = Get-Content $schedFile -Raw | ConvertFrom-Json
-    [int] $intervalSec = $sched.IntervalMinutes * 60
+    [int] $intervalSec = $sched.IntervalMinutes * 10
     [int] $runCount    = 0
 
     Write-Host ""
@@ -156,6 +156,18 @@ function Start-VBAFCenterSchedule {
         Write-Host ("  [{0}] Run #{1}" -f (Get-Date).ToString("HH:mm:ss"), $runCount) -ForegroundColor DarkGray
 
         $result = Invoke-VBAFCenterRun -CustomerID $CustomerID -Silent:$false
+
+                # Auto-trigger crisis tree on Action 3
+        if ($result.Action -ge 3) {
+            Write-Host ""
+            Write-Host "  [CRISIS] Action 3 detected — activating Crisis Response Tree!" -ForegroundColor Red
+            Write-Host ""
+            if (Get-Command Start-VBAFCenterCrisis -ErrorAction SilentlyContinue) {
+                Start-VBAFCenterCrisis -CustomerID $CustomerID
+            } else {
+                Write-Host "  Load VBAF.Center.CrisisTree.ps1 to activate crisis response." -ForegroundColor Yellow
+            }
+        }
 
         if ($MaxRuns -gt 0 -and $runCount -ge $MaxRuns) {
             Write-Host "Max runs reached. Stopping." -ForegroundColor Yellow
@@ -205,4 +217,5 @@ Write-Host "  Invoke-VBAFCenterRun         — run pipeline once"     -Foregroun
 Write-Host "  Start-VBAFCenterSchedule     — start auto-checking"   -ForegroundColor White
 Write-Host "  Get-VBAFCenterRunHistory     — show recent results"   -ForegroundColor White
 Write-Host ""
+
 

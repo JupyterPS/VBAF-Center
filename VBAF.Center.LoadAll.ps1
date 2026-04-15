@@ -3,7 +3,7 @@
 .SYNOPSIS
     VBAF-Center — Load All Modules
 .DESCRIPTION
-    Loads all 12 VBAF-Center phases in the correct order.
+    Loads all 13 VBAF-Center phases in the correct order.
     Run this before using any VBAF-Center functions.
 #>
 $basePath = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -32,10 +32,12 @@ $basePath = Split-Path -Parent $MyInvocation.MyCommand.Path
 . (Join-Path $basePath "VBAF.Center.Dashboard.ps1")
 # Phase 12 — Billing Engine
 . (Join-Path $basePath "VBAF.Center.Billing.ps1")
+# Phase 13 — Crisis Response Tree
+. (Join-Path $basePath "VBAF.Center.CrisisTree.ps1")
 
 Write-Host ""
 Write-Host "╔═════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║         VBAF-Center v1.0.6 — Ready                 ║" -ForegroundColor Cyan
+Write-Host "║         VBAF-Center v1.0.9 — Ready                 ║" -ForegroundColor Cyan
 Write-Host "║         Welcome Center for VBAF Agents             ║" -ForegroundColor Cyan
 Write-Host "╠═════════════════════════════════════════════════════╣" -ForegroundColor Cyan
 Write-Host "║  Phase 1  Customer Profile       — loaded          ║" -ForegroundColor White
@@ -50,13 +52,13 @@ Write-Host "║  Phase 9  Web Portal             — loaded          ║" -Foreg
 Write-Host "║  Phase 10 Auto-Connector         — loaded          ║" -ForegroundColor White
 Write-Host "║  Phase 11 Multi-Customer Dashboard — loaded        ║" -ForegroundColor White
 Write-Host "║  Phase 12 Billing Engine         — loaded          ║" -ForegroundColor White
+Write-Host "║  Phase 13 Crisis Response Tree   — loaded          ║" -ForegroundColor Red
 Write-Host "╠═════════════════════════════════════════════════════╣" -ForegroundColor Cyan
 Write-Host "║  Quick start:                                       ║" -ForegroundColor White
 Write-Host "║  Start-VBAFCenterOnboarding                        ║" -ForegroundColor Yellow
-Write-Host "║  Invoke-VBAFCenterRun -CustomerID 'NordLogistik'  ║" -ForegroundColor Yellow
+Write-Host "║  Invoke-VBAFCenterRun -CustomerID 'TruckCompanyDK' ║" -ForegroundColor Yellow
 Write-Host "║  Start-VBAFCenterPortal                            ║" -ForegroundColor Yellow
 Write-Host "║  Start-VBAFCenterDashboard                         ║" -ForegroundColor Yellow
+Write-Host "║  Start-VBAFCenterCrisis -CustomerID 'Company'     ║" -ForegroundColor Red
 Write-Host "╚═════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
-
-
