@@ -157,11 +157,76 @@ function Start-VBAFCenterSchedule {
 
         $result = Invoke-VBAFCenterRun -CustomerID $CustomerID -Silent:$false
 
-                # Auto-trigger crisis tree on Action 3
+        # Auto-trigger crisis tree on Action 3
         if ($result.Action -ge 3) {
             Write-Host ""
             Write-Host "  [CRISIS] Action 3 detected — activating Crisis Response Tree!" -ForegroundColor Red
             Write-Host ""
+
+            # Sound alarm — 3 escalating beeps
+            try {
+                [Console]::Beep(800,  400)
+                Start-Sleep -Milliseconds 100
+                [Console]::Beep(1000, 400)
+                Start-Sleep -Milliseconds 100
+                [Console]::Beep(1500, 800)
+                Write-Host "  [NOTIFY] Sound alarm fired." -ForegroundColor Yellow
+            } catch {
+                Write-Host "  [NOTIFY] Sound alarm failed." -ForegroundColor DarkGray
+            }
+
+            # Persistent red popup — stays until dispatcher clicks OK
+            try {
+                Add-Type -AssemblyName System.Windows.Forms
+                Add-Type -AssemblyName System.Drawing
+                $form               = New-Object System.Windows.Forms.Form
+                $form.Text          = "VBAF CRISIS ALERT"
+                $form.Size          = New-Object System.Drawing.Size(420,220)
+                $form.StartPosition = "CenterScreen"
+                $form.TopMost       = $true
+                $form.BackColor     = [System.Drawing.Color]::Red
+                $label              = New-Object System.Windows.Forms.Label
+                $label.Text         = "CRISIS DETECTED!`n`nCustomer : $CustomerID`nAction   : Escalate`nCommand  : $($result.ActionCommand)`n`nClick OK to continue."
+                $label.ForeColor    = [System.Drawing.Color]::White
+                $label.Font         = New-Object System.Drawing.Font("Arial", 10, [System.Drawing.FontStyle]::Bold)
+                $label.Size         = New-Object System.Drawing.Size(400,130)
+                $label.Location     = New-Object System.Drawing.Point(10,10)
+                $button             = New-Object System.Windows.Forms.Button
+                $button.Text        = "OK — I am handling it"
+                $button.Size        = New-Object System.Drawing.Size(200,35)
+                $button.Location    = New-Object System.Drawing.Point(100,145)
+                $button.BackColor   = [System.Drawing.Color]::White
+                $button.ForeColor   = [System.Drawing.Color]::Red
+                $button.Font        = New-Object System.Drawing.Font("Arial", 10, [System.Drawing.FontStyle]::Bold)
+                $button.Add_Click({ $form.Close() })
+                $form.Controls.Add($label)
+                $form.Controls.Add($button)
+                $form.Add_Shown({ $form.Activate() })
+                $form.ShowDialog() | Out-Null
+                Write-Host "  [NOTIFY] Crisis popup dismissed by dispatcher." -ForegroundColor Green
+            } catch {
+                Write-Host "  [NOTIFY] Popup failed — $($_.Exception.Message)" -ForegroundColor DarkGray
+            }
+
+            # Email alert — configure SMTP in customer schedule file
+            $schedFile  = Join-Path $env:USERPROFILE "VBAFCenter\schedules\$CustomerID-schedule.json"
+            if (Test-Path $schedFile) {
+                $sched = Get-Content $schedFile -Raw | ConvertFrom-Json
+                if ($sched.AlertEmail -and $sched.AlertEmail -ne "") {
+                    try {
+                        Send-MailMessage `
+                            -To      $sched.AlertEmail `
+                            -From    "vbaf@yourdomain.dk" `
+                            -Subject "VBAF CRISIS — Action 3 fired for $CustomerID" `
+                            -Body    "VBAF-Center detected a critical situation for $CustomerID at $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss').`n`nAction: Escalate`nCommand: $($result.ActionCommand)`n`nLog in to VBAF-Center and activate the Crisis Response Tree immediately." `
+                            -SmtpServer "smtp.yourdomain.dk"
+                        Write-Host "  [NOTIFY] Email alert sent to $($sched.AlertEmail)." -ForegroundColor Yellow
+                    } catch {
+                        Write-Host "  [NOTIFY] Email alert failed — check SMTP settings." -ForegroundColor DarkGray
+                    }
+                }
+            }
+
             if (Get-Command Start-VBAFCenterCrisis -ErrorAction SilentlyContinue) {
                 Start-VBAFCenterCrisis -CustomerID $CustomerID
             } else {
@@ -217,5 +282,7 @@ Write-Host "  Invoke-VBAFCenterRun         — run pipeline once"     -Foregroun
 Write-Host "  Start-VBAFCenterSchedule     — start auto-checking"   -ForegroundColor White
 Write-Host "  Get-VBAFCenterRunHistory     — show recent results"   -ForegroundColor White
 Write-Host ""
+
+
 
 
