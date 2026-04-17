@@ -96,9 +96,9 @@ function Get-DashboardHTML {
 
     $customerList = @($customers)
     $total        = $customerList.Count
-    $alerts       = ($customerList | Where-Object { $_.Action -ge 2 }).Count
-    $healthy      = ($customerList | Where-Object { $_.Action -eq 0 }).Count
-    $attention    = ($customerList | Where-Object { $_.Action -eq 1 }).Count
+    $vbafAlerts    = @($customerList | Where-Object { $_.Action -ge 2 }).Count
+    $vbafHealthy   = @($customerList | Where-Object { $_.Action -eq 0 }).Count
+    $vbafAttention = @($customerList | Where-Object { $_.Action -eq 1 }).Count
 
     $cards = ($customerList | ForEach-Object {
         $c = $_
@@ -170,16 +170,16 @@ function Get-DashboardHTML {
     </div>
 </div>
 <div class='summary'>
-    <div class='summary-box' style='background:#1D9E7512'>
-        <div class='num' style='color:#1D9E75'>$healthy</div>
+    <div class='summary-box' style='background:#1D9E7512'>        
+        <div class='num' style='color:#1D9E75'>$($vbafHealthy)</div>
         <div class='lbl'>Healthy</div>
     </div>
     <div class='summary-box' style='background:#EF9F2712'>
-        <div class='num' style='color:#EF9F27'>$attention</div>
+        <div class='num' style='color:#EF9F27'>$($vbafAttention)</div>
         <div class='lbl'>Attention</div>
     </div>
     <div class='summary-box' style='background:#E24B4A12'>
-        <div class='num' style='color:#E24B4A'>$alerts</div>
+        <div class='num' style='color:#E24B4A'>$($vbafAlerts)</div>
         <div class='lbl'>Alerts</div>
     </div>
     <div class='summary-box' style='background:#f4f4f0'>
@@ -237,6 +237,7 @@ function Start-VBAFCenterDashboard {
             $response = $context.Response
             $html     = Get-DashboardHTML
             $buffer   = [System.Text.Encoding]::UTF8.GetBytes($html)
+            $response.Headers.Add("Cache-Control", "no-cache, no-store, must-revalidate")
             $response.ContentType     = "text/html; charset=utf-8"
             $response.ContentLength64 = $buffer.Length
             $response.OutputStream.Write($buffer, 0, $buffer.Length)
