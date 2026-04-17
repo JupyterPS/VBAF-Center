@@ -1,7 +1,7 @@
-﻿. .\VBAF-Center\VBAF.Center.Publish.ps1                                        # GIT
+﻿. (Join-Path $basePath "VBAF-Center\VBAF.Center.Publish.ps1")                 # GIT
 Publish-VBAFCenter
 
-. "VBAF-Center\VBAF.Center.LoadAll.ps1"
+. (Join-Path $basePath "VBAF-Center\VBAF.Center.LoadAll.ps1")
 
 Phase 1 — Customer profile
 New-VBAFCenterCustomer	            First time you onboard a new customer	    Once per customer         Purple Once per customer — setup only

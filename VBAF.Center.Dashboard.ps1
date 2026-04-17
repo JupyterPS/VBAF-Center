@@ -66,7 +66,7 @@ function Get-DashboardData {
             }
         }
 
-        $customers += @{
+        $customers += [PSCustomObject]@{
             CustomerID   = $p.CustomerID
             CompanyName  = $p.CompanyName
             BusinessType = $p.BusinessType
@@ -93,12 +93,14 @@ function Get-DashboardHTML {
 
     $customers  = Get-DashboardData
     $timestamp  = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
-    $total      = $customers.Count
-    $alerts     = ($customers | Where-Object { $_.Action -ge 2 }).Count
-    $healthy    = ($customers | Where-Object { $_.Action -eq 0 }).Count
-    $attention  = ($customers | Where-Object { $_.Action -eq 1 }).Count
 
-    $cards = ($customers | ForEach-Object {
+    $customerList = @($customers)
+    $total        = $customerList.Count
+    $alerts       = ($customerList | Where-Object { $_.Action -ge 2 }).Count
+    $healthy      = ($customerList | Where-Object { $_.Action -eq 0 }).Count
+    $attention    = ($customerList | Where-Object { $_.Action -eq 1 }).Count
+
+    $cards = ($customerList | ForEach-Object {
         $c = $_
         "<div class='customer-card' style='border-left:4px solid $($c.BorderColor)'>
             <div class='card-top'>
