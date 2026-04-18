@@ -14,8 +14,9 @@
     Each customer gets their own unique URL with token.
 
     Functions:
-      Start-VBAFCenterPortal   — start the web portal
-      Stop-VBAFCenterPortal    — stop the web portal
+      Start-VBAFCenterPortal      — start the web portal
+      Stop-VBAFCenterPortal       — stop the web portal
+      Get-VBAFCenterPortalURLs    — show all customer portal URLs
 #>
 
 # ============================================================
@@ -40,6 +41,46 @@ function Test-PortalToken {
     if (-not $sched.PortalToken) { return $false }
 
     return ($sched.PortalToken -eq $Token)
+}
+
+# ============================================================
+# GET-VBAFCENTERPORTALURLS
+# ============================================================
+function Get-VBAFCenterPortalURLs {
+    param(
+        [int] $Port = 8080
+    )
+
+    $schedPath = Join-Path $env:USERPROFILE "VBAFCenter\schedules"
+    if (-not (Test-Path $schedPath)) {
+        Write-Host "No customers found." -ForegroundColor Yellow
+        return
+    }
+
+    $files = Get-ChildItem $schedPath -Filter "*.json"
+    if ($files.Count -eq 0) {
+        Write-Host "No customers found." -ForegroundColor Yellow
+        return
+    }
+
+    Write-Host ""
+    Write-Host "  +--------------------------------------------------+" -ForegroundColor Cyan
+    Write-Host "  |   VBAF-Center Portal URLs                        |" -ForegroundColor Cyan
+    Write-Host "  |   Copy and send to each customer                 |" -ForegroundColor Cyan
+    Write-Host "  +--------------------------------------------------+" -ForegroundColor Cyan
+    Write-Host ""
+
+    foreach ($file in $files) {
+        $s = Get-Content $file.FullName -Raw | ConvertFrom-Json
+        if ($s.PortalToken) {
+            Write-Host ("  Customer : {0}" -f $s.CustomerID) -ForegroundColor White
+            Write-Host ("  URL      : http://localhost:{0}/?customer={1}&token={2}" -f $Port, $s.CustomerID, $s.PortalToken) -ForegroundColor Yellow
+            Write-Host ""
+        } else {
+            Write-Host ("  Customer : {0} — no token (run onboarding again to generate)" -f $s.CustomerID) -ForegroundColor DarkGray
+            Write-Host ""
+        }
+    }
 }
 
 # ============================================================
@@ -262,7 +303,7 @@ function Get-PortalHTML {
 </div>
 
 </div>
-<div class='footer'>VBAF-Center v1.0.14 · Roskilde, Denmark · Built with PowerShell 5.1</div>
+<div class='footer'>VBAF-Center v1.0.15 · Roskilde, Denmark · Built with PowerShell 5.1</div>
 </body>
 </html>
 "@
@@ -289,13 +330,20 @@ function Start-VBAFCenterPortal {
     Write-Host ("  URL     : http://localhost:{0}" -f $Port) -ForegroundColor White
     Write-Host "  Press Ctrl+C to stop." -ForegroundColor Yellow
     Write-Host ""
+    Write-Host "  Customer portal URLs:" -ForegroundColor DarkGray
+    Get-VBAFCenterPortalURLs -Port $Port
+    Write-Host ""
 
     $listener = [System.Net.HttpListener]::new()
     $listener.Prefixes.Add("http://localhost:$Port/")
     $listener.Start()
     $script:PortalListener = $listener
 
-    Start-Process "http://localhost:$Port/"
+    $firstSched = Get-ChildItem (Join-Path $env:USERPROFILE "VBAFCenter\schedules") -Filter "*.json" | Select-Object -First 1
+    if ($firstSched) {
+        $s = Get-Content $firstSched.FullName -Raw | ConvertFrom-Json
+        if ($s.PortalToken) { Start-Process ("http://localhost:{0}/?customer={1}&token={2}" -f $Port, $s.CustomerID, $s.PortalToken) }
+    }
 
     Write-Host "  Portal running — browser opened." -ForegroundColor Green
     Write-Host ""
@@ -358,10 +406,11 @@ Write-Host "  |   VBAF-Center Phase 9 - Web Portal       |" -ForegroundColor Cya
 Write-Host "  |   Token-protected customer dashboard     |" -ForegroundColor Cyan
 Write-Host "  +------------------------------------------+" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "  Start-VBAFCenterPortal   — open browser dashboard" -ForegroundColor White
-Write-Host "  Stop-VBAFCenterPortal    — stop the portal"        -ForegroundColor White
+Write-Host "  Start-VBAFCenterPortal      — open browser dashboard"    -ForegroundColor White
+Write-Host "  Stop-VBAFCenterPortal       — stop the portal"           -ForegroundColor White
+Write-Host "  Get-VBAFCenterPortalURLs    — show all customer URLs"    -ForegroundColor White
 Write-Host ""
 Write-Host "  Quick start:" -ForegroundColor Yellow
 Write-Host "  Start-VBAFCenterPortal" -ForegroundColor Green
-Write-Host "  Then use URL from onboarding summary" -ForegroundColor DarkGray
+Write-Host "  Get-VBAFCenterPortalURLs" -ForegroundColor Green
 Write-Host ""
