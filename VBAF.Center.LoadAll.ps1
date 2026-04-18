@@ -36,10 +36,10 @@ $basePath = Split-Path -Parent $MyInvocation.MyCommand.Path
 . (Join-Path $basePath "VBAF.Center.CrisisTree.ps1")
 
 Write-Host ""
-Write-Host "╔═════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║         VBAF-Center v1.0.9 — Ready                 ║" -ForegroundColor Cyan
+Write-Host "╔════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+Write-Host "║         VBAF-Center v1.0.14 — Ready                ║" -ForegroundColor Cyan
 Write-Host "║         Welcome Center for VBAF Agents             ║" -ForegroundColor Cyan
-Write-Host "╠═════════════════════════════════════════════════════╣" -ForegroundColor Cyan
+Write-Host "╠════════════════════════════════════════════════════╣" -ForegroundColor Cyan
 Write-Host "║  Phase 1  Customer Profile       — loaded          ║" -ForegroundColor White
 Write-Host "║  Phase 2  Problem Classification — loaded          ║" -ForegroundColor White
 Write-Host "║  Phase 3  Signal Acquisition     — loaded          ║" -ForegroundColor White

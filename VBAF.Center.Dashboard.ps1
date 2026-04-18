@@ -5,6 +5,7 @@
 .DESCRIPTION
     Your overview screen — ALL customers on one page.
     Green/yellow/red status at a glance.
+    Shows last 10 runs per customer.
     Auto-refreshes every 10 minutes.
 
     Functions:
@@ -53,16 +54,36 @@ function Get-DashboardData {
         $bgColors     = @("#1D9E7512","#EF9F2712","#BA751712","#E24B4A12")
         $borderColors = @("#1D9E75","#EF9F27","#BA7517","#E24B4A")
 
-        # Last run
+        # Last 10 runs + trend
         $historyPath = Join-Path $env:USERPROFILE "VBAFCenter\history"
         $lastRun     = "Never"
+        $trend       = "&#8594;"
+        $trendColor  = "#888780"
+        $runHistory  = @()
+
         if (Test-Path $historyPath) {
-            $last = Get-ChildItem $historyPath -Filter "$($p.CustomerID)-*.json" |
+            $runs = Get-ChildItem $historyPath -Filter "$($p.CustomerID)-*.json" |
                     Sort-Object LastWriteTime -Descending |
-                    Select-Object -First 1
-            if ($last) {
-                $h = Get-Content $last.FullName -Raw | ConvertFrom-Json
+                    Select-Object -First 10
+
+            if ($runs -and @($runs).Count -ge 1) {
+                $h = Get-Content $runs[0].FullName -Raw | ConvertFrom-Json
                 $lastRun = $h.Timestamp
+            }
+            if ($runs -and @($runs).Count -ge 2) {
+                $latest   = [int](Get-Content $runs[0].FullName -Raw | ConvertFrom-Json).Action
+                $previous = [int](Get-Content $runs[1].FullName -Raw | ConvertFrom-Json).Action
+                if ($latest -gt $previous)     { $trend = "&#8679;"; $trendColor = "#E24B4A" }
+                elseif ($latest -lt $previous) { $trend = "&#8681;"; $trendColor = "#1D9E75" }
+            }
+            foreach ($run in $runs) {
+                $h = Get-Content $run.FullName -Raw | ConvertFrom-Json
+                $runHistory += @{
+                    Timestamp  = $h.Timestamp
+                    Action     = $h.Action
+                    ActionName = $h.ActionName
+                    AvgSignal  = $h.AvgSignal
+                }
             }
         }
 
@@ -80,6 +101,9 @@ function Get-DashboardData {
             BgColor      = $bgColors[$action]
             BorderColor  = $borderColors[$action]
             LastRun      = $lastRun
+            Trend        = $trend
+            TrendColor   = $trendColor
+            RunHistory   = $runHistory
         }
     }
 
@@ -94,18 +118,39 @@ function Get-DashboardHTML {
     $customers  = Get-DashboardData
     $timestamp  = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
 
-    $customerList = @($customers)
-    $total        = $customerList.Count
-    $vbafAlerts    = @($customerList | Where-Object { $_.Action -ge 2 }).Count
-    $vbafHealthy   = @($customerList | Where-Object { $_.Action -eq 0 }).Count
-    $vbafAttention = @($customerList | Where-Object { $_.Action -eq 1 }).Count
+    $customerList  = @($customers)
+    $total         = $customerList.Count
+    $vbafAlerts    = @($customerList | Where-Object { [int]$_.Action -ge 2 }).Count
+    $vbafHealthy   = @($customerList | Where-Object { [int]$_.Action -eq 0 }).Count
+    $vbafAttention = @($customerList | Where-Object { [int]$_.Action -eq 1 }).Count
 
     $cards = ($customerList | ForEach-Object {
         $c = $_
+
+        # Build history rows
+        $historyRows = ""
+        if ($c.RunHistory -and $c.RunHistory.Count -gt 0) {
+            foreach ($r in $c.RunHistory) {
+                $rAction = [int]$r.Action
+                $rColor  = @("#1D9E75","#EF9F27","#BA7517","#E24B4A")[$rAction]
+                $rName   = @("Monitor","Reassign","Reroute","Escalate")[$rAction]
+                $historyRows += "<tr>
+                    <td style='color:#888;font-size:11px'>$($r.Timestamp)</td>
+                    <td style='color:$rColor;font-weight:500;font-size:11px'>$rName</td>
+                    <td style='color:#888;font-size:11px;text-align:right'>$($r.AvgSignal)</td>
+                </tr>"
+            }
+        } else {
+            $historyRows = "<tr><td colspan='3' style='color:#aaa;font-size:11px;text-align:center'>No history yet — run Invoke-VBAFCenterRun first</td></tr>"
+        }
+
         "<div class='customer-card' style='border-left:4px solid $($c.BorderColor)'>
             <div class='card-top'>
                 <div class='company-name'>$($c.CompanyName)</div>
-                <div class='action-badge' style='background:$($c.BgColor);color:$($c.ActionColor);border:1px solid $($c.BorderColor)'>$($c.ActionName)</div>
+                <div style='display:flex;align-items:center;gap:8px'>
+                    <span style='font-size:20px;color:$($c.TrendColor)'>$($c.Trend)</span>
+                    <div class='action-badge' style='background:$($c.BgColor);color:$($c.ActionColor);border:1px solid $($c.BorderColor)'>$($c.ActionName)</div>
+                </div>
             </div>
             <div class='card-meta'>
                 <span>$($c.BusinessType)</span>
@@ -118,7 +163,16 @@ function Get-DashboardHTML {
                 </div>
                 <div class='signal-value' style='color:$($c.ActionColor)'>$($c.AvgSignal)</div>
             </div>
-            <div class='last-run'>Last run: $($c.LastRun)</div>
+            <div class='history-section'>
+                <table class='history-table'>
+                    <thead><tr>
+                        <th>Time</th>
+                        <th>Action</th>
+                        <th style='text-align:right'>Avg</th>
+                    </tr></thead>
+                    <tbody>$historyRows</tbody>
+                </table>
+            </div>
         </div>"
     }) -join "`n"
 
@@ -144,17 +198,21 @@ function Get-DashboardHTML {
   .summary-box .num { font-size:32px; font-weight:500; }
   .summary-box .lbl { font-size:12px; color:#888; margin-top:4px; }
   .container { max-width:1100px; margin:24px auto; padding:0 24px; }
-  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:16px; }
   .customer-card { background:#fff; border-radius:8px; padding:20px; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
   .card-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
   .company-name { font-size:16px; font-weight:500; }
   .action-badge { padding:4px 12px; border-radius:12px; font-size:12px; font-weight:500; }
   .card-meta { display:flex; gap:12px; font-size:12px; color:#888; margin-bottom:12px; }
-  .card-bottom { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+  .card-bottom { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
   .signal-bar-wrap { flex:1; height:6px; background:#f0f0ee; border-radius:3px; overflow:hidden; }
   .signal-bar { height:100%; border-radius:3px; transition:width 0.3s; }
   .signal-value { font-size:13px; font-weight:500; min-width:32px; text-align:right; }
-  .last-run { font-size:11px; color:#aaa; }
+  .history-section { border-top:1px solid #f0f0ee; padding-top:10px; margin-top:4px; }
+  .history-table { width:100%; border-collapse:collapse; }
+  .history-table th { text-align:left; font-size:11px; color:#aaa; font-weight:500; padding:2px 4px; border-bottom:1px solid #f0f0ee; }
+  .history-table td { padding:3px 4px; border-bottom:1px solid #f8f8f6; }
+  .history-table tr:last-child td { border-bottom:none; }
   .empty { text-align:center; padding:60px; color:#aaa; grid-column:1/-1; }
   .footer { text-align:center; color:#aaa; font-size:12px; padding:24px; }
   .refresh-btn { background:#444; color:#fff; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-size:12px; }
@@ -170,7 +228,7 @@ function Get-DashboardHTML {
     </div>
 </div>
 <div class='summary'>
-    <div class='summary-box' style='background:#1D9E7512'>        
+    <div class='summary-box' style='background:#1D9E7512'>
         <div class='num' style='color:#1D9E75'>$($vbafHealthy)</div>
         <div class='lbl'>Healthy</div>
     </div>
@@ -192,7 +250,7 @@ function Get-DashboardHTML {
         $cards
     </div>
 </div>
-<div class='footer'>VBAF-Center v1.0.2 · Roskilde, Denmark · Built with PowerShell 5.1</div>
+<div class='footer'>VBAF-Center v1.0.14 · Roskilde, Denmark · Built with PowerShell 5.1</div>
 </body>
 </html>
 "@

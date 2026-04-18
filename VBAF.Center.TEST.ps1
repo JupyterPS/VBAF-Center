@@ -85,6 +85,31 @@ Write-Host "Clean slate — all test data removed!" -ForegroundColor Green
 Get-VBAFCenterAllCustomers              # CHECK    
 
 
+#___________________________________ Any browser can see the portal ________________________________________________
+
+
+The correct workflow for using the Portal/Dashboard
+
+Open PowerShell console (not ISE) — press Windows key, type powershell, press Enter
+Run the portal there — ISE stays free
+
+Use ISE for coding as normal
+
+cd "C:\Users\henni\OneDrive\WindowsPowerShell"
+. .\VBAF-Center\VBAF.Center.LoadAll.ps1
+Start-VBAFCenterPortal
+
+Any browser can here after see the Portal at:
+http://localhost:8080
+
+cd "C:\Users\henni\OneDrive\WindowsPowerShell"
+. .\VBAF-Center\VBAF.Center.LoadAll.ps1
+Start-VBAFCenterDashboard
+
+Any browser can here after see the Dashboard at:
+http://localhost:8081
+
+
 <#___________________ ALLE NEDENSTÅENDE DATA ER AT FINDE PÅ GITHUB VBAF-CENTER (PAGES)__________________
 
 CustomerID   : TruckCompanyDK

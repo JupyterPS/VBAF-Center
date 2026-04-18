@@ -10,6 +10,9 @@
     No internet needed. No cloud. No hosting fees.
     Runs entirely on your Windows PC.
 
+    Access is protected by a token generated during onboarding.
+    Each customer gets their own unique URL with token.
+
     Functions:
       Start-VBAFCenterPortal   — start the web portal
       Stop-VBAFCenterPortal    — stop the web portal
@@ -23,26 +26,20 @@ $script:PortalRunning  = $false
 $script:PortalPort     = 8080
 
 # ============================================================
-# GET CUSTOMER LIST
+# VALIDATE TOKEN
 # ============================================================
-function Get-PortalCustomerList {
-    $storePath = Join-Path $env:USERPROFILE "VBAFCenter\customers"
-    $customers = @()
-    if (Test-Path $storePath) {
-        Get-ChildItem $storePath -Filter "*.json" | ForEach-Object {
-            $p = Get-Content $_.FullName -Raw | ConvertFrom-Json
-            if ($p.CustomerID) {
-                $customers += @{
-                    CustomerID   = $p.CustomerID
-                    CompanyName  = $p.CompanyName
-                    BusinessType = $p.BusinessType
-                    Agent        = $p.Agent
-                    Status       = $p.Status
-                }
-            }
-        }
-    }
-    return $customers
+function Test-PortalToken {
+    param([string]$CustomerID, [string]$Token)
+
+    if ($CustomerID -eq "" -or $Token -eq "") { return $false }
+
+    $schedFile = Join-Path $env:USERPROFILE "VBAFCenter\schedules\$CustomerID-schedule.json"
+    if (-not (Test-Path $schedFile)) { return $false }
+
+    $sched = Get-Content $schedFile -Raw | ConvertFrom-Json
+    if (-not $sched.PortalToken) { return $false }
+
+    return ($sched.PortalToken -eq $Token)
 }
 
 # ============================================================
@@ -86,15 +83,19 @@ function Get-PortalCustomerData {
     $actions    = @("Monitor","Reassign","Reroute","Escalate")
     if (Test-Path $actionFile) {
         $lines = Get-Content $actionFile
-        $actions = $lines | Where-Object { $_ -match "^Action\d+Name=" } |
-                   ForEach-Object { ($_ -split "=")[1] }
-        if ($actions.Count -eq 0) { $actions = @("Monitor","Reassign","Reroute","Escalate") }
+        $parsed = $lines | Where-Object { $_ -match "^\d+\|" } |
+                  ForEach-Object { ($_ -split "\|")[1] }
+        if ($parsed -and $parsed.Count -gt 0) { $actions = $parsed }
     }
 
     # Calculate recommendation
-    $avg = if ($signals.Count -gt 0) { $total = 0; foreach ($sig in $signals) { $total += $sig.Normalised }; [Math]::Round($total / $signals.Count, 2) } else { 0 }
-    $action = if ($avg -lt 0.25) { 0 } elseif ($avg -lt 0.50) { 1 } elseif ($avg -lt 0.75) { 2 } else { 3 }
-    $actionName = if ($actions.Count -gt $action) { $actions[$action] } else { @("Monitor","Reassign","Reroute","Escalate")[$action] }
+    $avg = if ($signals.Count -gt 0) {
+        $total = 0
+        foreach ($sig in $signals) { $total += $sig.Normalised }
+        [Math]::Round($total / $signals.Count, 2)
+    } else { 0 }
+    $action      = if ($avg -lt 0.25) { 0 } elseif ($avg -lt 0.50) { 1 } elseif ($avg -lt 0.75) { 2 } else { 3 }
+    $actionName  = if ($actions.Count -gt $action) { $actions[$action] } else { @("Monitor","Reassign","Reroute","Escalate")[$action] }
     $actionColor = @("#1D9E75","#EF9F27","#EF9F27","#E24B4A")[$action]
 
     # Get history
@@ -128,45 +129,105 @@ function Get-PortalCustomerData {
 }
 
 # ============================================================
+# BUILD ACCESS DENIED PAGE
+# ============================================================
+function Get-PortalDeniedHTML {
+    return @"
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8'>
+<title>VBAF-Center Portal — Access Denied</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:Arial,sans-serif; background:#f4f4f0; color:#2C2C2A; display:flex; align-items:center; justify-content:center; min-height:100vh; }
+  .box { background:#fff; border-radius:12px; padding:40px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.1); max-width:400px; }
+  .icon { font-size:48px; margin-bottom:16px; }
+  h1 { font-size:20px; font-weight:500; margin-bottom:8px; color:#E24B4A; }
+  p { font-size:14px; color:#888; line-height:1.6; }
+</style>
+</head>
+<body>
+<div class='box'>
+    <div class='icon'>&#128274;</div>
+    <h1>Access Denied</h1>
+    <p>This portal requires a valid customer URL with token.<br><br>
+    Please contact your VBAF-Center administrator for your personal portal link.</p>
+</div>
+</body>
+</html>
+"@
+}
+
+# ============================================================
 # BUILD HTML PAGE
 # ============================================================
 function Get-PortalHTML {
-    param([string]$CustomerID = "")
+    param([string]$CustomerID = "", [string]$Token = "")
 
-    $customers = Get-PortalCustomerList
-    $customerOptions = ($customers | ForEach-Object {
-        $sel = if ($_.CustomerID -eq $CustomerID) { " selected" } else { "" }
-        "<option value='$($_.CustomerID)'$sel>$($_.CompanyName)</option>"
+    $data = Get-PortalCustomerData -CustomerID $CustomerID
+    if (-not $data) { return Get-PortalDeniedHTML }
+
+    $signalRows = ($data.Signals | ForEach-Object {
+        "<tr>
+            <td>$($_.SignalName)</td>
+            <td style='color:$($_.Color);font-weight:500'>$($_.RawValue)</td>
+            <td style='color:$($_.Color);font-weight:500'>$($_.Normalised)</td>
+            <td><span class='badge' style='background:$($_.Color)20;color:$($_.Color);border:1px solid $($_.Color)'>$($_.Status)</span></td>
+            <td>$($_.SourceType)</td>
+        </tr>"
     }) -join "`n"
 
-    $dataSection = ""
-    if ($CustomerID -ne "" -and $CustomerID -ne "SELECT") {
-        $data = Get-PortalCustomerData -CustomerID $CustomerID
-        if ($data) {
-            $signalRows = ($data.Signals | ForEach-Object {
-                "<tr>
-                    <td>$($_.SignalName)</td>
-                    <td style='color:$($_.Color);font-weight:500'>$($_.RawValue)</td>
-                    <td style='color:$($_.Color);font-weight:500'>$($_.Normalised)</td>
-                    <td><span class='badge' style='background:$($_.Color)20;color:$($_.Color);border:1px solid $($_.Color)'>$($_.Status)</span></td>
-                    <td>$($_.SourceType)</td>
-                </tr>"
-            }) -join "`n"
+    $historyRows = ($data.History | ForEach-Object {
+        $hcolor = @("#1D9E75","#EF9F27","#EF9F27","#E24B4A")[[int]$_.Action]
+        "<tr>
+            <td>$($_.Timestamp)</td>
+            <td style='color:$hcolor;font-weight:500'>$($_.ActionName)</td>
+            <td>$($_.AvgSignal)</td>
+        </tr>"
+    }) -join "`n"
 
-            $historyRows = ($data.History | ForEach-Object {
-                $hcolor = @("#1D9E75","#EF9F27","#EF9F27","#E24B4A")[[int]$_.Action]
-                "<tr>
-                    <td>$($_.Timestamp)</td>
-                    <td style='color:$hcolor;font-weight:500'>$($_.ActionName)</td>
-                    <td>$($_.AvgSignal)</td>
-                </tr>"
-            }) -join "`n"
+    if ($historyRows -eq "") {
+        $historyRows = "<tr><td colspan='3' style='text-align:center;color:#888'>No history yet — run Invoke-VBAFCenterRun first</td></tr>"
+    }
 
-            if ($historyRows -eq "") {
-                $historyRows = "<tr><td colspan='3' style='text-align:center;color:#888'>No history yet — run Invoke-VBAFCenterRun first</td></tr>"
-            }
+    return @"
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8'>
+<meta http-equiv='refresh' content='600'>
+<title>VBAF-Center — $($data.Profile.CompanyName)</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:Arial,sans-serif; background:#f4f4f0; color:#2C2C2A; font-size:14px; }
+  .header { background:#2C2C2A; color:#fff; padding:16px 32px; display:flex; align-items:center; justify-content:space-between; }
+  .header h1 { font-size:18px; font-weight:500; }
+  .header .version { font-size:12px; color:#888; }
+  .container { max-width:960px; margin:24px auto; padding:0 24px; }
+  .card { background:#fff; border-radius:8px; padding:20px 24px; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+  .card-header { display:flex; justify-content:space-between; align-items:center; font-size:16px; font-weight:500; margin-bottom:8px; }
+  .meta { color:#666; font-size:13px; }
+  .badge { padding:3px 10px; border-radius:12px; font-size:12px; font-weight:500; }
+  .recommendation { display:flex; flex-direction:column; gap:6px; }
+  .rec-label { font-size:12px; color:#888; text-transform:uppercase; letter-spacing:0.5px; }
+  .rec-action { font-size:28px; font-weight:500; }
+  .rec-avg { font-size:13px; color:#666; }
+  .section-title { font-weight:500; margin-bottom:12px; color:#444; }
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; padding:8px 12px; background:#f8f8f6; color:#666; font-weight:500; font-size:13px; border-bottom:1px solid #eee; }
+  td { padding:10px 12px; border-bottom:1px solid #f0f0ee; font-size:13px; }
+  tr:last-child td { border-bottom:none; }
+  .footer { text-align:center; color:#aaa; font-size:12px; padding:24px; }
+</style>
+</head>
+<body>
+<div class='header'>
+    <h1>$($data.Profile.CompanyName) — VBAF Portal</h1>
+    <span class='version'>Auto-refresh every 10 min · $($data.Timestamp)</span>
+</div>
+<div class='container'>
 
-            $dataSection = @"
 <div class='card'>
     <div class='card-header'>
         <span>$($data.Profile.CompanyName)</span>
@@ -174,8 +235,7 @@ function Get-PortalHTML {
     </div>
     <div class='meta'>
         Agent: <b>$($data.Profile.Agent)</b> &nbsp;|&nbsp;
-        Business: <b>$($data.Profile.BusinessType)</b> &nbsp;|&nbsp;
-        Updated: <b>$($data.Timestamp)</b>
+        Business: <b>$($data.Profile.BusinessType)</b>
     </div>
 </div>
 
@@ -200,66 +260,9 @@ function Get-PortalHTML {
         <tbody>$historyRows</tbody>
     </table>
 </div>
-"@
-        }
-    }
 
-    return @"
-<!DOCTYPE html>
-<html lang='en'>
-<head>
-<meta charset='UTF-8'>
-<meta http-equiv='refresh' content='600'>
-<title>VBAF-Center Portal</title>
-<style>
-  * { box-sizing:border-box; margin:0; padding:0; }
-  body { font-family:Arial,sans-serif; background:#f4f4f0; color:#2C2C2A; font-size:14px; }
-  .header { background:#2C2C2A; color:#fff; padding:16px 32px; display:flex; align-items:center; justify-content:space-between; }
-  .header h1 { font-size:18px; font-weight:500; }
-  .header .version { font-size:12px; color:#888; }
-  .container { max-width:960px; margin:24px auto; padding:0 24px; }
-  .selector { background:#fff; border-radius:8px; padding:16px 24px; margin-bottom:20px; display:flex; align-items:center; gap:16px; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
-  .selector label { font-weight:500; }
-  .selector select { padding:8px 12px; border:1px solid #ccc; border-radius:6px; font-size:14px; min-width:200px; }
-  .selector button { padding:8px 20px; background:#2C2C2A; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:14px; }
-  .selector button:hover { background:#444; }
-  .card { background:#fff; border-radius:8px; padding:20px 24px; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
-  .card-header { display:flex; justify-content:space-between; align-items:center; font-size:16px; font-weight:500; margin-bottom:8px; }
-  .meta { color:#666; font-size:13px; }
-  .badge { padding:3px 10px; border-radius:12px; font-size:12px; font-weight:500; }
-  .recommendation { display:flex; flex-direction:column; gap:6px; }
-  .rec-label { font-size:12px; color:#888; text-transform:uppercase; letter-spacing:0.5px; }
-  .rec-action { font-size:28px; font-weight:500; }
-  .rec-avg { font-size:13px; color:#666; }
-  .section-title { font-weight:500; margin-bottom:12px; color:#444; }
-  table { width:100%; border-collapse:collapse; }
-  th { text-align:left; padding:8px 12px; background:#f8f8f6; color:#666; font-weight:500; font-size:13px; border-bottom:1px solid #eee; }
-  td { padding:10px 12px; border-bottom:1px solid #f0f0ee; font-size:13px; }
-  tr:last-child td { border-bottom:none; }
-  .empty { text-align:center; padding:40px; color:#aaa; }
-  .footer { text-align:center; color:#aaa; font-size:12px; padding:24px; }
-</style>
-</head>
-<body>
-<div class='header'>
-    <h1>VBAF-Center Portal</h1>
-    <span class='version'>v1.0.0 · Auto-refresh every 10 min</span>
 </div>
-<div class='container'>
-    <form method='GET' action='/'>
-        <div class='selector'>
-            <label>Customer:</label>
-            <select name='customer'>
-                <option value='SELECT'>-- Select customer --</option>
-                $customerOptions
-            </select>
-            <button type='submit'>Load</button>
-        </div>
-    </form>
-    $dataSection
-    $(if ($dataSection -eq "") { "<div class='card'><div class='empty'>Select a customer to view their dashboard</div></div>" })
-</div>
-<div class='footer'>VBAF-Center v1.0.2 · Roskilde, Denmark · Built with PowerShell 5.1</div>
+<div class='footer'>VBAF-Center v1.0.14 · Roskilde, Denmark · Built with PowerShell 5.1</div>
 </body>
 </html>
 "@
@@ -278,7 +281,8 @@ function Start-VBAFCenterPortal {
         return
     }
 
-    $script:PortalPort = $Port
+    $script:PortalPort    = $Port
+    $script:PortalRunning = $true
 
     Write-Host ""
     Write-Host "  Starting VBAF-Center Web Portal..." -ForegroundColor Cyan
@@ -290,9 +294,7 @@ function Start-VBAFCenterPortal {
     $listener.Prefixes.Add("http://localhost:$Port/")
     $listener.Start()
     $script:PortalListener = $listener
-    $script:PortalRunning  = $true
 
-    # Open browser
     Start-Process "http://localhost:$Port/"
 
     Write-Host "  Portal running — browser opened." -ForegroundColor Green
@@ -304,21 +306,29 @@ function Start-VBAFCenterPortal {
             $request  = $context.Request
             $response = $context.Response
 
-            # Parse customer from query string
-            $customerID = ""
-            if ($request.QueryString["customer"]) {
-                $customerID = $request.QueryString["customer"]
-                if ($customerID -eq "SELECT") { $customerID = "" }
+            # Parse customer and token from query string
+            $customerID = $request.QueryString["customer"]
+            $token      = $request.QueryString["token"]
+
+            if (-not $customerID) { $customerID = "" }
+            if (-not $token)      { $token = "" }
+
+            # Validate token
+            $valid = Test-PortalToken -CustomerID $customerID -Token $token
+
+            if ($valid) {
+                $html = Get-PortalHTML -CustomerID $customerID -Token $token
+                Write-Host ("  [{0}] Access granted: {1}" -f (Get-Date -Format "HH:mm:ss"), $customerID) -ForegroundColor Green
+            } else {
+                $html = Get-PortalDeniedHTML
+                Write-Host ("  [{0}] Access denied: {1}" -f (Get-Date -Format "HH:mm:ss"), $request.RawUrl) -ForegroundColor Red
             }
 
-            $html   = Get-PortalHTML -CustomerID $customerID
             $buffer = [System.Text.Encoding]::UTF8.GetBytes($html)
             $response.ContentType     = "text/html; charset=utf-8"
             $response.ContentLength64 = $buffer.Length
             $response.OutputStream.Write($buffer, 0, $buffer.Length)
             $response.OutputStream.Close()
-
-            Write-Host ("  [{0}] Request: {1}" -f (Get-Date -Format "HH:mm:ss"), $request.RawUrl) -ForegroundColor DarkGray
         }
     }
     finally {
@@ -345,7 +355,7 @@ function Stop-VBAFCenterPortal {
 Write-Host ""
 Write-Host "  +------------------------------------------+" -ForegroundColor Cyan
 Write-Host "  |   VBAF-Center Phase 9 - Web Portal       |" -ForegroundColor Cyan
-Write-Host "  |   Local browser dashboard                |" -ForegroundColor Cyan
+Write-Host "  |   Token-protected customer dashboard     |" -ForegroundColor Cyan
 Write-Host "  +------------------------------------------+" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "  Start-VBAFCenterPortal   — open browser dashboard" -ForegroundColor White
@@ -353,7 +363,5 @@ Write-Host "  Stop-VBAFCenterPortal    — stop the portal"        -ForegroundCo
 Write-Host ""
 Write-Host "  Quick start:" -ForegroundColor Yellow
 Write-Host "  Start-VBAFCenterPortal" -ForegroundColor Green
+Write-Host "  Then use URL from onboarding summary" -ForegroundColor DarkGray
 Write-Host ""
-
-
-
