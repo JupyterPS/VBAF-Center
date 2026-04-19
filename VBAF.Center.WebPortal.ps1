@@ -12,6 +12,7 @@
 
     Access is protected by a token generated during onboarding.
     Each customer gets their own unique URL with token.
+    Customer switcher tabs appear at the top of the portal.
 
     Functions:
       Start-VBAFCenterPortal      — start the web portal
@@ -47,21 +48,13 @@ function Test-PortalToken {
 # GET-VBAFCENTERPORTALURLS
 # ============================================================
 function Get-VBAFCenterPortalURLs {
-    param(
-        [int] $Port = 8080
-    )
+    param([int] $Port = 8080)
 
     $schedPath = Join-Path $env:USERPROFILE "VBAFCenter\schedules"
-    if (-not (Test-Path $schedPath)) {
-        Write-Host "No customers found." -ForegroundColor Yellow
-        return
-    }
+    if (-not (Test-Path $schedPath)) { Write-Host "No customers found." -ForegroundColor Yellow; return }
 
     $files = Get-ChildItem $schedPath -Filter "*.json"
-    if ($files.Count -eq 0) {
-        Write-Host "No customers found." -ForegroundColor Yellow
-        return
-    }
+    if ($files.Count -eq 0) { Write-Host "No customers found." -ForegroundColor Yellow; return }
 
     Write-Host ""
     Write-Host "  +--------------------------------------------------+" -ForegroundColor Cyan
@@ -81,6 +74,27 @@ function Get-VBAFCenterPortalURLs {
             Write-Host ""
         }
     }
+}
+
+# ============================================================
+# GET ALL CUSTOMER TABS
+# ============================================================
+function Get-PortalCustomerTabs {
+    param([string]$CurrentCustomerID, [int]$Port = 8080)
+
+    $schedPath = Join-Path $env:USERPROFILE "VBAFCenter\schedules"
+    $tabs = ""
+    if (Test-Path $schedPath) {
+        Get-ChildItem $schedPath -Filter "*.json" | ForEach-Object {
+            $s = Get-Content $_.FullName -Raw | ConvertFrom-Json
+            if ($s.PortalToken) {
+                $active = if ($s.CustomerID -eq $CurrentCustomerID) { " class='tab active'" } else { " class='tab'" }
+                $url    = "http://localhost:$Port/?customer=$($s.CustomerID)&token=$($s.PortalToken)"
+                $tabs  += "<a href='$url'$active>$($s.CustomerID)</a>"
+            }
+        }
+    }
+    return $tabs
 }
 
 # ============================================================
@@ -204,10 +218,13 @@ function Get-PortalDeniedHTML {
 # BUILD HTML PAGE
 # ============================================================
 function Get-PortalHTML {
-    param([string]$CustomerID = "", [string]$Token = "")
+    param([string]$CustomerID = "", [string]$Token = "", [int]$Port = 8080)
 
     $data = Get-PortalCustomerData -CustomerID $CustomerID
     if (-not $data) { return Get-PortalDeniedHTML }
+
+    # Build customer switcher tabs
+    $tabs = Get-PortalCustomerTabs -CurrentCustomerID $CustomerID -Port $Port
 
     $signalRows = ($data.Signals | ForEach-Object {
         "<tr>
@@ -245,6 +262,10 @@ function Get-PortalHTML {
   .header { background:#2C2C2A; color:#fff; padding:16px 32px; display:flex; align-items:center; justify-content:space-between; }
   .header h1 { font-size:18px; font-weight:500; }
   .header .version { font-size:12px; color:#888; }
+  .tabs { background:#1a1a18; padding:0 32px; display:flex; gap:4px; }
+  .tab { display:inline-block; padding:10px 20px; color:#aaa; text-decoration:none; font-size:13px; border-bottom:3px solid transparent; transition:all 0.2s; }
+  .tab:hover { color:#fff; background:#2C2C2A; }
+  .tab.active { color:#fff; border-bottom:3px solid #EF9F27; }
   .container { max-width:960px; margin:24px auto; padding:0 24px; }
   .card { background:#fff; border-radius:8px; padding:20px 24px; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
   .card-header { display:flex; justify-content:space-between; align-items:center; font-size:16px; font-weight:500; margin-bottom:8px; }
@@ -264,9 +285,10 @@ function Get-PortalHTML {
 </head>
 <body>
 <div class='header'>
-    <h1>$($data.Profile.CompanyName) — VBAF Portal</h1>
+    <h1>VBAF-Center Portal</h1>
     <span class='version'>Auto-refresh every 10 min · $($data.Timestamp)</span>
 </div>
+<div class='tabs'>$tabs</div>
 <div class='container'>
 
 <div class='card'>
@@ -303,7 +325,7 @@ function Get-PortalHTML {
 </div>
 
 </div>
-<div class='footer'>VBAF-Center v1.0.15 · Roskilde, Denmark · Built with PowerShell 5.1</div>
+<div class='footer'>VBAF-Center v1.0.16 · Roskilde, Denmark · Built with PowerShell 5.1</div>
 </body>
 </html>
 "@
@@ -313,9 +335,7 @@ function Get-PortalHTML {
 # START-VBAFCENTERPORTAL
 # ============================================================
 function Start-VBAFCenterPortal {
-    param(
-        [int] $Port = 8080
-    )
+    param([int] $Port = 8080)
 
     if ($script:PortalRunning) {
         Write-Host "Portal already running at http://localhost:$script:PortalPort" -ForegroundColor Yellow
@@ -354,18 +374,16 @@ function Start-VBAFCenterPortal {
             $request  = $context.Request
             $response = $context.Response
 
-            # Parse customer and token from query string
             $customerID = $request.QueryString["customer"]
             $token      = $request.QueryString["token"]
 
             if (-not $customerID) { $customerID = "" }
             if (-not $token)      { $token = "" }
 
-            # Validate token
             $valid = Test-PortalToken -CustomerID $customerID -Token $token
 
             if ($valid) {
-                $html = Get-PortalHTML -CustomerID $customerID -Token $token
+                $html = Get-PortalHTML -CustomerID $customerID -Token $token -Port $Port
                 Write-Host ("  [{0}] Access granted: {1}" -f (Get-Date -Format "HH:mm:ss"), $customerID) -ForegroundColor Green
             } else {
                 $html = Get-PortalDeniedHTML
