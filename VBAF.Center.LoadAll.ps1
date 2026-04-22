@@ -59,7 +59,7 @@ Write-Host "║  Start-VBAFCenterOnboarding                        ║" -Foregro
 Write-Host "║  Invoke-VBAFCenterRun -CustomerID 'TruckCompanyDK' ║" -ForegroundColor Yellow
 Write-Host "║  Start-VBAFCenterPortal                            ║" -ForegroundColor Yellow
 Write-Host "║  Start-VBAFCenterDashboard                         ║" -ForegroundColor Yellow
-Write-Host "║  Start-VBAFCenterCrisis -CustomerID 'Company'     ║" -ForegroundColor Red
+Write-Host "║  Start-VBAFCenterCrisis -CustomerID 'TruckCompanyDK'║" -ForegroundColor Red
 Write-Host "╚═════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 

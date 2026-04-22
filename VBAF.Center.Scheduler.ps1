@@ -141,7 +141,7 @@ function Start-VBAFCenterSchedule {
     }
 
     $sched = Get-Content $schedFile -Raw | ConvertFrom-Json
-    [int] $intervalSec = $sched.IntervalMinutes * 10 
+    [int] $intervalSec = $sched.IntervalMinutes * 10            # reset here for test of crisis
     [int] $runCount    = 0
 
     Write-Host ""

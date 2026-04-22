@@ -56,7 +56,8 @@ cd C:\Users\henni\OneDrive\WindowsPowerShell\
 . "VBAF-Center\VBAF.Center.TMSSimulator.Standard.ps1"
 . "VBAF-Center\VBAF.Center.TMSSimulator.Advanced.ps1"
 . "VBAF-Center\VBAF.Center.TMSSimulator.Full.ps1"
-
+. .\VBAF-Center\VBAF.Center.APIInspector.ps1                                                              Point it at any REST API URL
+. .\VBAF.Center.GPSInspector.ps1                                                                          Same here 
 Start-VBAFCenterOnboarding covers all Purple setup functions in one go
 
 
@@ -83,31 +84,6 @@ Write-Host "Clean slate — all test data removed!" -ForegroundColor Green
 
 . "VBAF-Center\VBAF.Center.LoadAll.ps1"
 Get-VBAFCenterAllCustomers              # CHECK    
-
-
-#___________________________________ Any browser can see the portal ________________________________________________
-
-
-The correct workflow for using the Portal/Dashboard
-
-Open PowerShell console (not ISE) — press Windows key, type powershell, press Enter
-Run the portal there — ISE stays free
-
-Use ISE for coding as normal
-
-cd "C:\Users\henni\OneDrive\WindowsPowerShell"
-. .\VBAF-Center\VBAF.Center.LoadAll.ps1
-Start-VBAFCenterPortal
-
-Any browser can here after see the Portal at:
-http://localhost:8080
-
-cd "C:\Users\henni\OneDrive\WindowsPowerShell"
-. .\VBAF-Center\VBAF.Center.LoadAll.ps1
-Start-VBAFCenterDashboard
-
-Any browser can here after see the Dashboard at:
-http://localhost:8081
 
 
 <#___________________ ALLE NEDENSTÅENDE DATA ER AT FINDE PÅ GITHUB VBAF-CENTER (PAGES)__________________

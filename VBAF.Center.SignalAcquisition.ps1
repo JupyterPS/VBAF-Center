@@ -34,6 +34,7 @@ function New-VBAFCenterSignalConfig {
         [Parameter(Mandatory)] [string] $SignalIndex,   # "Signal1"|"Signal2"|"Signal3"|"Signal4"
         [Parameter(Mandatory)] [string] $SourceType,    # "REST"|"WMI"|"CSV"|"Manual"
         [string] $SourceURL      = "",   # REST endpoint
+        [string] $JSONPath       = "",   # dot-notation path e.g. "current.wind_speed_10m"
         [string] $WMIClass       = "",   # WMI class name
         [string] $WMIProperty    = "",   # WMI property
         [string] $CSVPath        = "",   # CSV file path
@@ -51,6 +52,7 @@ function New-VBAFCenterSignalConfig {
         SignalIndex  = $SignalIndex
         SourceType   = $SourceType
         SourceURL    = $SourceURL
+        JSONPath     = $JSONPath
         WMIClass     = $WMIClass
         WMIProperty  = $WMIProperty
         CSVPath      = $CSVPath
@@ -101,7 +103,14 @@ function Get-VBAFCenterSignal {
         "REST" {
             try {
                 $response  = Invoke-RestMethod -Uri $config.SourceURL -Method GET -ErrorAction Stop
-                $rawValue  = [double] $response
+                if ($config.JSONPath -and $config.JSONPath -ne "") {
+                    $parts = $config.JSONPath -split "\."
+                    $value = $response
+                    foreach ($part in $parts) { $value = $value.$part }
+                    $rawValue = [double] $value
+                } else {
+                    $rawValue = [double] $response
+                }
             } catch {
                 Write-Host "REST call failed: $($_.Exception.Message)" -ForegroundColor Red
                 $rawValue = 0.0
@@ -242,4 +251,5 @@ Write-Host "  Get-VBAFCenterSignal         — get one live signal"  -Foreground
 Write-Host "  Get-VBAFCenterAllSignals     — get all signals"      -ForegroundColor White
 Write-Host "  Test-VBAFCenterSignalConfig  — test configuration"   -ForegroundColor White
 Write-Host ""
+
 
