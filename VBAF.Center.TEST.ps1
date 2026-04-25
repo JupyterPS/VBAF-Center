@@ -50,14 +50,13 @@ Start-VBAFCenterDashboard	        Your overview of all customers at once	    Dai
 Start-VBAFCenterAutoConnect	        Connect a real data source for a customer	Once per customer         Purple Once per customer — setup only
 New-VBAFCenterInvoice	            Generate monthly invoice for a customer  	Monthly                   Light greenMonthly — billing cycle
 
-cd C:\Users\henni\OneDrive\WindowsPowerShell\
 . "VBAF-Center\VBAF.Center.Assessment.ps1" Run ALL 4 BEFORE every onboarding FOR NEED  Once per customer  Purple Once per customer — setup only
 . "VBAF-Center\VBAF.Center.TMSSimulator.ps1"
 . "VBAF-Center\VBAF.Center.TMSSimulator.Standard.ps1"
 . "VBAF-Center\VBAF.Center.TMSSimulator.Advanced.ps1"
-. "VBAF-Center\VBAF.Center.TMSSimulator.Full.ps1"
-. .\VBAF-Center\VBAF.Center.APIInspector.ps1                                                              Point it at any REST API URL
-. .\VBAF.Center.GPSInspector.ps1                                                                          Same here 
+. "VBAF-Center\VBAF.Center.TMSSimulator.Full.ps1"    
+. "VBAF-Center\VBAF.Center.APIInspector.ps1"                                                              
+. "VBAF-Center\VBAF.Center.GPSInspector.ps1"                                                              
 Start-VBAFCenterOnboarding covers all Purple setup functions in one go
 
 
@@ -315,57 +314,200 @@ Get-VBAFCenterAllCustomers
 
 #>
 
-#_______________________________ ALLE NEDENSTÅENDE DATA ER CONNECTION SYSTEMERS DATA ____________________
+#_______________________________ CONNECTION SYSTEMS DATA ____________________
 
 <#
 
-1 TMS-Generic — any TMS with API
-Signal nameEmpty Driving*
-API endpointhttps://tms.company.dk/api/idle*
-Raw minimum0
-Raw maximum100
-Need their REST API URL — ask IT department
+# VBAF-Center — Source Types Reference
+## The 7 ways VBAF connects to customer data
 
-2 TMS-Navision — Microsoft Dynamics
-Signal nameFleet Utilisation*
-API endpointhttps://nav.company.dk/api/fleet*
-Raw minimum0
-Raw maximum100
-Navision has OData REST endpoints built in
+---
 
-3 TMS-SAP — SAP Transportation
-Signal nameLoad Factor*
-API endpointhttps://sap.company.dk/api/load*
-Raw minimum0
-Raw maximum100
-SAP TM exposes REST via SAP API Management
+## Decision Tree — Which Source Type?
 
-4 Excel-CSV — file export
-Signal nameSignal 1*
-CSV file pathC:\Data\fleet.csv*
-Column nameEmptyDriving*
-Raw minimum0
-Raw maximum100
-Customer exports daily CSV from their system
+  Has GPS trackers?
+    YES → Use GPS Inspector (preferred)
+    NO  ↓
+  Has REST API?
+    YES → Source type: REST (use API Inspector to find fields)
+    NO  ↓
+  Exports CSV/Excel daily?
+    YES → Source type: CSV
+    NO  ↓
+  Windows IT infrastructure?
+    YES → Source type: WMI
+    NO  ↓
+  No system at all?
+    → Source type: Simulated (demo only)
+    → Manual possible but unreliable in practice
 
-5 Manual — no system
-Signal nameEmpty Driving*
-Raw minimum0
-Raw maximum100
-Customer types the number themselves each day — no API needed
+---
 
-6 Windows-IT — WMI infrastructure
-Signal nameCPU Load*
-WMI ClassWin32_Processor*
-WMI PropertyLoadPercentage*
-Raw minimum0
-Raw maximum100
-For IT customers — reads Windows system data directly
+## 1. TMS-Generic — Any system with a REST API
 
-7 Simulated — demo and shadow mode
-Signal nameEmpty Driving*
-Raw minimum0
-Raw maximum100
-No real data source needed. VBAF generates realistic values automatically. Use this during demo and shadow mode before connecting to a real system.
+  Signal name    : Empty Driving
+  SourceType     : REST
+  SourceURL      : https://tms.company.dk/api/idle
+  JSONPath       : (use API Inspector to find — may be needed)
+  Raw minimum    : 0
+  Raw maximum    : 100
 
+  Notes:
+  → Ask IT department for REST API documentation
+  → Use Invoke-VBAFCenterAPIInspector to inspect the response
+  → JSONPath required if response is nested JSON
+  → GPS Inspector covers most fleet GPS systems
+
+---
+
+## 2. TMS-Navision — Microsoft Dynamics
+
+  Signal name    : Fleet Utilisation
+  SourceType     : REST
+  SourceURL      : https://nav.company.dk/api/fleet
+  JSONPath       : (use API Inspector to find)
+  Raw minimum    : 0
+  Raw maximum    : 100
+
+  Notes:
+  → Navision (Microsoft Dynamics 365 Business Central) has OData REST endpoints built in
+  → Requires Azure AD authentication + API key
+  → Authentication is more complex than simple GPS systems
+  → Use GPS Inspector Generic option or API Inspector
+  → Ask their IT department for the Business Central API URL and credentials
+  → Complexity: ⚠️ Medium
+
+---
+
+## 3. TMS-SAP — SAP Transportation
+
+  Signal name    : Load Factor
+  SourceType     : REST
+  SourceURL      : https://sap.company.dk/api/load
+  JSONPath       : (use API Inspector to find)
+  Raw minimum    : 0
+  Raw maximum    : 100
+
+  Notes:
+  → SAP TM exposes REST via SAP API Management
+  → Requires formal API access request — typically takes weeks to approve
+  → Usually only found at large enterprise companies
+  → Not realistic for small/medium companies
+  → Complexity: ⚠️ High — not recommended for first customers
+
+---
+
+## 4. Excel-CSV — File Export
+
+  Signal name    : Empty Driving
+  SourceType     : CSV
+  CSVPath        : C:\Data\fleet.csv
+  CSVColumn      : EmptyDriving
+  Raw minimum    : 0
+  Raw maximum    : 100
+
+  Notes:
+  → Customer exports daily CSV from their system
+  → File must be on a path VBAF can access (local or network drive)
+  → VBAF reads the LAST row of the CSV each run
+  → Customer must save/overwrite the file before each VBAF run
+  → Works reliably if customer has a scheduled export
+  → Unreliable if customer must do it manually every day
+
+  New-VBAFCenterSignalConfig `
+    -CustomerID  "CompanyName" `
+    -SignalName  "Empty Driving" `
+    -SignalIndex "Signal1" `
+    -SourceType  "CSV" `
+    -CSVPath     "C:\Data\fleet.csv" `
+    -CSVColumn   "EmptyDriving" `
+    -RawMin      0 `
+    -RawMax      100
+
+---
+
+## 5. Manual — No System
+
+  Signal name    : Empty Driving
+  SourceType     : Manual
+  Raw minimum    : 0
+  Raw maximum    : 100
+
+  Notes:
+  → Customer types the number themselves each run
+  → No API, no file, no automation needed
+  → ⚠️ UNRELIABLE IN PRACTICE
+  → Customers rarely do manual input consistently
+  → Works in theory — breaks down in practice after 1-2 weeks
+  → Only use as last resort or for short-term testing
+  → Better to wait until customer gets GPS than rely on manual input
+
+---
+
+## 6. Windows-IT — WMI Infrastructure
+
+  Signal name    : CPU Load
+  SourceType     : WMI
+  WMIClass       : Win32_Processor
+  WMIProperty    : LoadPercentage
+  Raw minimum    : 0
+  Raw maximum    : 100
+
+  Notes:
+  → For IT customers — reads Windows system data directly
+  → ⚠️ IMPORTANT: WMI only works on same network or VPN
+  → Does NOT work over the internet without VPN
+  → Requires Windows Firewall to allow WMI (port 135)
+  → Requires admin credentials for their server
+
+  Useful WMI combinations:
+  | Signal          | WMIClass                | WMIProperty       | RawMax       |
+  |-----------------|-------------------------|-------------------|--------------|
+  | CPU Load %      | Win32_Processor         | LoadPercentage    | 100          |
+  | Disk Free %     | Win32_LogicalDisk       | PercentFreeSpace  | 100          |
+  | Memory Free KB  | Win32_OperatingSystem   | FreePhysicalMemory| Total KB     |
+
+  ⚠️ FreeSpace (bytes) is NOT the same as PercentFreeSpace (%)
+  Always use PercentFreeSpace for disk — not FreeSpace
+
+  New-VBAFCenterSignalConfig `
+    -CustomerID  "SkoleIT" `
+    -SignalName  "CPU Load" `
+    -SignalIndex "Signal1" `
+    -SourceType  "WMI" `
+    -WMIClass    "Win32_Processor" `
+    -WMIProperty "LoadPercentage" `
+    -RawMin      0 `
+    -RawMax      100
+
+---
+
+## 7. Simulated — Demo and Shadow Mode
+
+  Signal name    : Empty Driving
+  SourceType     : Simulated
+  Raw minimum    : 0
+  Raw maximum    : 100
+
+  Notes:
+  → No real data source needed
+  → VBAF generates realistic random values automatically
+  → Values change every run — by design
+  → Use during: demo, shadow mode, testing, onboarding
+  → Always start with Simulated — replace with REST when GPS API ready
+  → The 4 TMS simulators use this source type
+
+---
+
+## Summary Table
+
+| # | Source Type | When to use | Reliability | Complexity |
+|---|-------------|-------------|-------------|------------|
+| 1 | REST (GPS)  | Has GPS with API | ✅ Excellent | Low with Inspector |
+| 2 | REST (Navision) | Microsoft Dynamics | ⚠️ Medium | Medium |
+| 3 | REST (SAP) | SAP enterprise | ⚠️ Complex | High |
+| 4 | CSV | Daily file export | ✅ Good if automated | Low |
+| 5 | Manual | No system at all | ❌ Unreliable | Low |
+| 6 | WMI | Windows IT servers | ✅ Good on VPN | Medium |
+| 7 | Simulated | Demo and testing | ✅ Always works | Zero |
 #>
