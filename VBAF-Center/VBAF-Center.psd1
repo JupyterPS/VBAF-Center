@@ -12,7 +12,7 @@
 RootModule = 'VBAF.Center.LoadAll.ps1'
 
 # Version number of this module.
-ModuleVersion = '1.0.21'
+ModuleVersion = '1.0.22'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -120,6 +120,7 @@ PrivateData = @{
 # DefaultCommandPrefix = ''
 
 }
+
 
 
 
