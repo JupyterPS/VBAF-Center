@@ -231,5 +231,5 @@ Write-Host "  Get-VBAFCenterInvoiceHistory — show all invoices"       -Foregro
 Write-Host "  Get-VBAFCenterBillingSummary — show billing overview"   -ForegroundColor White
 Write-Host ""
 Write-Host "  Quick start:" -ForegroundColor Yellow
-Write-Host "  New-VBAFCenterInvoice -CustomerID 'NordLogistik' -InvoiceType 'Monthly'" -ForegroundColor Green
+Write-Host "  New-VBAFCenterInvoice -CustomerID 'TruckCompanyDK' -InvoiceType 'Monthly'" -ForegroundColor Green
 Write-Host ""

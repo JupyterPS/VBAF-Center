@@ -335,5 +335,5 @@ Write-Host "  Test-VBAFCenterConnection       — test one customer"      -Foreg
 Write-Host "  Get-VBAFCenterConnectionStatus  — show all connections"   -ForegroundColor White
 Write-Host ""
 Write-Host "  Quick start:" -ForegroundColor Yellow
-Write-Host "  Start-VBAFCenterAutoConnect -CustomerID 'NordLogistik'" -ForegroundColor Green
+Write-Host "  Start-VBAFCenterAutoConnect -CustomerID 'TruckCompanyDK'" -ForegroundColor Green
 Write-Host ""

@@ -212,10 +212,13 @@ function Start-VBAFCenterOnboarding {
     foreach ($a in $actions) { $lines += "$($a.Number)|$($a.Name)|$($a.Command)" }
     Set-Content "$actPath\$customerID-actions.txt" -Value $lines -Encoding UTF8
 
+    # Generate portal token
+    $token = -join ((65..90) + (48..57) | Get-Random -Count 6 | ForEach-Object { [char]$_ })
+
     # Save schedule
     $schedPath = Join-Path $storePath "schedules"
     if (-not (Test-Path $schedPath)) { New-Item -ItemType Directory -Path $schedPath -Force | Out-Null }
-    @{ CustomerID=$customerID; IntervalMinutes=[int]$intervalMinutes; NormMethod=$normMethod; Active=$true } |
+    @{ CustomerID=$customerID; IntervalMinutes=[int]$intervalMinutes; NormMethod=$normMethod; Active=$true; PortalToken=$token } |
         ConvertTo-Json | Set-Content "$schedPath\$customerID-schedule.json" -Encoding UTF8
 
     # ── SUMMARY ───────────────────────────────────────────────
@@ -230,6 +233,9 @@ function Start-VBAFCenterOnboarding {
     Write-Host "╠═════════════════════════════════════════════════════╣" -ForegroundColor Green
     Write-Host "║  Next step: run the Welcome Center                  ║" -ForegroundColor Cyan
     Write-Host ("║  Invoke-VBAFCenterRun -CustomerID ""{0}""" -f $customerID) -ForegroundColor Cyan
+    Write-Host "╠═════════════════════════════════════════════════════╣" -ForegroundColor Green
+    Write-Host "║  Portal URL:                                        ║" -ForegroundColor Cyan
+    Write-Host ("║  http://localhost:8080/?customer={0}&token={1}" -f $customerID, $token) -ForegroundColor Yellow
     Write-Host "╚═════════════════════════════════════════════════════╝" -ForegroundColor Green
     Write-Host ""
 
@@ -278,4 +284,5 @@ Write-Host "VBAF-Center Phase 7 loaded  [Customer Onboarding UI]"    -Foreground
 Write-Host "  Start-VBAFCenterOnboarding  — full setup wizard"        -ForegroundColor White
 Write-Host "  Show-VBAFCenterSummary      — show customer setup"      -ForegroundColor White
 Write-Host ""
+
 
