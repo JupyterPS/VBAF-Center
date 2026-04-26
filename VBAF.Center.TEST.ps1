@@ -56,7 +56,8 @@ New-VBAFCenterInvoice	            Generate monthly invoice for a customer  	Mont
 . "VBAF-Center\VBAF.Center.TMSSimulator.Advanced.ps1"
 . "VBAF-Center\VBAF.Center.TMSSimulator.Full.ps1"    
 . "VBAF-Center\VBAF.Center.APIInspector.ps1"                                                              
-. "VBAF-Center\VBAF.Center.GPSInspector.ps1"                                                              
+. "VBAF-Center\VBAF.Center.GPSInspector.ps1"  
+. "VBAF-Center\VBAF-Center\VBAF.Center.FakeTMS.ps1"                                                            
 Start-VBAFCenterOnboarding covers all Purple setup functions in one go
 
 
