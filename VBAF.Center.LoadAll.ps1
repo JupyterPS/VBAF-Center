@@ -5,6 +5,11 @@
 .DESCRIPTION
     Loads all VBAF-Center phases in the correct order.
     Run this before using any VBAF-Center functions.
+
+    NOTE: FakeTMS is NOT loaded here — it must run in its own
+    separate PowerShell console:
+    . .\VBAF-Center\VBAF.Center.FakeTMS.ps1
+    Start-VBAFFakeTMS
 #>
 $basePath = Split-Path -Parent $MyInvocation.MyCommand.Path
 
@@ -44,7 +49,7 @@ $basePath = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 Write-Host ""
 Write-Host "╔════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║         VBAF-Center v1.0.23 — Ready                ║" -ForegroundColor Cyan
+Write-Host "║         VBAF-Center v1.0.24 — Ready                ║" -ForegroundColor Cyan
 Write-Host "║         Welcome Center for VBAF Agents             ║" -ForegroundColor Cyan
 Write-Host "╠════════════════════════════════════════════════════╣" -ForegroundColor Cyan
 Write-Host "║  Phase 1  Customer Profile       — loaded          ║" -ForegroundColor White
@@ -72,6 +77,9 @@ Write-Host "║  Invoke-VBAFCenterRun -CustomerID 'TruckCompanyDK' ║" -Foregro
 Write-Host "║  Start-VBAFCenterPortal                            ║" -ForegroundColor Yellow
 Write-Host "║  Start-VBAFCenterDashboard                         ║" -ForegroundColor Yellow
 Write-Host "║  Start-VBAFCenterCrisis -CustomerID 'TruckCompanyDK'║" -ForegroundColor Red
-Write-Host "║  Start-VBAFFakeTMS                                 ║" -ForegroundColor Yellow
+Write-Host "╠═════════════════════════════════════════════════════╣" -ForegroundColor Cyan
+Write-Host "║  Write-back (separate console):                     ║" -ForegroundColor White
+Write-Host "║  . .\VBAF-Center\VBAF.Center.FakeTMS.ps1           ║" -ForegroundColor DarkGray
+Write-Host "║  Start-VBAFFakeTMS                                 ║" -ForegroundColor DarkGray
 Write-Host "╚═════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
