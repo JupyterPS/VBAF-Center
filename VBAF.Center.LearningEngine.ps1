@@ -1,4 +1,6 @@
-﻿#Requires -Version 5.1
+﻿
+
+#Requires -Version 5.1
 <#
 .SYNOPSIS
     VBAF-Center Phase 16 — Learning Engine
@@ -203,9 +205,9 @@ function Invoke-VBAFCenterLearnFromHistory {
     foreach ($r in $runs) { $actionCounts[[int]$r.Action]++ }
 
     # Override analysis
-    $dispatcherLower  = @($overrides | Where-Object { $_.DispatcherAction -lt $_.VBAFAction }).Count
-    $dispatcherHigher = @($overrides | Where-Object { $_.DispatcherAction -gt $_.VBAFAction }).Count
-    $dispatcherSame   = @($overrides | Where-Object { $_.DispatcherAction -eq $_.VBAFAction }).Count
+    $dispatcherLower  = @($overrides | Where-Object { [int]$_.DispatcherAction -lt [int]$_.VBAFAction }).Count
+    $dispatcherHigher = @($overrides | Where-Object { [int]$_.DispatcherAction -gt [int]$_.VBAFAction }).Count
+    $dispatcherSame   = @($overrides | Where-Object { [int]$_.DispatcherAction -eq [int]$_.VBAFAction }).Count
 
     # Average signal per action bucket
     $actionAvgs = @{}
