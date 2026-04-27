@@ -50,14 +50,50 @@ Start-VBAFCenterDashboard	        Your overview of all customers at once	    Dai
 Start-VBAFCenterAutoConnect	        Connect a real data source for a customer	Once per customer         Purple Once per customer — setup only
 New-VBAFCenterInvoice	            Generate monthly invoice for a customer  	Monthly                   Light greenMonthly — billing cycle
 
-. "VBAF-Center\VBAF.Center.Assessment.ps1" Run ALL 4 BEFORE every onboarding FOR NEED  Once per customer  Purple Once per customer — setup only
+Phase 13 — Crisis Response Tree
+
+Phase 14 — Signal Thresholds
+Get-VBAFCenterSignalStatus          See Green/Yellow/Red colour per signal      When needed              Amber When needed — you decide
+Invoke-VBAFCenterThresholdCheck     Show only Red and Yellow signals            When needed              Amber When needed — you decide
+Set-VBAFCenterSignalThreshold       Tune thresholds without full reconfiguration When needed             Amber When needed — you decide
+
+Phase 15 — Weighted Signals
+(built into Phase 3 — use -Weight parameter on New-VBAFCenterSignalConfig)
+
+Phase 16 — Learning Engine
+Start-VBAFCenterOverride            Log a dispatcher override immediately       After each override      Amber When needed — you decide
+Get-VBAFCenterOverrideHistory       See all logged overrides for a customer     Weekly review            Amber When needed — you decide
+Invoke-VBAFCenterLearnFromHistory   Analyse 30 days of history and suggest      Monthly                  Amber When needed — you decide
+Get-VBAFCenterLearningReport        Show the latest saved learning report       When needed              Amber When needed — you decide
+Clear-VBAFCenterLearningData        Reset all learning data for a customer      Rarely                   Amber When needed — you decide
+                                    
+Phase 17 — Smart Action Map         
+Set-VBAFCenterActionThresholds      Set customer-specific action sensitivity    Once per customer        Purple Once per customer — setup only
+Get-VBAFCenterActionThresholds      Show current thresholds for a customer      When needed              Amber When needed — you decide
+Test-VBAFCenterActionThresholds     Simulate which action fires at a given avg  Before going live        Purple Once per customer — setup only
+Reset-VBAFCenterActionThresholds    Restore default thresholds 0.25/0.50/0.75   Rarely                   Amber When needed — you decide
+                                    
+Phase 18 — Write-back               
+New-VBAFCenterWriteConfig           Configure TMS write endpoints per customer  Once per customer        Purple Once per customer — setup only
+Test-VBAFCenterWriteConnection      Verify VBAF can reach the TMS               After setup              Purple Once per customer — setup only
+Invoke-VBAFCenterWriteBack          Send approved command to TMS                After dispatcher approves Amber When needed — you decide
+Undo-VBAFCenterWriteBack            Roll back a command within 5 minutes        When needed              Amber When needed — you decide
+Get-VBAFCenterWriteLog              Full audit log of all write-back actions    Weekly review            Amber When needed — you decide
+                                                                                
+Fake TMS (separate console)                                                     
+Start-VBAFFakeTMS                   Start fake TMS server for Write-back demo   Demo / testing           Amber When needed — you decide
+Get-VBAFFakeTMSLog                  See all commands received by Fake TMS       When needed              Amber When needed — you decide
+Clear-VBAFFakeTMSLog                Reset the Fake TMS command log              When needed              Amber When needed — you decide
+
+. "VBAF-Center\VBAF.Center.Assessment.ps1" Run ALL 4 BEFORE onboarding FOR NEED Once per customer Purple Once per customer — setup only
 . "VBAF-Center\VBAF.Center.TMSSimulator.ps1"
 . "VBAF-Center\VBAF.Center.TMSSimulator.Standard.ps1"
 . "VBAF-Center\VBAF.Center.TMSSimulator.Advanced.ps1"
 . "VBAF-Center\VBAF.Center.TMSSimulator.Full.ps1"    
+
 . "VBAF-Center\VBAF.Center.APIInspector.ps1"                                                              
 . "VBAF-Center\VBAF.Center.GPSInspector.ps1"  
-. "VBAF-Center\VBAF-Center\VBAF.Center.FakeTMS.ps1"                                                            
+                                                         
 Start-VBAFCenterOnboarding covers all Purple setup functions in one go
 
 
