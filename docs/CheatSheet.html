@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -17,10 +17,12 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
 .fn{font-size:12px;font-weight:500;color:#5F5E5A;margin:10px 0 4px;text-transform:uppercase;letter-spacing:0.4px}
 .args{background:#F1EFE8;border-radius:8px;padding:10px 12px;font-size:12px;font-family:monospace;line-height:1.8;border:0.5px solid #D3D1C7}
 .arg-row{display:flex;gap:8px}
-.arg-key{color:#5F5E5A;min-width:130px;flex-shrink:0}
+.arg-key{color:#5F5E5A;min-width:160px;flex-shrink:0}
 .arg-val{color:#2C2C2A;font-weight:500}
+.arg-opt{color:#1D9E75;font-weight:500}
 .note{font-size:11px;color:#888780;margin-top:6px;font-style:italic}
 .cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.cols3{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:10px}
 .ref-table{width:100%;font-size:12px;border-collapse:collapse}
 .ref-table th{text-align:left;padding:6px 8px;background:#F1EFE8;color:#5F5E5A;font-weight:500;border-bottom:0.5px solid #D3D1C7}
 .ref-table td{padding:6px 8px;border-bottom:0.5px solid #D3D1C7;color:#2C2C2A}
@@ -29,11 +31,12 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
 .com-card{background:#F1EFE8;border-radius:8px;padding:12px;border:0.5px solid #D3D1C7}
 .com-label{font-size:11px;color:#5F5E5A;margin-bottom:4px}
 .com-value{font-size:13px;font-weight:500;color:#2C2C2A}
+.new-badge{font-size:10px;font-weight:500;padding:1px 6px;border-radius:10px;background:#1D9E7520;color:#1D9E75;border:0.5px solid #1D9E7540;margin-left:6px;vertical-align:middle}
 </style>
 </head>
 <body>
 <div class="title">VBAF-Center — complete onboarding cheat sheet</div>
-<div class="subtitle">Every prompt · Every argument · Every command · All 12 phases</div>
+<div class="subtitle">Every prompt · Every argument · Every command · All 18 phases</div>
 
 <div class="phase">
   <div class="phase-header" style="background:#EEEDFE;border-bottom:0.5px solid #AFA9EC">
@@ -129,6 +132,9 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
           <div class="arg-row"><span class="arg-key">SourceType</span><span class="arg-val">Simulated</span></div>
           <div class="arg-row"><span class="arg-key">RawMin</span><span class="arg-val">0</span></div>
           <div class="arg-row"><span class="arg-key">RawMax</span><span class="arg-val">100</span></div>
+          <div class="arg-row"><span class="arg-key">GoodBelow</span><span class="arg-opt">25 &nbsp;← Phase 14 optional</span></div>
+          <div class="arg-row"><span class="arg-key">BadAbove</span><span class="arg-opt">40 &nbsp;← Phase 14 optional</span></div>
+          <div class="arg-row"><span class="arg-key">Weight</span><span class="arg-opt">5 &nbsp;← Phase 15 optional (1-5)</span></div>
         </div>
       </div>
       <div>
@@ -140,9 +146,15 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
           <div class="arg-row"><span class="arg-key">SourceType</span><span class="arg-val">Simulated</span></div>
           <div class="arg-row"><span class="arg-key">RawMin</span><span class="arg-val">0</span></div>
           <div class="arg-row"><span class="arg-key">RawMax</span><span class="arg-val">100</span></div>
+          <div class="arg-row"><span class="arg-key">GoodBelow</span><span class="arg-opt">85 &nbsp;← Phase 14 optional</span></div>
+          <div class="arg-row"><span class="arg-key">BadAbove</span><span class="arg-opt">70 &nbsp;← Phase 14 optional</span></div>
+          <div class="arg-row"><span class="arg-key">Weight</span><span class="arg-opt">3 &nbsp;← Phase 15 optional (1-5)</span></div>
         </div>
       </div>
     </div>
+    <div class="note" style="margin-top:8px">RawMin / RawMax — customer decides based on their real-world data. Ask: "Hvad er den laveste/højeste værdi I nogensinde har set?"</div>
+    <div class="note">GoodBelow / BadAbove — optional Phase 14 thresholds. Ask: "Hvornår er I tilfredse?" and "Hvornår begynder I at blive bekymrede?"</div>
+    <div class="note">Weight — optional Phase 15 importance 1-5. Ask: "Hvilken signal holder dig mest vågen om natten?" → Weight 5</div>
     <div class="cols" style="margin-top:10px">
       <div>
         <div class="fn">Get-VBAFCenterSignal</div>
@@ -344,8 +356,8 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
 
 <div class="phase">
   <div class="phase-header" style="background:#EAF3DE;border-bottom:0.5px solid #97C459">
-    <span class="phase-num" style="background:#C0DD97;color:#173404">Phase 9-12</span>
-    <span class="phase-title" style="color:#173404">Web portal · Auto-connector · Dashboard · Billing</span>
+    <span class="phase-num" style="background:#C0DD97;color:#173404">Phase 9-13</span>
+    <span class="phase-title" style="color:#173404">Portal · Dashboard · Auto-connector · Billing · Crisis</span>
   </div>
   <div class="phase-body">
     <div class="cols">
@@ -354,6 +366,8 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
         <div class="args">Start-VBAFCenterPortal<div style="font-size:11px;color:#888780">Opens at http://localhost:8080</div></div>
         <div class="fn" style="margin-top:10px">Phase 11 — dashboard</div>
         <div class="args">Start-VBAFCenterDashboard<div style="font-size:11px;color:#888780">Opens at http://localhost:8081</div></div>
+        <div class="fn" style="margin-top:10px">Phase 13 — crisis tree</div>
+        <div class="args">Start-VBAFCenterCrisis<div class="arg-row"><span class="arg-key">-CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
       </div>
       <div>
         <div class="fn">Phase 10 — auto-connector</div>
@@ -362,6 +376,179 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
         <div class="args">New-VBAFCenterInvoice<div class="arg-row"><span class="arg-key">-CustomerID</span><span class="arg-val">TruckCompanyDK</span></div><div class="arg-row"><span class="arg-key">-InvoiceType</span><span class="arg-val">Monthly</span></div></div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- PHASES 14-18 — INTELLIGENCE LAYER -->
+
+<div class="phase">
+  <div class="phase-header" style="background:#E0F4F4;border-bottom:0.5px solid #5BBFBF">
+    <span class="phase-num" style="background:#9FD9D9;color:#033636">Phase 14</span>
+    <span class="phase-title" style="color:#033636">Signal thresholds <span class="new-badge">NEW</span></span>
+  </div>
+  <div class="phase-body">
+    <div class="note" style="margin-top:10px;margin-bottom:8px">Each signal gets its own Green/Yellow/Red colour. A single RED signal overrides the average and raises the action level.</div>
+    <div class="cols">
+      <div>
+        <div class="fn">Get-VBAFCenterSignalStatus</div>
+        <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
+        <div class="fn" style="margin-top:10px">Invoke-VBAFCenterThresholdCheck</div>
+        <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
+        <div class="note">Shows only Red and Yellow signals — silent if all Green</div>
+      </div>
+      <div>
+        <div class="fn">Set-VBAFCenterSignalThreshold</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
+          <div class="arg-row"><span class="arg-key">SignalIndex</span><span class="arg-val">Signal1</span></div>
+          <div class="arg-row"><span class="arg-key">GoodBelow</span><span class="arg-val">20</span></div>
+          <div class="arg-row"><span class="arg-key">BadAbove</span><span class="arg-val">35</span></div>
+          <div class="arg-row"><span class="arg-key">Weight</span><span class="arg-val">4</span></div>
+        </div>
+        <div class="note">Tune thresholds without full reconfiguration. All 3 parameters are optional.</div>
+      </div>
+    </div>
+    <div class="note" style="margin-top:8px">Override rules: 1 RED → minimum Reroute &nbsp;|&nbsp; 2+ RED → minimum Escalate &nbsp;|&nbsp; 2+ YELLOW → minimum Reassign</div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="phase-header" style="background:#E0F4F4;border-bottom:0.5px solid #5BBFBF">
+    <span class="phase-num" style="background:#9FD9D9;color:#033636">Phase 16</span>
+    <span class="phase-title" style="color:#033636">Learning engine <span class="new-badge">NEW</span></span>
+  </div>
+  <div class="phase-body">
+    <div class="note" style="margin-top:10px;margin-bottom:8px">VBAF gets smarter from dispatcher overrides. After 30 days of real data it suggests threshold improvements.</div>
+    <div class="cols">
+      <div>
+        <div class="fn">Start-VBAFCenterOverride</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
+          <div class="arg-row"><span class="arg-key">VBAFAction</span><span class="arg-val">3</span></div>
+          <div class="arg-row"><span class="arg-key">DispatcherAction</span><span class="arg-val">2</span></div>
+          <div class="arg-row"><span class="arg-key">Reason</span><span class="arg-val">Situation resolved itself</span></div>
+        </div>
+        <div class="note">Call immediately after a run where dispatcher disagreed</div>
+        <div class="fn" style="margin-top:10px">Get-VBAFCenterOverrideHistory</div>
+        <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
+      </div>
+      <div>
+        <div class="fn">Invoke-VBAFCenterLearnFromHistory</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
+          <div class="arg-row"><span class="arg-key">Days</span><span class="arg-val">30</span></div>
+        </div>
+        <div class="note">Run monthly. Needs 5+ overrides to suggest threshold changes.</div>
+        <div class="fn" style="margin-top:10px">Get-VBAFCenterLearningReport</div>
+        <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
+        <div class="fn" style="margin-top:10px">Clear-VBAFCenterLearningData</div>
+        <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="phase-header" style="background:#E0F4F4;border-bottom:0.5px solid #5BBFBF">
+    <span class="phase-num" style="background:#9FD9D9;color:#033636">Phase 17</span>
+    <span class="phase-title" style="color:#033636">Smart action map <span class="new-badge">NEW</span></span>
+  </div>
+  <div class="phase-body">
+    <div class="note" style="margin-top:10px;margin-bottom:8px">Each customer gets their own action sensitivity thresholds. Default is 0.25 / 0.50 / 0.75.</div>
+    <div class="cols3">
+      <div>
+        <div class="fn">Set-VBAFCenterActionThresholds</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
+          <div class="arg-row"><span class="arg-key">Action1</span><span class="arg-val">0.20</span></div>
+          <div class="arg-row"><span class="arg-key">Action2</span><span class="arg-val">0.40</span></div>
+          <div class="arg-row"><span class="arg-key">Action3</span><span class="arg-val">0.65</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="fn">Get-VBAFCenterActionThresholds</div>
+        <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
+        <div class="fn" style="margin-top:10px">Reset-VBAFCenterActionThresholds</div>
+        <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
+      </div>
+      <div>
+        <div class="fn">Test-VBAFCenterActionThresholds</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
+          <div class="arg-row"><span class="arg-key">SimulatedAverage</span><span class="arg-val">0.55</span></div>
+        </div>
+        <div class="note">Simulate which action fires before going live</div>
+      </div>
+    </div>
+    <div class="note" style="margin-top:8px">Ask customer: "Hvornår vil du ringes op med det samme?" → Action3 threshold</div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="phase-header" style="background:#E0F4F4;border-bottom:0.5px solid #5BBFBF">
+    <span class="phase-num" style="background:#9FD9D9;color:#033636">Phase 18</span>
+    <span class="phase-title" style="color:#033636">Write-back <span class="new-badge">NEW</span></span>
+  </div>
+  <div class="phase-body">
+    <div class="note" style="margin-top:10px;margin-bottom:8px">VBAF now acts — not just advises. Dispatcher approves, TMS executes. Full audit log with 5-minute rollback.</div>
+    <div class="cols">
+      <div>
+        <div class="fn">New-VBAFCenterWriteConfig</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
+          <div class="arg-row"><span class="arg-key">TMSBaseURL</span><span class="arg-val">http://localhost:8082</span></div>
+        </div>
+        <div class="note">For demo: use localhost:8082 (Fake TMS). For production: replace with real TMS URL.</div>
+        <div class="fn" style="margin-top:10px">Test-VBAFCenterWriteConnection</div>
+        <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
+        <div class="fn" style="margin-top:10px">Get-VBAFCenterWriteConfig</div>
+        <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
+      </div>
+      <div>
+        <div class="fn">Invoke-VBAFCenterWriteBack</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
+          <div class="arg-row"><span class="arg-key">Action</span><span class="arg-val">2</span></div>
+          <div class="arg-row"><span class="arg-key">TruckID</span><span class="arg-opt">DK-4471 &nbsp;← optional</span></div>
+          <div class="arg-row"><span class="arg-key">JobID</span><span class="arg-opt">J-3001 &nbsp;← optional</span></div>
+          <div class="arg-row"><span class="arg-key">Note</span><span class="arg-opt">Dispatcher approved &nbsp;← optional</span></div>
+        </div>
+        <div class="fn" style="margin-top:10px">Undo-VBAFCenterWriteBack</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
+          <div class="arg-row"><span class="arg-key">ActionID</span><span class="arg-val">WB-20260425_172303</span></div>
+        </div>
+        <div class="note">Rollback available for 5 minutes after action</div>
+        <div class="fn" style="margin-top:10px">Get-VBAFCenterWriteLog</div>
+        <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="phase-header" style="background:#E0F4F4;border-bottom:0.5px solid #5BBFBF">
+    <span class="phase-num" style="background:#9FD9D9;color:#033636">Fake TMS</span>
+    <span class="phase-title" style="color:#033636">Separate console — for Write-back testing and demos <span class="new-badge">NEW</span></span>
+  </div>
+  <div class="phase-body">
+    <div class="note" style="margin-top:10px;margin-bottom:8px">Simulates a real TMS on port 8082. Always run in a separate PowerShell console. Never in ISE.</div>
+    <div class="args" style="margin-bottom:8px">
+      cd "C:\Users\henni\OneDrive\WindowsPowerShell"<br>
+      . .\VBAF-Center\VBAF.Center.FakeTMS.ps1<br>
+      Start-VBAFFakeTMS
+    </div>
+    <div class="cols">
+      <div>
+        <div class="fn">Get-VBAFFakeTMSLog</div>
+        <div class="args" style="color:#888780;font-size:11px">(no arguments) — shows all commands received</div>
+      </div>
+      <div>
+        <div class="fn">Clear-VBAFFakeTMSLog</div>
+        <div class="args" style="color:#888780;font-size:11px">(no arguments) — resets the log</div>
+      </div>
+    </div>
+    <div class="note" style="margin-top:8px">Fleet: 5 trucks (DK-4471, DK-3892, DK-5511, DK-2244, DK-7731) · 5 jobs (J-2847 to J-3002)</div>
   </div>
 </div>
 
@@ -398,11 +585,11 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
         </table>
         <div class="fn" style="margin-top:10px">Action numbers</div>
         <table class="ref-table">
-          <tr><th>No.</th><th>Name</th><th>Meaning</th></tr>
-          <tr><td>0</td><td>Monitor</td><td>All good</td></tr>
-          <tr><td>1</td><td>Reassign</td><td>Move resource</td></tr>
-          <tr><td>2</td><td>Reroute</td><td>Change approach</td></tr>
-          <tr><td>3</td><td>Escalate</td><td>Call human now</td></tr>
+          <tr><th>No.</th><th>Name</th><th>Meaning</th><th>Special</th></tr>
+          <tr><td>0</td><td>Monitor</td><td>All good</td><td></td></tr>
+          <tr><td>1</td><td>Reassign</td><td>Move resource</td><td></td></tr>
+          <tr><td>2</td><td>Reroute</td><td>Change approach</td><td></td></tr>
+          <tr><td>3</td><td>Escalate</td><td>Call human now</td><td>Crisis + alarm + popup</td></tr>
         </table>
       </div>
     </div>
@@ -428,7 +615,7 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
 </div>
 
 <div style="text-align:center;color:#888780;font-size:12px;padding:24px 0">
-  VBAF-Center v1.0.2 · Roskilde, Denmark · Built with PowerShell 5.1
+  VBAF-Center v1.0.26 · Roskilde, Denmark · Built with PowerShell 5.1
 </div>
 </body>
 </html>
