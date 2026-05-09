@@ -3,7 +3,7 @@ Publish-VBAFCenter
 
 . (Join-Path $basePath "VBAF-Center\VBAF.Center.LoadAll.ps1")
 
-Phase 1 — Customer profile
+Phase 1 — Customer profile          CustomerID: TruckCompanyDK
 New-VBAFCenterCustomer	            First time you onboard a new customer	    Once per customer         Purple Once per customer — setup only
 Get-VBAFCenterCustomer	            Look up one customer's details	            When needed               Amber When needed — you decide             
 Get-VBAFCenterAllCustomers	        See all customers at a glance	            When needed               Amber When needed — you decide
@@ -85,6 +85,8 @@ Start-VBAFFakeTMS                   Start fake TMS server for Write-back demo   
 Get-VBAFFakeTMSLog                  See all commands received by Fake TMS       When needed              Amber When needed — you decide
 Clear-VBAFFakeTMSLog                Reset the Fake TMS command log              When needed              Amber When needed — you decide
 
+Phase 19 — ClaudeBrain              For future use ONLY
+
 . "VBAF-Center\VBAF.Center.Assessment.ps1" Run ALL 4 BEFORE onboarding FOR NEED Once per customer Purple Once per customer — setup only
 . "VBAF-Center\VBAF.Center.TMSSimulator.ps1"
 . "VBAF-Center\VBAF.Center.TMSSimulator.Standard.ps1"
@@ -96,6 +98,51 @@ Clear-VBAFFakeTMSLog                Reset the Fake TMS command log              
                                                          
 Start-VBAFCenterOnboarding covers all Purple setup functions in one go
 
+#___________________________________ TEST FAKE TMS ________________________________________________
+
+# TERMINAL 1
+
+# Start the Fake TMS in a new PowerShell console 1:
+cd "C:\Users\henni\OneDrive\WindowsPowerShell"
+. .\VBAF-Center\VBAF.Center.LoadAll.ps1
+. .\VBAF-Center\VBAF.Center.FakeTMS.ps1
+Start-VBAFFakeTMS
+
+
+# TERMINAL 2
+
+cd "C:\Users\henni\OneDrive\WindowsPowerShell"
+. .\VBAF-Center\VBAF.Center.LoadAll.ps1
+. .\VBAF-Center\VBAF.Center.WriteBack.ps1
+
+# In your original console 2 (not the Fake TMS one) run:
+New-VBAFCenterWriteConfig -CustomerID "TruckCompanyDK" -TMSBaseURL "http://localhost:8082"
+
+# Now test the connection to the Fake TMS: console 2
+Test-VBAFCenterWriteConnection -CustomerID "TruckCompanyDK"
+
+# Now send a real write-back command — dispatcher approves a Reroute: console 2
+Invoke-VBAFCenterWriteBack -CustomerID "TruckCompanyDK" -Action 2 -TruckID "DK-4471" -Note "Dispatcher approved reroute"
+
+# Now check what the Fake TMS console 2 shows — it should have logged the incoming command. Then test the rollback:
+Undo-VBAFCenterWriteBack -CustomerID "TruckCompanyDK" -ActionID "WB-20260509_130228"
+
+# Now check the write log to see the full audit trail:  console 2
+Get-VBAFCenterWriteLog -CustomerID "TruckCompanyDK"
+
+# TERMINAL 3
+
+cd "C:\Users\henni\OneDrive\WindowsPowerShell"
+. .\VBAF-Center\VBAF.Center.LoadAll.ps1
+Start-VBAFCenterDashboard     
+
+# TERMINAL 4
+
+cd "C:\Users\henni\OneDrive\WindowsPowerShell"        # console 4  NB: It gives an error  >>>  run beneath in the browser command line
+. .\VBAF-Center\VBAF.Center.LoadAll.ps1
+Start-VBAFCenterPortal                                  
+
+http://localhost:8080/?customer=TruckCompanyDK&token=GXE08I   THIS IS THE WAY TO: Start-VBAFCenterPortal fra BROWSER
 
 #___________________________________ RESET FILES IN BETWEEN TEST'S ________________________________________________
 
@@ -122,7 +169,7 @@ Write-Host "Clean slate — all test data removed!" -ForegroundColor Green
 Get-VBAFCenterAllCustomers              # CHECK    
 
 
-<#___________________ ALLE NEDENSTÅENDE DATA ER AT FINDE PÅ GITHUB VBAF-CENTER (PAGES)__________________
+<#___________________ ALLE NEDENSTÅENDE DATA ER AT FINDE PÅ GITHUB VBAF-CENTER (PAGES) __________________
 
 CustomerID   : TruckCompanyDK
 CompanyName  : Truck Company DK

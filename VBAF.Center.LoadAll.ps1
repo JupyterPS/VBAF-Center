@@ -46,6 +46,8 @@ $basePath = Split-Path -Parent $MyInvocation.MyCommand.Path
 . (Join-Path $basePath "VBAF.Center.ActionThresholds.ps1")
 # Phase 18 — Write-back
 . (Join-Path $basePath "VBAF.Center.WriteBack.ps1")
+# Phase 19 — ClaudeBrain >>>>>> For future use ONLY
+. (Join-Path $basePath "VBAF.Center.ClaudeBrain.ps1") 
 
 Write-Host ""
 Write-Host "╔════════════════════════════════════════════════════╗" -ForegroundColor Cyan
@@ -70,6 +72,7 @@ Write-Host "║  Phase 15 Weighted Signals       — loaded          ║" -Foreg
 Write-Host "║  Phase 16 Learning Engine        — loaded          ║" -ForegroundColor Cyan
 Write-Host "║  Phase 17 Smart Action Map       — loaded          ║" -ForegroundColor Cyan
 Write-Host "║  Phase 18 Write-back             — loaded          ║" -ForegroundColor Cyan
+Write-Host "║  Phase 19 ClaudeBrain (PASSIVE)  — loaded          ║" -ForegroundColor Cyan
 Write-Host "╠═════════════════════════════════════════════════════╣" -ForegroundColor Cyan
 Write-Host "║  Quick start:                                       ║" -ForegroundColor White
 Write-Host "║  Start-VBAFCenterOnboarding                        ║" -ForegroundColor Yellow
