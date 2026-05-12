@@ -272,14 +272,14 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
 <div class="phase">
   <div class="phase-header" style="background:#FAEEDA;border-bottom:0.5px solid #EF9F27">
     <span class="phase-num" style="background:#FAC775;color:#412402">Phase 7</span>
-    <span class="phase-title" style="color:#412402">Onboarding wizard — full argument list</span>
+    <span class="phase-title" style="color:#412402">Onboarding wizard — full argument list (7 steps)</span>
   </div>
   <div class="phase-body">
     <div class="fn">Start-VBAFCenterOnboarding</div>
     <div class="args">
       <div class="arg-row"><span class="arg-key">Press Enter to start</span><span class="arg-val">[just press Enter]</span></div>
       <div style="height:6px"></div>
-      <div style="font-size:11px;color:#888780;margin-bottom:2px">Step 1/6 — Customer profile</div>
+      <div style="font-size:11px;color:#888780;margin-bottom:2px">Step 1/7 — Customer profile</div>
       <div class="arg-row"><span class="arg-key">Customer ID</span><span class="arg-val">TruckCompanyDK</span></div>
       <div class="arg-row"><span class="arg-key">Company name</span><span class="arg-val">Truck Company DK</span></div>
       <div class="arg-row"><span class="arg-key">Country</span><span class="arg-val">Denmark</span></div>
@@ -287,26 +287,33 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
       <div class="arg-row"><span class="arg-key">Problem</span><span class="arg-val">Too many idle trucks and late deliveries</span></div>
       <div class="arg-row"><span class="arg-key">Contact email</span><span class="arg-val">ceo@truckcompanydk.dk</span></div>
       <div style="height:6px"></div>
-      <div style="font-size:11px;color:#888780;margin-bottom:2px">Step 2/6 — Classification</div>
+      <div style="font-size:11px;color:#888780;margin-bottom:2px">Step 2/7 — Classification</div>
       <div class="arg-row"><span class="arg-key">Accept agent? Y/N</span><span class="arg-val">N</span></div>
       <div class="arg-row"><span class="arg-key">Enter agent name</span><span class="arg-val">FleetDispatch</span></div>
       <div style="height:6px"></div>
-      <div style="font-size:11px;color:#888780;margin-bottom:2px">Step 3/6 — Signals</div>
+      <div style="font-size:11px;color:#888780;margin-bottom:2px">Step 3/7 — Signals (up to 10) — Phase 14 thresholds + Phase 15 weights</div>
       <div class="arg-row"><span class="arg-key">Signal 1 name</span><span class="arg-val">Empty Driving</span></div>
       <div class="arg-row"><span class="arg-key">Source type</span><span class="arg-val">Simulated</span></div>
       <div class="arg-row"><span class="arg-key">Raw minimum</span><span class="arg-val">0</span></div>
       <div class="arg-row"><span class="arg-key">Raw maximum</span><span class="arg-val">100</span></div>
+      <div class="arg-row"><span class="arg-key">Good below</span><span class="arg-opt">25 ← Phase 14 — press Enter to skip</span></div>
+      <div class="arg-row"><span class="arg-key">Bad above</span><span class="arg-opt">40 ← Phase 14 — press Enter to skip</span></div>
+      <div class="arg-row"><span class="arg-key">Weight (1-5)</span><span class="arg-opt">5 ← Phase 15 — default 3</span></div>
+      <div style="height:4px"></div>
       <div class="arg-row"><span class="arg-key">Signal 2 name</span><span class="arg-val">On-Time Delivery</span></div>
       <div class="arg-row"><span class="arg-key">Source type</span><span class="arg-val">Simulated</span></div>
       <div class="arg-row"><span class="arg-key">Raw minimum</span><span class="arg-val">0</span></div>
       <div class="arg-row"><span class="arg-key">Raw maximum</span><span class="arg-val">100</span></div>
-      <div class="arg-row"><span class="arg-key">Signal 3 name</span><span class="arg-val">[Enter to skip]</span></div>
-      <div class="arg-row"><span class="arg-key">Signal 4 name</span><span class="arg-val">[Enter to skip]</span></div>
+      <div class="arg-row"><span class="arg-key">Good below</span><span class="arg-opt">85 ← Phase 14</span></div>
+      <div class="arg-row"><span class="arg-key">Bad above</span><span class="arg-opt">70 ← Phase 14</span></div>
+      <div class="arg-row"><span class="arg-key">Weight (1-5)</span><span class="arg-opt">3 ← Phase 15</span></div>
+      <div style="height:4px"></div>
+      <div class="arg-row"><span class="arg-key">Signal 3 name</span><span class="arg-val">[Enter to finish]</span></div>
       <div style="height:6px"></div>
-      <div style="font-size:11px;color:#888780;margin-bottom:2px">Step 4/6 — Normalisation</div>
+      <div style="font-size:11px;color:#888780;margin-bottom:2px">Step 4/7 — Normalisation</div>
       <div class="arg-row"><span class="arg-key">Method</span><span class="arg-val">MinMax</span></div>
       <div style="height:6px"></div>
-      <div style="font-size:11px;color:#888780;margin-bottom:2px">Step 5/6 — Action map</div>
+      <div style="font-size:11px;color:#888780;margin-bottom:2px">Step 5/7 — Action map</div>
       <div class="arg-row"><span class="arg-key">Action 0 name</span><span class="arg-val">Monitor</span></div>
       <div class="arg-row"><span class="arg-key">Action 0 command</span><span class="arg-val">Watch and log — fleet healthy</span></div>
       <div class="arg-row"><span class="arg-key">Action 1 name</span><span class="arg-val">Reassign</span></div>
@@ -316,9 +323,17 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
       <div class="arg-row"><span class="arg-key">Action 3 name</span><span class="arg-val">Escalate</span></div>
       <div class="arg-row"><span class="arg-key">Action 3 command</span><span class="arg-val">Call operations manager immediately</span></div>
       <div style="height:6px"></div>
-      <div style="font-size:11px;color:#888780;margin-bottom:2px">Step 6/6 — Schedule</div>
+      <div style="font-size:11px;color:#888780;margin-bottom:2px">Step 6/7 — Action thresholds (Phase 17 — customer sensitivity)</div>
+      <div class="arg-row"><span class="arg-key">Set custom thresholds? Y/N</span><span class="arg-val">Y</span></div>
+      <div class="arg-row"><span class="arg-key">Reassign threshold</span><span class="arg-val">0.20</span></div>
+      <div class="arg-row"><span class="arg-key">Reroute threshold</span><span class="arg-val">0.40</span></div>
+      <div class="arg-row"><span class="arg-key">Escalate threshold</span><span class="arg-val">0.65</span></div>
+      <div style="font-size:11px;color:#888780;margin-top:4px">Press N to keep defaults: 0.25 / 0.50 / 0.75</div>
+      <div style="height:6px"></div>
+      <div style="font-size:11px;color:#888780;margin-bottom:2px">Step 7/7 — Schedule</div>
       <div class="arg-row"><span class="arg-key">Check interval</span><span class="arg-val">10</span></div>
     </div>
+    <div class="note" style="margin-top:6px">Signals: up to 10 · GoodBelow/BadAbove: ask customer their numbers · Weight: ask "Hvilken signal holder dig mest vågen om natten?"</div>
     <div class="fn" style="margin-top:10px">Show-VBAFCenterSummary</div>
     <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
   </div>
