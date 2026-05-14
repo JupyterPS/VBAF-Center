@@ -143,6 +143,7 @@ cd "C:\Users\henni\OneDrive\WindowsPowerShell"        # console 4  NB: It gives 
 Start-VBAFCenterPortal                                  
 
 http://localhost:8080/?customer=TruckCompanyDK&token=GXE08I   THIS IS THE WAY TO: Start-VBAFCenterPortal fra BROWSER
+http://localhost:8080/?customer=NordLogistik&token=D2W6PZ
 
 #___________________________________ RESET FILES IN BETWEEN TEST'S ________________________________________________
 

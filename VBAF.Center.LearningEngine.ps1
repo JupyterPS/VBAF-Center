@@ -205,9 +205,13 @@ function Invoke-VBAFCenterLearnFromHistory {
     foreach ($r in $runs) { $actionCounts[[int]$r.Action]++ }
 
     # Override analysis
-    $dispatcherLower  = @($overrides | Where-Object { [int]$_.DispatcherAction -lt [int]$_.VBAFAction }).Count
-    $dispatcherHigher = @($overrides | Where-Object { [int]$_.DispatcherAction -gt [int]$_.VBAFAction }).Count
-    $dispatcherSame   = @($overrides | Where-Object { [int]$_.DispatcherAction -eq [int]$_.VBAFAction }).Count
+    #$dispatcherLower  = @($overrides | Where-Object { [int]$_.DispatcherAction -lt [int]$_.VBAFAction }).Count
+    #$dispatcherHigher = @($overrides | Where-Object { [int]$_.DispatcherAction -gt [int]$_.VBAFAction }).Count
+    #$dispatcherSame   = @($overrides | Where-Object { [int]$_.DispatcherAction -eq [int]$_.VBAFAction }).Count
+
+    $dispatcherLower  = @($overrides | Where-Object { [int]($_.DispatcherAction[0]) -lt [int]($_.VBAFAction[0]) }).Count
+    $dispatcherHigher = @($overrides | Where-Object { [int]($_.DispatcherAction[0]) -gt [int]($_.VBAFAction[0]) }).Count
+    $dispatcherSame   = @($overrides | Where-Object { [int]($_.DispatcherAction[0]) -eq [int]($_.VBAFAction[0]) }).Count
 
     # Average signal per action bucket
     $actionAvgs = @{}

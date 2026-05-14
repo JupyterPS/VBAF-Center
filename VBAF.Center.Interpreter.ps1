@@ -83,7 +83,9 @@ function Invoke-VBAFCenterInterpret {
 
     foreach ($line in $lines) {
         $parts = $line -split "\|"
-        if ([int]$parts[0] -eq $Action) {
+
+        $lineAction = ($parts[0] -replace '\D','')  # remove all non‑digits
+        if ([int]$lineAction -eq $Action) {        
             $actionName    = $parts[1]
             $actionCommand = $parts[2]
             break
