@@ -176,31 +176,34 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
 <div class="phase">
   <div class="phase-header" style="background:#E1F5EE;border-bottom:0.5px solid #5DCAA5">
     <span class="phase-num" style="background:#9FE1CB;color:#04342C">Phase 4</span>
-    <span class="phase-title" style="color:#04342C">Normalisation</span>
+    <span class="phase-title" style="color:#04342C">Normalisation — AUTOMATIC</span>
   </div>
   <div class="phase-body">
-    <div class="cols">
+    <div style="font-size:12px;color:#04342C;background:#d4f0e4;border-radius:8px;padding:10px 12px;border:0.5px solid #5DCAA5;margin-top:10px;font-weight:500">
+      Phase 4 runs automatically inside Invoke-VBAFCenterRun every 10 minutes.<br>
+      You never need to call it manually in daily operation.<br>
+      Method is set once during onboarding Step 4 — MinMax recommended for logistics.
+    </div>
+    <div class="note" style="margin-top:10px">Debugging only — use these if a signal value looks wrong:</div>
+    <div class="cols" style="margin-top:8px">
       <div>
-        <div class="fn">Invoke-VBAFCenterNormalise</div>
+        <div class="fn">Invoke-VBAFCenterNormalise — debug only</div>
         <div class="args">
           <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
-          <div class="arg-row"><span class="arg-key">RawSignals[0]</span><span class="arg-val">27.0</span></div>
-          <div class="arg-row"><span class="arg-key">RawSignals[1]</span><span class="arg-val">64.0</span></div>
-          <div class="arg-row"><span class="arg-key">RawSignals[2]</span><span class="arg-val">[Enter to stop]</span></div>
+          <div class="arg-row"><span class="arg-key">RawSignals</span><span class="arg-val">@(88, 69)</span></div>
           <div class="arg-row"><span class="arg-key">Method</span><span class="arg-val">MinMax</span></div>
         </div>
       </div>
       <div>
-        <div class="fn">Get-VBAFCenterNormalisationReport</div>
+        <div class="fn">Get-VBAFCenterNormalisationReport — debug only</div>
         <div class="args">
           <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
-          <div class="arg-row"><span class="arg-key">RawSignals[0]</span><span class="arg-val">27.0</span></div>
-          <div class="arg-row"><span class="arg-key">RawSignals[1]</span><span class="arg-val">64.0</span></div>
-          <div class="arg-row"><span class="arg-key">RawSignals[2]</span><span class="arg-val">[Enter to stop]</span></div>
+          <div class="arg-row"><span class="arg-key">RawSignals</span><span class="arg-val">@(88, 69)</span></div>
+          <div class="arg-row"><span class="arg-key">SignalNames</span><span class="arg-val">@("Empty Driving","On-Time Delivery")</span></div>
         </div>
       </div>
     </div>
-    <div class="note">Methods: MinMax | Standard | Robust | PassThrough — use MinMax for 0-100% logistics signals</div>
+    <div class="note">Methods: MinMax | Standard | Robust | PassThrough — MinMax for 0-100% logistics signals</div>
   </div>
 </div>
 
