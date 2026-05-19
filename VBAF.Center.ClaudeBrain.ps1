@@ -1,81 +1,277 @@
 ﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
-    VBAF-Center Phase 19 — Claude Brain
+    VBAF-Center Phase 19 — AI Brain (Multi-Provider)
 .DESCRIPTION
-    Replaces the if-statement decision engine with real AI.
-    Claude analyses signals, history, customer profile and action map
-    and returns a full situational assessment in Danish.
+    Real AI decision engine supporting multiple providers.
+    Replaces the if-statement with genuine intelligence.
 
-    Option C — Full intelligence:
+    Supported providers:
+      Claude     — Anthropic (paid, best quality)
+      Gemini     — Google (FREE — 1500 req/day — excellent)
+      Groq       — Groq (FREE — extremely fast)
+      OpenRouter — OpenRouter (FREE — 200 req/day)
+      Mistral    — Mistral AI (FREE)
+
+    Returns full intelligence:
       Action number (0-3)
       Reason in plain Danish
       Specific dispatcher instruction
       Pattern recognition from history
+      Confidence level
 
     Functions:
+      Set-VBAFCenterAIKey              — save API key for a provider
+      Get-VBAFCenterAIProviders        — show all providers and status
+      Test-VBAFCenterAIProvider        — test a provider connection
       Invoke-VBAFCenterClaudeBrain     — run full AI analysis
       Get-VBAFCenterClaudeBrainHistory — show AI decision history
-      Set-VBAFCenterClaudeAPIKey       — save API key
-      Get-VBAFCenterClaudeAPIKey       — verify API key is set
 #>
 
-$script:ClaudeConfigPath = Join-Path $env:USERPROFILE "VBAFCenter\claude"
-$script:ClaudeAPIURL     = "https://api.anthropic.com/v1/messages"
-$script:ClaudeModel      = "claude-sonnet-4-20250514"
+$script:AIConfigPath = Join-Path $env:USERPROFILE "VBAFCenter\ai"
 
-function Initialize-VBAFCenterClaudeStore {
-    if (-not (Test-Path $script:ClaudeConfigPath)) {
-        New-Item -ItemType Directory -Path $script:ClaudeConfigPath -Force | Out-Null
+# ============================================================
+# PROVIDER DEFINITIONS
+# ============================================================
+$script:AIProviders = @{
+
+    "Claude" = @{
+        Name        = "Claude Sonnet (Anthropic)"
+        URL         = "https://api.anthropic.com/v1/messages"
+        Model       = "claude-sonnet-4-20250514"
+        Format      = "Anthropic"
+        Free        = $false
+        Description = "Best quality — paid API"
+        GetKey      = "https://console.anthropic.com"
+    }
+
+    "Gemini" = @{
+        Name        = "Gemini 2.0 Flash (Google)"
+        URL         = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+        Model       = "gemini-2.0-flash"
+        Format      = "OpenAI"
+        Free        = $true
+        Description = "FREE — 1500 req/day — excellent quality"
+        GetKey      = "https://aistudio.google.com/app/apikey"
+    }
+
+    "Groq" = @{
+        Name        = "Llama 3.3 70B (Groq)"
+        URL         = "https://api.groq.com/openai/v1/chat/completions"
+        Model       = "llama-3.3-70b-versatile"
+        Format      = "OpenAI"
+        Free        = $true
+        Description = "FREE — extremely fast inference"
+        GetKey      = "https://console.groq.com/keys"
+    }
+
+    "OpenRouter" = @{
+        Name        = "DeepSeek R1 (OpenRouter)"
+        URL         = "https://openrouter.ai/api/v1/chat/completions"
+        Model       = "deepseek/deepseek-r1:free"
+        Format      = "OpenAI"
+        Free        = $true
+        Description = "FREE — 200 req/day — many models"
+        GetKey      = "https://openrouter.ai/keys"
+    }
+
+    "Mistral" = @{
+        Name        = "Mistral Small (Mistral AI)"
+        URL         = "https://api.mistral.ai/v1/chat/completions"
+        Model       = "mistral-small-latest"
+        Format      = "OpenAI"
+        Free        = $true
+        Description = "FREE tier — good quality"
+        GetKey      = "https://console.mistral.ai/api-keys"
     }
 }
 
 # ============================================================
-# SET-VBAFCENTERCLAUDEAPIKEY
+# INITIALIZE
 # ============================================================
-function Set-VBAFCenterClaudeAPIKey {
+function Initialize-VBAFCenterAIStore {
+    if (-not (Test-Path $script:AIConfigPath)) {
+        New-Item -ItemType Directory -Path $script:AIConfigPath -Force | Out-Null
+    }
+}
+
+# ============================================================
+# SET-VBAFCENTERAIKEY
+# ============================================================
+function Set-VBAFCenterAIKey {
     <#
     .SYNOPSIS
-        Save your Anthropic API key securely to disk.
-        Get your key from: https://console.anthropic.com
+        Save an API key for a provider.
     .EXAMPLE
-        Set-VBAFCenterClaudeAPIKey -APIKey "sk-ant-xxxx"
+        Set-VBAFCenterAIKey -Provider "Gemini"     -APIKey "AIzaXXXXXX"
+        Set-VBAFCenterAIKey -Provider "Groq"       -APIKey "gsk_XXXXXXXX"
+        Set-VBAFCenterAIKey -Provider "OpenRouter" -APIKey "sk-or-XXXXXXX"
+        Set-VBAFCenterAIKey -Provider "Mistral"    -APIKey "XXXXXXXXXX"
+        Set-VBAFCenterAIKey -Provider "Claude"     -APIKey "sk-ant-XXXXXX"
     #>
     param(
+        [Parameter(Mandatory)]
+        [ValidateSet("Claude","Gemini","Groq","OpenRouter","Mistral")]
+        [string] $Provider,
         [Parameter(Mandatory)] [string] $APIKey
     )
 
-    Initialize-VBAFCenterClaudeStore
+    Initialize-VBAFCenterAIStore
 
-    $configFile = Join-Path $script:ClaudeConfigPath "claude-config.json"
-    @{ APIKey = $APIKey; SavedAt = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss") } |
-        ConvertTo-Json | Set-Content $configFile -Encoding UTF8
+    $configFile = Join-Path $script:AIConfigPath "$Provider-key.json"
+    @{
+        Provider = $Provider
+        APIKey   = $APIKey
+        SavedAt  = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
+    } | ConvertTo-Json | Set-Content $configFile -Encoding UTF8
 
+    $p = $script:AIProviders[$Provider]
     Write-Host ""
-    Write-Host "Claude API key saved!" -ForegroundColor Green
-    Write-Host "Test with: Invoke-VBAFCenterClaudeBrain -CustomerID 'TruckCompanyDK'" -ForegroundColor DarkGray
+    Write-Host ("  API key saved: {0}" -f $p.Name) -ForegroundColor Green
+    Write-Host ("  Free  : {0}" -f (if ($p.Free) { "Yes — " + $p.Description } else { "No (paid)" })) -ForegroundColor White
+    Write-Host ("  Model : {0}" -f $p.Model) -ForegroundColor White
+    Write-Host ("  Test  : Test-VBAFCenterAIProvider -Provider ""{0}""" -f $Provider) -ForegroundColor DarkGray
     Write-Host ""
 }
 
 # ============================================================
-# GET-VBAFCENTERCLAUDEAPIKEY  (internal)
+# GET-VBAFCENTERAIPROVIDERS
 # ============================================================
-function Get-VBAFCenterClaudeAPIKey {
-    Initialize-VBAFCenterClaudeStore
-    $configFile = Join-Path $script:ClaudeConfigPath "claude-config.json"
-    if (-not (Test-Path $configFile)) {
-        Write-Host "No API key found." -ForegroundColor Red
-        Write-Host "Run: Set-VBAFCenterClaudeAPIKey -APIKey 'sk-ant-xxxx'" -ForegroundColor Yellow
-        return $null
+function Get-VBAFCenterAIProviders {
+    <#
+    .SYNOPSIS
+        Show all providers and which ones have API keys configured.
+    #>
+    Initialize-VBAFCenterAIStore
+
+    Write-Host ""
+    Write-Host "  VBAF-Center AI Providers" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host ("  {0,-12} {1,-32} {2,-6} {3,-10} {4}" -f "Provider","Name","Free","Status","Description") -ForegroundColor Yellow
+    Write-Host ("  {0}" -f ("-" * 85)) -ForegroundColor DarkGray
+
+    foreach ($key in ($script:AIProviders.Keys | Sort-Object)) {
+        $p       = $script:AIProviders[$key]
+        $keyFile = Join-Path $script:AIConfigPath "$key-key.json"
+        $status  = if (Test-Path $keyFile) { "Key OK" } else { "No key" }
+        $color   = if (Test-Path $keyFile) { "Green" } else { "DarkGray" }
+        $free    = if ($p.Free) { "FREE" } else { "Paid" }
+        Write-Host ("  {0,-12} {1,-32} {2,-6} {3,-10} {4}" -f $key, $p.Name, $free, $status, $p.Description) -ForegroundColor $color
     }
+
+    Write-Host ""
+    Write-Host "  Get free API keys:" -ForegroundColor Yellow
+    foreach ($key in ($script:AIProviders.Keys | Where-Object { $script:AIProviders[$_].Free } | Sort-Object)) {
+        Write-Host ("  {0,-12} {1}" -f $key, $script:AIProviders[$key].GetKey) -ForegroundColor DarkGray
+    }
+    Write-Host ""
+}
+
+# ============================================================
+# GET API KEY (internal)
+# ============================================================
+function Get-VBAFCenterAIKey {
+    param([string] $Provider)
+    Initialize-VBAFCenterAIStore
+    $configFile = Join-Path $script:AIConfigPath "$Provider-key.json"
+    if (-not (Test-Path $configFile)) { return $null }
     $config = Get-Content $configFile -Raw | ConvertFrom-Json
     return $config.APIKey
 }
 
 # ============================================================
-# BUILD CLAUDE PROMPT  (internal)
+# INVOKE AI CALL (internal)
 # ============================================================
-function Build-VBAFCenterClaudePrompt {
+function Invoke-VBAFCenterAICall {
+    param([string]$Provider, [string]$Prompt, [string]$APIKey)
+
+    $p = $script:AIProviders[$Provider]
+
+    if ($p.Format -eq "Anthropic") {
+        $body = @{
+            model      = $p.Model
+            max_tokens = 1000
+            messages   = @(@{ role="user"; content=$Prompt })
+        } | ConvertTo-Json -Depth 5
+
+        $headers = @{
+            "x-api-key"         = $APIKey
+            "anthropic-version" = "2023-06-01"
+            "content-type"      = "application/json"
+        }
+
+        $response = Invoke-RestMethod -Uri $p.URL -Method POST -Headers $headers -Body $body -ErrorAction Stop
+        return $response.content[0].text
+
+    } else {
+        $promptString = [string]$Prompt
+        $bodyObj = [ordered]@{
+            model    = [string]$p.Model
+            messages = @([ordered]@{ role="user"; content=$promptString })
+        }
+        $body      = $bodyObj | ConvertTo-Json -Depth 5
+        $bodyBytes = [System.Text.Encoding]::UTF8.GetBytes($body)
+
+        $headers = @{
+            "Authorization" = "Bearer $APIKey"
+            "Content-Type"  = "application/json; charset=utf-8"
+        }
+
+        if ($Provider -eq "OpenRouter") {
+            $headers["HTTP-Referer"] = "https://github.com/JupyterPS/VBAF-Center"
+            $headers["X-Title"]      = "VBAF-Center"
+        }
+
+        $response = Invoke-RestMethod -Uri $p.URL -Method POST -Headers $headers -Body $bodyBytes -ErrorAction Stop
+        return $response.choices[0].message.content
+    }
+}
+
+# ============================================================
+# TEST-VBAFCENTERAIPROVIDER
+# ============================================================
+function Test-VBAFCenterAIProvider {
+    <#
+    .SYNOPSIS
+        Test a provider with a simple ping.
+    .EXAMPLE
+        Test-VBAFCenterAIProvider -Provider "Gemini"
+        Test-VBAFCenterAIProvider -Provider "Groq"
+    #>
+    param(
+        [Parameter(Mandatory)]
+        [ValidateSet("Claude","Gemini","Groq","OpenRouter","Mistral")]
+        [string] $Provider
+    )
+
+    $apiKey = Get-VBAFCenterAIKey -Provider $Provider
+    if (-not $apiKey) {
+        Write-Host ("No API key for {0}." -f $Provider) -ForegroundColor Red
+        Write-Host ("  Run: Set-VBAFCenterAIKey -Provider ""{0}"" -APIKey ""your-key""" -f $Provider) -ForegroundColor Yellow
+        return
+    }
+
+    $p = $script:AIProviders[$Provider]
+    Write-Host ""
+    Write-Host ("Testing: {0}" -f $p.Name) -ForegroundColor Yellow
+    Write-Host ("  URL   : {0}" -f $p.URL)   -ForegroundColor White
+    Write-Host ("  Model : {0}" -f $p.Model) -ForegroundColor White
+
+    try {
+        $result = Invoke-VBAFCenterAICall -Provider $Provider -APIKey $apiKey `
+            -Prompt 'Reply with exactly: {"status":"ok","message":"VBAF connection test successful"}'
+        Write-Host ("  Result: Connection OK") -ForegroundColor Green
+        Write-Host ("  Response: {0}" -f ($result -replace "`n"," ")) -ForegroundColor DarkGray
+    } catch {
+        Write-Host ("  FAILED: {0}" -f $_.Exception.Message) -ForegroundColor Red
+    }
+    Write-Host ""
+}
+
+# ============================================================
+# BUILD PROMPT (internal)
+# ============================================================
+function Build-VBAFCenterAIPrompt {
     param(
         [string]   $CustomerID,
         [object]   $Profile,
@@ -87,40 +283,28 @@ function Build-VBAFCenterClaudePrompt {
         [object[]] $YellowSignals
     )
 
-    # Build signal description
     $signalText = ""
     foreach ($s in $Signals) {
-        $status = $s.SignalColour
-        if (-not $status) { $status = if ($s.Normalised -gt 0.75) { "RED" } elseif ($s.Normalised -gt 0.40) { "YELLOW" } else { "GREEN" } }
-        $threshText = ""
-        if ($s.GoodBelow -ge 0 -or $s.BadAbove -ge 0) {
-            $threshText = " (god: under $($s.GoodBelow), kritisk: over $($s.BadAbove))"
+        $status = if ($s.SignalColour) { $s.SignalColour } else {
+            if ($s.Normalised -gt 0.75) { "RED" } elseif ($s.Normalised -gt 0.40) { "YELLOW" } else { "GREEN" }
         }
-        $signalText += "  - $($s.SignalName): $($s.RawValue) $threshText — $status`n"
+        $thr = ""
+        if ($s.GoodBelow -ge 0 -or $s.BadAbove -ge 0) { $thr = " (god under $($s.GoodBelow), kritisk over $($s.BadAbove))" }
+        $signalText += "  - $($s.SignalName): $($s.RawValue)$thr -- $status`n"
     }
 
-    # Build history description (last 5 runs)
     $historyText = ""
     if ($History -and $History.Count -gt 0) {
-        $recent = $History | Select-Object -Last 5
-        foreach ($h in $recent) {
+        foreach ($h in ($History | Select-Object -Last 5)) {
             $historyText += "  - $($h.Timestamp): $($h.ActionName) (avg $($h.AvgSignal))"
             if ($h.OverrideApplied) { $historyText += " [OVERRIDE]" }
             $historyText += "`n"
         }
-    } else {
-        $historyText = "  Ingen historik endnu.`n"
-    }
+    } else { $historyText = "  Ingen historik endnu.`n" }
 
-    # Build action map description
     $actionText = ""
     if ($ActionMap) {
-        $actionText = @"
-  Action 0 (Monitor)  : $($ActionMap.Action0Command)
-  Action 1 (Reassign) : $($ActionMap.Action1Command)
-  Action 2 (Reroute)  : $($ActionMap.Action2Command)
-  Action 3 (Escalate) : $($ActionMap.Action3Command)
-"@
+        $actionText = "  Action 0: $($ActionMap.Action0Command)`n  Action 1: $($ActionMap.Action1Command)`n  Action 2: $($ActionMap.Action2Command)`n  Action 3: $($ActionMap.Action3Command)`n"
     } else {
         $actionText = "  Standard: Monitor / Reassign / Reroute / Escalate`n"
     }
@@ -129,48 +313,25 @@ function Build-VBAFCenterClaudePrompt {
     $yellowCount = if ($YellowSignals) { @($YellowSignals).Count } else { 0 }
 
     return @"
-Du er en driftsassistent for $($Profile.CompanyName) — en $($Profile.BusinessType) virksomhed i Danmark.
-
-Dit job er at analysere de aktuelle driftssignaler og anbefale den rigtige handling til dispatcheren.
-Svar ALTID på dansk. Vær konkret og direkte. Ingen lange forklaringer.
+Du er driftsassistent for $($Profile.CompanyName) - en $($Profile.BusinessType) virksomhed i Danmark.
+Svar ALTID paa dansk. Vaer konkret. Ingen lange forklaringer.
 
 KUNDEPROFIL:
-  Virksomhed  : $($Profile.CompanyName)
-  Branche     : $($Profile.BusinessType)
-  Problem     : $($Profile.Problem)
-  Agent       : $($Profile.Agent)
+  Virksomhed: $($Profile.CompanyName) | Branche: $($Profile.BusinessType) | Agent: $($Profile.Agent)
+  Problem: $($Profile.Problem)
 
-AKTUELLE SIGNALER (nu):
+AKTUELLE SIGNALER:
 $signalText
-SIGNAL OVERSIGT:
-  Vægtet gennemsnit : $([Math]::Round($WeightedAvg, 4))
-  Røde signaler     : $redCount
-  Gule signaler     : $yellowCount
+OVERSIGT: Vaegtet gns=$([Math]::Round($WeightedAvg,4)) | Roede=$redCount | Gule=$yellowCount
 
-SENESTE HISTORIK (de 5 nyeste kørsler):
+HISTORIK (5 nyeste):
 $historyText
-KUNDENS HANDLINGSMULIGHEDER:
+HANDLINGER:
 $actionText
-DIN OPGAVE:
-Analyser situationen og returner KUN dette JSON-objekt — intet andet:
+OPGAVE - returner KUN dette JSON uden markdown eller forklaring:
+{"Action":<0-3>,"ActionName":"<Monitor/Reassign/Reroute/Escalate>","Reason":"<2-3 saetninger>","Instruction":"<1-2 konkrete saetninger til dispatcher>","Pattern":"<1 saetning eller tom>","Confidence":"<Hoej/Medium/Lav>"}
 
-{
-  "Action": <0, 1, 2 eller 3>,
-  "ActionName": "<Monitor, Reassign, Reroute eller Escalate>",
-  "Reason": "<2-3 sætninger på dansk — hvad ser du i signalerne og hvorfor er det bekymrende eller OK>",
-  "Instruction": "<1-2 konkrete sætninger til dispatcheren — præcis hvad skal de gøre NU>",
-  "Pattern": "<1 sætning om mønster på tværs af historik — eller tom streng hvis ingen mønster>",
-  "Confidence": "<Høj, Medium eller Lav>"
-}
-
-REGLER:
-- Action 0 (Monitor)  : alt er OK — ingen handling nødvendig
-- Action 1 (Reassign) : noget kræver opmærksomhed — flyt en ressource
-- Action 2 (Reroute)  : alvorlig situation — skift tilgang nu
-- Action 3 (Escalate) : krise — ring til et menneske med det samme
-- Hvis et rødt signal er til stede — minimum Action 2
-- Hvis 2+ røde signaler — minimum Action 3
-- Brug kundens egne handlingsord fra HANDLINGSMULIGHEDER ovenfor
+REGLER: 1 roed=min Action 2 | 2+ roede=min Action 3 | avg>0.75=Action 3 | avg>0.50=Action 2 | avg>0.25=Action 1
 "@
 }
 
@@ -180,79 +341,76 @@ REGLER:
 function Invoke-VBAFCenterClaudeBrain {
     <#
     .SYNOPSIS
-        Full AI analysis of current signals using Claude.
-        Replaces the if-statement with real intelligence.
-        Returns action, reason, dispatcher instruction and pattern analysis.
+        Full AI analysis using your chosen provider.
     .EXAMPLE
         Invoke-VBAFCenterClaudeBrain -CustomerID "TruckCompanyDK"
-        Invoke-VBAFCenterClaudeBrain -CustomerID "TruckCompanyDK" -Verbose
+        Invoke-VBAFCenterClaudeBrain -CustomerID "TruckCompanyDK" -Provider "Gemini"
+        Invoke-VBAFCenterClaudeBrain -CustomerID "TruckCompanyDK" -Provider "Groq"
+        Invoke-VBAFCenterClaudeBrain -CustomerID "TruckCompanyDK" -Provider "Claude"
     #>
     param(
         [Parameter(Mandatory)] [string] $CustomerID,
-        [switch] $Verbose
+        [ValidateSet("Claude","Gemini","Groq","OpenRouter","Mistral")]
+        [string] $Provider = "Gemini"
     )
 
-    # Get API key
-    $apiKey = Get-VBAFCenterClaudeAPIKey
-    if (-not $apiKey) { return $null }
+    $apiKey = Get-VBAFCenterAIKey -Provider $Provider
+    if (-not $apiKey) {
+        Write-Host ""
+        Write-Host ("No API key for {0}." -f $Provider) -ForegroundColor Red
+        $p = $script:AIProviders[$Provider]
+        Write-Host ("  Get free key : {0}" -f $p.GetKey) -ForegroundColor Yellow
+        Write-Host ("  Then run     : Set-VBAFCenterAIKey -Provider ""{0}"" -APIKey ""your-key""" -f $Provider) -ForegroundColor Yellow
+        Write-Host ""
+        return $null
+    }
+
+    $p = $script:AIProviders[$Provider]
 
     Write-Host ""
-    Write-Host ("Claude Brain: {0} — {1}" -f $CustomerID, (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")) -ForegroundColor Cyan
+    Write-Host ("AI Brain [{0}]: {1} — {2}" -f $Provider, $CustomerID, (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")) -ForegroundColor Cyan
+    Write-Host ("  Provider : {0}" -f $p.Name)  -ForegroundColor White
+    Write-Host ("  Model    : {0}" -f $p.Model) -ForegroundColor White
     Write-Host "  Gathering context..." -ForegroundColor DarkGray
 
-    # --------------------------------------------------------
-    # Step 1 — Load customer profile
-    # --------------------------------------------------------
+    # Load profile
     $profilePath = Join-Path $env:USERPROFILE "VBAFCenter\customers\$CustomerID.json"
     if (-not (Test-Path $profilePath)) {
-        Write-Host "Customer not found: $CustomerID" -ForegroundColor Red
+        Write-Host ("Customer not found: {0}" -f $CustomerID) -ForegroundColor Red
         return $null
     }
     $profile = Get-Content $profilePath -Raw | ConvertFrom-Json
 
-    # --------------------------------------------------------
-    # Step 2 — Get live signals via Phase 3
-    # --------------------------------------------------------
-    $signalResult = $null
-    $signals      = @()
-    $weightedAvg  = 0.0
-    $redSignals   = @()
-    $yellowSignals = @()
-
-    if (Get-Command Get-VBAFCenterAllSignals -ErrorAction SilentlyContinue) {
-        $signalResult  = Get-VBAFCenterAllSignals -CustomerID $CustomerID
-        $signals       = @($signalResult.Signals)
-        $weightedAvg   = if ($signalResult.WeightedAvg) { $signalResult.WeightedAvg } else { $signalResult.SimpleAvg }
-        $redSignals    = @($signalResult.RedSignals)
-        $yellowSignals = @($signalResult.YellowSignals)
-    } else {
-        Write-Host "  Phase 3 not loaded — load VBAF.Center.SignalAcquisition.ps1 first." -ForegroundColor Yellow
+    # Get signals
+    if (-not (Get-Command Get-VBAFCenterAllSignals -ErrorAction SilentlyContinue)) {
+        Write-Host "Phase 3 not loaded. Run: . .\VBAF-Center\VBAF.Center.LoadAll.ps1" -ForegroundColor Yellow
         return $null
     }
+
+    $signalResult  = Get-VBAFCenterAllSignals -CustomerID $CustomerID
+    $signals       = @($signalResult.Signals)
+    $weightedAvg   = if ($signalResult.WeightedAvg) { $signalResult.WeightedAvg } else { $signalResult.SimpleAvg }
+    $redSignals    = @($signalResult.RedSignals)
+    $yellowSignals = @($signalResult.YellowSignals)
 
     if ($signals.Count -eq 0) {
-        Write-Host "  No signals configured for: $CustomerID" -ForegroundColor Yellow
+        Write-Host ("No signals configured for: {0}" -f $CustomerID) -ForegroundColor Yellow
         return $null
     }
 
-    # --------------------------------------------------------
-    # Step 3 — Load run history
-    # --------------------------------------------------------
+    # Load history
     $historyPath = Join-Path $env:USERPROFILE "VBAFCenter\history"
     $history     = @()
     if (Test-Path $historyPath) {
-        $historyFiles = Get-ChildItem $historyPath -Filter "$CustomerID-*.json" |
-                        Sort-Object LastWriteTime -Descending |
-                        Select-Object -First 10
-        foreach ($f in $historyFiles) {
+        $files = Get-ChildItem $historyPath -Filter "$CustomerID-*.json" |
+                 Sort-Object LastWriteTime -Descending | Select-Object -First 10
+        foreach ($f in $files) {
             try { $history += Get-Content $f.FullName -Raw | ConvertFrom-Json } catch {}
         }
         $history = @($history | Sort-Object Timestamp)
     }
 
-    # --------------------------------------------------------
-    # Step 4 — Load action map
-    # --------------------------------------------------------
+    # Load action map
     $actionMap  = $null
     $actionFile = Join-Path $env:USERPROFILE "VBAFCenter\actions\$CustomerID-actions.txt"
     if (Test-Path $actionFile) {
@@ -265,69 +423,42 @@ function Invoke-VBAFCenterClaudeBrain {
         }
     }
 
-    # --------------------------------------------------------
-    # Step 5 — Build prompt and call Claude
-    # --------------------------------------------------------
-    $prompt = Build-VBAFCenterClaudePrompt `
-        -CustomerID    $CustomerID `
-        -Profile       $profile `
-        -Signals       $signals `
-        -History       $history `
-        -ActionMap     $actionMap `
-        -WeightedAvg   $weightedAvg `
-        -RedSignals    $redSignals `
-        -YellowSignals $yellowSignals
+    # Build and send prompt
+    $prompt = Build-VBAFCenterAIPrompt `
+        -CustomerID $CustomerID -Profile $profile -Signals $signals `
+        -History $history -ActionMap $actionMap -WeightedAvg $weightedAvg `
+        -RedSignals $redSignals -YellowSignals $yellowSignals
 
-    if ($Verbose) {
-        Write-Host ""
-        Write-Host "  Prompt sent to Claude:" -ForegroundColor DarkGray
-        Write-Host $prompt -ForegroundColor DarkGray
-        Write-Host ""
-    }
+    Write-Host ("  Calling {0}..." -f $p.Name) -ForegroundColor DarkGray
 
-    Write-Host "  Calling Claude..." -ForegroundColor DarkGray
-
-    $body = @{
-        model      = $script:ClaudeModel
-        max_tokens = 1000
-        messages   = @(
-            @{ role = "user"; content = $prompt }
-        )
-    } | ConvertTo-Json -Depth 5
-
-    $headers = @{
-        "x-api-key"         = $apiKey
-        "anthropic-version" = "2023-06-01"
-        "content-type"      = "application/json"
-    }
-
-    $claudeResponse = $null
+    $aiResponse = $null
     try {
-        $response      = Invoke-RestMethod -Uri $script:ClaudeAPIURL -Method POST -Headers $headers -Body $body -ErrorAction Stop
-        $rawText       = $response.content[0].text
-        $claudeResponse = $rawText | ConvertFrom-Json
+        $rawText    = Invoke-VBAFCenterAICall -Provider $Provider -Prompt $prompt -APIKey $apiKey
+        $clean      = $rawText.Trim() -replace '```json', '' -replace '```', '' -replace "`n", " "
+        # Extract JSON if surrounded by other text
+        if ($clean -match '\{.*\}') { $clean = $Matches[0] }
+        $aiResponse = $clean | ConvertFrom-Json
     } catch {
-        Write-Host ("  Claude API call failed: {0}" -f $_.Exception.Message) -ForegroundColor Red
-        Write-Host "  Check your API key with: Get-VBAFCenterClaudeAPIKey" -ForegroundColor Yellow
+        Write-Host ("  AI call failed: {0}" -f $_.Exception.Message) -ForegroundColor Red
+        Write-Host "  Raw response was:" -ForegroundColor DarkGray
+        if ($rawText) { Write-Host ("  {0}" -f $rawText.Substring(0, [Math]::Min(200, $rawText.Length))) -ForegroundColor DarkGray }
         return $null
     }
 
-    # --------------------------------------------------------
-    # Step 6 — Display result
-    # --------------------------------------------------------
-    $action      = [int]$claudeResponse.Action
-    $actionName  = $claudeResponse.ActionName
-    $reason      = $claudeResponse.Reason
-    $instruction = $claudeResponse.Instruction
-    $pattern     = $claudeResponse.Pattern
-    $confidence  = $claudeResponse.Confidence
+    # Display
+    $action      = [int]$aiResponse.Action
+    $actionName  = [string]$aiResponse.ActionName
+    $reason      = [string]$aiResponse.Reason
+    $instruction = [string]$aiResponse.Instruction
+    $pattern     = [string]$aiResponse.Pattern
+    $confidence  = [string]$aiResponse.Confidence
 
     $actionColors = @("Green","Yellow","DarkYellow","Red")
     $color        = $actionColors[$action]
 
     Write-Host ""
     Write-Host ("  Action     : {0} — {1}" -f $action, $actionName) -ForegroundColor $color
-    Write-Host ("  Confidence : {0}" -f $confidence) -ForegroundColor White
+    Write-Host ("  Confidence : {0}" -f $confidence)                 -ForegroundColor White
     Write-Host ""
     Write-Host "  Reason:" -ForegroundColor Yellow
     Write-Host ("  {0}" -f $reason) -ForegroundColor White
@@ -341,77 +472,35 @@ function Invoke-VBAFCenterClaudeBrain {
     }
     Write-Host ""
 
-    # --------------------------------------------------------
-    # Step 7 — Save result to history
-    # --------------------------------------------------------
+    # Save to history
     $result = [PSCustomObject]@{
-        CustomerID       = $CustomerID
-        Timestamp        = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss.fff")
-        Signals          = @($signals | ForEach-Object { $_.Normalised })
-        AvgSignal        = [Math]::Round($weightedAvg, 4)
-        WeightedAvg      = [Math]::Round($weightedAvg, 4)
-        Action           = $action
-        ActionName       = $actionName
-        ActionCommand    = $instruction
-        ActionReason     = $reason
-        Pattern          = $pattern
-        Confidence       = $confidence
-        OverrideApplied  = ($redSignals.Count -gt 0)
-        RedSignalCount   = $redSignals.Count
+        CustomerID        = $CustomerID
+        Timestamp         = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss.fff")
+        Provider          = $Provider
+        Model             = $p.Model
+        Signals           = @($signals | ForEach-Object { $_.Normalised })
+        AvgSignal         = [Math]::Round($weightedAvg, 4)
+        WeightedAvg       = [Math]::Round($weightedAvg, 4)
+        Action            = $action
+        ActionName        = $actionName
+        ActionCommand     = $instruction
+        ActionReason      = $reason
+        Pattern           = $pattern
+        Confidence        = $confidence
+        OverrideApplied   = ($redSignals.Count -gt 0)
+        RedSignalCount    = $redSignals.Count
         YellowSignalCount = $yellowSignals.Count
-        Source           = "Claude"
+        Source            = "AI-$Provider"
     }
 
-    $histFile = Join-Path $historyPath "$CustomerID-$(Get-Date -Format 'yyyyMMdd_HHmmss_fff').json"
     if (-not (Test-Path $historyPath)) { New-Item -ItemType Directory -Path $historyPath -Force | Out-Null }
+    $histFile = Join-Path $historyPath "$CustomerID-$(Get-Date -Format 'yyyyMMdd_HHmmss_fff').json"
     $result | ConvertTo-Json -Depth 5 | Set-Content $histFile -Encoding UTF8
 
-    # --------------------------------------------------------
-    # Step 8 — Crisis response if Action 3
-    # --------------------------------------------------------
+    # Crisis if Action 3
     if ($action -ge 3) {
-        Write-Host ""
-        Write-Host "  [CRISIS] Claude recommends Escalate — activating crisis response!" -ForegroundColor Red
-        Write-Host ""
-
-        try {
-            [Console]::Beep(800,  400)
-            Start-Sleep -Milliseconds 100
-            [Console]::Beep(1000, 400)
-            Start-Sleep -Milliseconds 100
-            [Console]::Beep(1500, 800)
-        } catch {}
-
-        try {
-            Add-Type -AssemblyName System.Windows.Forms
-            Add-Type -AssemblyName System.Drawing
-            $form               = New-Object System.Windows.Forms.Form
-            $form.Text          = "VBAF CRISIS — Claude Brain"
-            $form.Size          = New-Object System.Drawing.Size(480, 280)
-            $form.StartPosition = "CenterScreen"
-            $form.TopMost       = $true
-            $form.BackColor     = [System.Drawing.Color]::Red
-            $label              = New-Object System.Windows.Forms.Label
-            $label.Text         = ("KRISE DETEKTERET!`n`nKunde   : {0}`nHandling: {1}`n`nKlauds vurdering:`n{2}`n`nInstruktion:`n{3}`n`nKlik OK for at bekræfte." -f `
-                                    $CustomerID, $actionName, $reason, $instruction)
-            $label.ForeColor    = [System.Drawing.Color]::White
-            $label.Font         = New-Object System.Drawing.Font("Arial", 9, [System.Drawing.FontStyle]::Regular)
-            $label.Size         = New-Object System.Drawing.Size(450, 200)
-            $label.Location     = New-Object System.Drawing.Point(10, 10)
-            $button             = New-Object System.Windows.Forms.Button
-            $button.Text        = "OK — Jeg håndterer det"
-            $button.Size        = New-Object System.Drawing.Size(200, 35)
-            $button.Location    = New-Object System.Drawing.Point(130, 220)
-            $button.BackColor   = [System.Drawing.Color]::White
-            $button.ForeColor   = [System.Drawing.Color]::Red
-            $button.Font        = New-Object System.Drawing.Font("Arial", 10, [System.Drawing.FontStyle]::Bold)
-            $button.Add_Click({ $form.Close() })
-            $form.Controls.Add($label)
-            $form.Controls.Add($button)
-            $form.Add_Shown({ $form.Activate() })
-            $form.ShowDialog() | Out-Null
-        } catch {}
-
+        Write-Host "  [CRISIS] AI recommends Escalate — activating crisis response!" -ForegroundColor Red
+        try { [Console]::Beep(800,400); Start-Sleep -Milliseconds 100; [Console]::Beep(1200,800) } catch {}
         if (Get-Command Start-VBAFCenterCrisis -ErrorAction SilentlyContinue) {
             Start-VBAFCenterCrisis -CustomerID $CustomerID
         }
@@ -426,13 +515,15 @@ function Invoke-VBAFCenterClaudeBrain {
 function Get-VBAFCenterClaudeBrainHistory {
     <#
     .SYNOPSIS
-        Show recent Claude Brain decisions for a customer.
+        Show recent AI Brain decisions for a customer.
     .EXAMPLE
         Get-VBAFCenterClaudeBrainHistory -CustomerID "TruckCompanyDK"
+        Get-VBAFCenterClaudeBrainHistory -CustomerID "TruckCompanyDK" -Provider "Gemini"
     #>
     param(
         [Parameter(Mandatory)] [string] $CustomerID,
-        [int] $Last = 10
+        [string] $Provider = "",
+        [int]    $Last     = 10
     )
 
     $historyPath = Join-Path $env:USERPROFILE "VBAFCenter\history"
@@ -441,34 +532,39 @@ function Get-VBAFCenterClaudeBrainHistory {
         return
     }
 
-    $files = Get-ChildItem $historyPath -Filter "$CustomerID-*.json" |
-             Sort-Object LastWriteTime -Descending |
-             Select-Object -First $Last
+    $files  = Get-ChildItem $historyPath -Filter "$CustomerID-*.json" |
+              Sort-Object LastWriteTime -Descending | Select-Object -First ($Last * 3)
+    $aiOnly = @()
 
-    $claudeOnly = @()
     foreach ($f in $files) {
         try {
             $h = Get-Content $f.FullName -Raw | ConvertFrom-Json
-            if ($h.Source -eq "Claude") { $claudeOnly += $h }
+            if ($h.Source -like "AI-*") {
+                if ($Provider -eq "" -or $h.Source -eq "AI-$Provider") { $aiOnly += $h }
+            }
         } catch {}
     }
 
-    if ($claudeOnly.Count -eq 0) {
-        Write-Host "No Claude Brain decisions found yet." -ForegroundColor Yellow
-        Write-Host "Run: Invoke-VBAFCenterClaudeBrain -CustomerID '$CustomerID'" -ForegroundColor DarkGray
+    $aiOnly = $aiOnly | Select-Object -First $Last
+
+    if ($aiOnly.Count -eq 0) {
+        Write-Host ("No AI Brain decisions found for: {0}" -f $CustomerID) -ForegroundColor Yellow
+        Write-Host ("  Run: Invoke-VBAFCenterClaudeBrain -CustomerID '{0}'" -f $CustomerID) -ForegroundColor DarkGray
         return
     }
 
     Write-Host ""
-    Write-Host ("Claude Brain History: {0} (last {1})" -f $CustomerID, $claudeOnly.Count) -ForegroundColor Cyan
-    Write-Host ("  {0,-23} {1,-4} {2,-10} {3,-8} {4}" -f "Timestamp","Act","Name","Conf","Reason") -ForegroundColor Yellow
-    Write-Host ("  {0}" -f ("-" * 85)) -ForegroundColor DarkGray
+    Write-Host ("AI Brain History: {0} (last {1})" -f $CustomerID, $aiOnly.Count) -ForegroundColor Cyan
+    Write-Host ("  {0,-23} {1,-12} {2,-4} {3,-10} {4,-8} {5}" -f "Timestamp","Provider","Act","Name","Conf","Reason") -ForegroundColor Yellow
+    Write-Host ("  {0}" -f ("-" * 90)) -ForegroundColor DarkGray
 
-    foreach ($h in $claudeOnly) {
-        $color = @("Green","Yellow","DarkYellow","Red")[[int]$h.Action]
-        Write-Host ("  {0,-23} {1,-4} {2,-10} {3,-8} {4}" -f `
-            $h.Timestamp, $h.Action, $h.ActionName, $h.Confidence,
-            ($h.ActionReason -replace "`n"," " | ForEach-Object { if ($_.Length -gt 50) { $_.Substring(0,50) + "..." } else { $_ } })) -ForegroundColor $color
+    foreach ($h in $aiOnly) {
+        $color    = @("Green","Yellow","DarkYellow","Red")[[int]$h.Action]
+        $prov     = [string]$h.Source -replace "^AI-", ""
+        $reason   = [string]$h.ActionReason
+        $short    = if ($reason.Length -gt 40) { $reason.Substring(0,40) + "..." } else { $reason }
+        Write-Host ("  {0,-23} {1,-12} {2,-4} {3,-10} {4,-8} {5}" -f `
+            $h.Timestamp, $prov, $h.Action, $h.ActionName, $h.Confidence, $short) -ForegroundColor $color
     }
     Write-Host ""
 }
@@ -476,108 +572,52 @@ function Get-VBAFCenterClaudeBrainHistory {
 # ============================================================
 # LOAD MESSAGE
 # ============================================================
+Initialize-VBAFCenterAIStore
+
 Write-Host ""
 Write-Host "  +--------------------------------------------------+" -ForegroundColor Cyan
-Write-Host "  |   VBAF-Center Phase 19 — Claude Brain           |" -ForegroundColor Cyan
-Write-Host "  |   Real AI replaces the if-statement             |" -ForegroundColor Cyan
+Write-Host "  |   VBAF-Center Phase 19 — AI Brain               |" -ForegroundColor Cyan
+Write-Host "  |   Multi-provider — Claude, Gemini, Groq + more  |" -ForegroundColor Cyan
 Write-Host "  +--------------------------------------------------+" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "  Set-VBAFCenterClaudeAPIKey      — save your Anthropic API key"     -ForegroundColor White
-Write-Host "  Invoke-VBAFCenterClaudeBrain    — full AI analysis per customer"   -ForegroundColor White
-Write-Host "  Get-VBAFCenterClaudeBrainHistory — show recent AI decisions"       -ForegroundColor White
+Write-Host "  Set-VBAFCenterAIKey              — save API key for a provider"   -ForegroundColor White
+Write-Host "  Get-VBAFCenterAIProviders        — show all providers and status" -ForegroundColor White
+Write-Host "  Test-VBAFCenterAIProvider        — test a provider connection"    -ForegroundColor White
+Write-Host "  Invoke-VBAFCenterClaudeBrain     — run full AI analysis"          -ForegroundColor White
+Write-Host "  Get-VBAFCenterClaudeBrainHistory — show AI decision history"      -ForegroundColor White
 Write-Host ""
 
-$apiKey = Get-VBAFCenterClaudeAPIKey
-if ($apiKey) {
-    Write-Host "  API key: configured" -ForegroundColor Green
+# Show configured providers
+$configured = @()
+foreach ($key in $script:AIProviders.Keys) {
+    $keyFile = Join-Path $script:AIConfigPath "$key-key.json"
+    if (Test-Path $keyFile) { $configured += $key }
+}
+
+if ($configured.Count -gt 0) {
+    Write-Host ("  Configured: {0}" -f ($configured -join ", ")) -ForegroundColor Green
+    Write-Host ("  Default   : Gemini (free) — use -Provider to switch") -ForegroundColor DarkGray
 } else {
-    Write-Host "  API key: NOT configured" -ForegroundColor Yellow
-    Write-Host "  Run: Set-VBAFCenterClaudeAPIKey -APIKey 'sk-ant-xxxx'" -ForegroundColor DarkGray
+    Write-Host "  No providers configured yet — start with free Gemini:" -ForegroundColor Yellow
+    Write-Host "  1. Go to  : https://aistudio.google.com/app/apikey" -ForegroundColor DarkGray
+    Write-Host "  2. Run    : Set-VBAFCenterAIKey -Provider ""Gemini"" -APIKey ""AIzaXXXX""" -ForegroundColor DarkGray
+    Write-Host "  3. Test   : Test-VBAFCenterAIProvider -Provider ""Gemini""" -ForegroundColor DarkGray
+    Write-Host "  4. Analyse: Invoke-VBAFCenterClaudeBrain -CustomerID ""TruckCompanyDK"" -Provider ""Gemini""" -ForegroundColor DarkGray
 }
 Write-Host ""
 
 <#
 
-SETUP — once only:
+Set-VBAFCenterAIKey -Provider "Mistral" -APIKey "PvPxsvxKVk1SoefDnGbsW9gnjWTiMHOJ"
+Test-VBAFCenterAIProvider -Provider "Mistral"
 
-Step 1 — Get your Anthropic API key:
-Go to https://console.anthropic.com — create an account if needed — copy your API key (starts with sk-ant-)
+Invoke-VBAFCenterClaudeBrain -CustomerID "TruckCompanyDK" -Provider "Mistral"
 
-Step 2 — Save the file from ISE:
-Save as C:\Users\henni\OneDrive\WindowsPowerShell\VBAF-Center\VBAF.Center.ClaudeBrain.ps1
 
-Step 3 — Save your API key:
-powershellcd "C:\Users\henni\OneDrive\WindowsPowerShell"
-. .\VBAF-Center\VBAF.Center.ClaudeBrain.ps1
-Set-VBAFCenterClaudeAPIKey -APIKey "sk-ant-xxxx"
-
-DAILY USE — the two options:
-
-Option A — Manual run (testing and demos):
-powershellcd "C:\Users\henni\OneDrive\WindowsPowerShell"
-. .\VBAF-Center\VBAF.Center.LoadAll.ps1
-. .\VBAF-Center\VBAF.Center.ClaudeBrain.ps1
-Invoke-VBAFCenterClaudeBrain -CustomerID "TruckCompanyDK"
-
-Option B — Automatic 24/7 via Scheduler:
-The Scheduler already calls Invoke-VBAFCenterRun every 10 minutes. You have two choices:
-
-Choice 1 — Replace the brain entirely:
-Edit VBAF.Center.Scheduler.ps1 — replace the Invoke-VBAFCenterRoute call with Invoke-VBAFCenterClaudeBrain. Claude makes every decision.
-
-Choice 2 — Run both in parallel (recommended to start):
-Keep the existing scheduler running as before. Add a second scheduler that calls Claude every 30 minutes. Compare the two decisions. Trust builds.
-
-PRODUCTION SETUP — 4 consoles:
-
-Console 1 — Scheduler (rule-based, every 10 min)
-  Start-VBAFCenterSchedule -CustomerID "TruckCompanyDK"
-
-Console 2 — Portal
-  Start-VBAFCenterPortal
-
-Console 3 — Dashboard
-  Start-VBAFCenterDashboard
-
-Console 4 — Claude Brain (every 30 min manually or via loop)
-  while ($true) {
-    Invoke-VBAFCenterClaudeBrain -CustomerID "TruckCompanyDK"
-    Start-Sleep -Seconds 1800
-  }
-
-REVIEWING DECISIONS:
-
-See what Claude decided recently:
-powershellGet-VBAFCenterClaudeBrainHistory -CustomerID "TruckCompanyDK"
-Compare Claude vs rule-based in run history:
-powershellGet-VBAFCenterRunHistory -CustomerID "TruckCompanyDK"
-History rows with Source: Claude are AI decisions. Rows without are rule-based.
-
-COST ESTIMATE:
-
-Each Invoke-VBAFCenterClaudeBrain call uses roughly 800-1200 tokens.
-Every 30 min = 48 calls per day per customer
-48 calls × 1000 tokens = 48.000 tokens per day
-At Claude Sonnet pricing ≈ DKK 1-2 per day per customer
-At 10 customers ≈ DKK 10-20 per day = DKK 300-600 per month
-Well within what you charge for monthly subscription. 🙂
-
-IF SOMETHING GOES WRONG:
-
-Claude API unreachable:
-powershellInvoke-VBAFCenterClaudeBrain -CustomerID "TruckCompanyDK" -Verbose
-Shows the full prompt and exact error message.
-API key expired or invalid:
-powershellSet-VBAFCenterClaudeAPIKey -APIKey "sk-ant-new-key"
-Claude returns garbage JSON:
-The -Verbose flag shows exactly what Claude returned so you can debug the prompt.
-
-THE MIGRATION PATH:
-
-Today      : Rule-based every 10 min  (what you have now)
-Week 1-2   : Claude every 30 min      (parallel — compare decisions)
-Month 2    : Claude every 10 min      (Claude is the brain)
-Month 3+   : Rule-based as fallback only (Claude primary)
-Never remove the rule-based engine entirely — it is your safety net if the API is down.  
 
 #>
+
+
+
+
+
