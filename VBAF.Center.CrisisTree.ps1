@@ -25,7 +25,7 @@
 #>
 
 # ============================================================
-# CRISIS TREES
+# BUILT-IN CRISIS TREES — domain-based defaults
 # ============================================================
 $script:CrisisTrees = @{
 
@@ -35,30 +35,14 @@ $script:CrisisTrees = @{
         Trigger     = "Empty Driving above 45% or Fleet Availability below 75%"
         Title       = "Vehicle Breakdown Response"
         Steps       = @(
-            @{
-                Step    = 1
-                Question = "Is a backup vehicle available in the depot?"
-                Yes     = "Deploy backup vehicle immediately — assign to affected route"
-                No      = "Proceed to Step 2"
-            }
-            @{
-                Step    = 2
-                Question = "Can the load be split between remaining trucks?"
-                Yes     = "Redistribute load — prioritise time-sensitive deliveries first"
-                No      = "Proceed to Step 3"
-            }
-            @{
-                Step    = 3
-                Question = "Can delivery time be renegotiated with the customer?"
-                Yes     = "Call customer now — explain situation, agree new ETA"
-                No      = "Proceed to Step 4"
-            }
-            @{
-                Step    = 4
-                Question = "Is an external subcontractor available?"
-                Yes     = "Contact subcontractor — confirm availability and cost"
-                No      = "ESCALATE — Call operations manager immediately"
-            }
+            @{ Step=1; Question="Is a backup vehicle available in the depot?";
+               Yes="Deploy backup vehicle immediately — assign to affected route"; No="Proceed to Step 2" }
+            @{ Step=2; Question="Can the load be split between remaining trucks?";
+               Yes="Redistribute load — prioritise time-sensitive deliveries first"; No="Proceed to Step 3" }
+            @{ Step=3; Question="Can delivery time be renegotiated with the customer?";
+               Yes="Call customer now — explain situation, agree new ETA"; No="Proceed to Step 4" }
+            @{ Step=4; Question="Is an external subcontractor available?";
+               Yes="Contact subcontractor — confirm availability and cost"; No="ESCALATE — Call operations manager immediately" }
         )
     }
 
@@ -67,24 +51,12 @@ $script:CrisisTrees = @{
         Trigger     = "On-Time Delivery below 65% or ETA Accuracy below 60%"
         Title       = "Late Delivery Response"
         Steps       = @(
-            @{
-                Step    = 1
-                Question = "Is the delay due to traffic or weather?"
-                Yes     = "Reroute to fastest available alternative — check Google Maps"
-                No      = "Proceed to Step 2"
-            }
-            @{
-                Step    = 2
-                Question = "Is the delay more than 60 minutes?"
-                Yes     = "Call customer proactively — do not wait for them to call you"
-                No      = "Monitor — update ETA every 15 minutes"
-            }
-            @{
-                Step    = 3
-                Question = "Is this a high-priority customer?"
-                Yes     = "Reassign nearest available truck to take over delivery"
-                No      = "Log delay — update delivery status in TMS"
-            }
+            @{ Step=1; Question="Is the delay due to traffic or weather?";
+               Yes="Reroute to fastest available alternative — check Google Maps"; No="Proceed to Step 2" }
+            @{ Step=2; Question="Is the delay more than 60 minutes?";
+               Yes="Call customer proactively — do not wait for them to call you"; No="Monitor — update ETA every 15 minutes" }
+            @{ Step=3; Question="Is this a high-priority customer?";
+               Yes="Reassign nearest available truck to take over delivery"; No="Log delay — update delivery status in TMS" }
         )
     }
 
@@ -93,24 +65,26 @@ $script:CrisisTrees = @{
         Trigger     = "Cost Per Trip above 2500 DKK"
         Title       = "Cost Spike Response"
         Steps       = @(
-            @{
-                Step    = 1
-                Question = "Is the cost spike due to fuel price?"
-                Yes     = "Check if routes can be shortened — combine deliveries where possible"
-                No      = "Proceed to Step 2"
-            }
-            @{
-                Step    = 2
-                Question = "Are multiple trucks running near-empty?"
-                Yes     = "Consolidate loads — cancel unnecessary runs"
-                No      = "Proceed to Step 3"
-            }
-            @{
-                Step    = 3
-                Question = "Is overtime driving the cost up?"
-                Yes     = "Review driver schedules — reassign to avoid overtime rates"
-                No      = "Log for weekly cost review — no immediate action needed"
-            }
+            @{ Step=1; Question="Is the cost spike due to fuel price?";
+               Yes="Check if routes can be shortened — combine deliveries where possible"; No="Proceed to Step 2" }
+            @{ Step=2; Question="Are multiple trucks running near-empty?";
+               Yes="Consolidate loads — cancel unnecessary runs"; No="Proceed to Step 3" }
+            @{ Step=3; Question="Is overtime driving the cost up?";
+               Yes="Review driver schedules — reassign to avoid overtime rates"; No="Log for weekly cost review — no immediate action needed" }
+        )
+    }
+
+    "LOGISTICS-DRIVER-MISSING" = @{
+        Domain      = "Logistics"
+        Trigger     = "Fleet Availability below 80% due to driver absence"
+        Title       = "Driver Missing Response"
+        Steps       = @(
+            @{ Step=1; Question="Can another driver cover the route today?";
+               Yes="Reassign immediately — update TMS with new driver"; No="Proceed to Step 2" }
+            @{ Step=2; Question="Is a temp driver available from agency?";
+               Yes="Contact agency — confirm availability and ETA"; No="Proceed to Step 3" }
+            @{ Step=3; Question="Can the deliveries be postponed to tomorrow?";
+               Yes="Contact customers — rebook deliveries"; No="ESCALATE — Call operations manager immediately" }
         )
     }
 
@@ -120,30 +94,14 @@ $script:CrisisTrees = @{
         Trigger     = "Fleet Availability below 70% or CPU Load above 90%"
         Title       = "Server Down Response"
         Steps       = @(
-            @{
-                Step    = 1
-                Question = "Is the server responding to ping?"
-                Yes     = "Service likely crashed — attempt service restart"
-                No      = "Proceed to Step 2"
-            }
-            @{
-                Step    = 2
-                Question = "Is a backup server available?"
-                Yes     = "Failover to backup server — notify users of temporary switch"
-                No      = "Proceed to Step 3"
-            }
-            @{
-                Step    = 3
-                Question = "Can users work offline temporarily?"
-                Yes     = "Notify all users — estimated recovery time?"
-                No      = "ESCALATE — Call IT vendor immediately"
-            }
-            @{
-                Step    = 4
-                Question = "Is this affecting business-critical systems?"
-                Yes     = "Declare incident — notify management and all affected departments"
-                No      = "Continue recovery — update status every 15 minutes"
-            }
+            @{ Step=1; Question="Is the server responding to ping?";
+               Yes="Service likely crashed — attempt service restart"; No="Proceed to Step 2" }
+            @{ Step=2; Question="Is a backup server available?";
+               Yes="Failover to backup server — notify users of temporary switch"; No="Proceed to Step 3" }
+            @{ Step=3; Question="Can users work offline temporarily?";
+               Yes="Notify all users — estimated recovery time?"; No="ESCALATE — Call IT vendor immediately" }
+            @{ Step=4; Question="Is this affecting business-critical systems?";
+               Yes="Declare incident — notify management and all affected departments"; No="Continue recovery — update status every 15 minutes" }
         )
     }
 
@@ -152,24 +110,12 @@ $script:CrisisTrees = @{
         Trigger     = "Disk Space Free below 20%"
         Title       = "Disk Space Critical Response"
         Steps       = @(
-            @{
-                Step    = 1
-                Question = "Are there old log files or temp files that can be deleted?"
-                Yes     = "Run disk cleanup — delete logs older than 30 days"
-                No      = "Proceed to Step 2"
-            }
-            @{
-                Step    = 2
-                Question = "Are there old backups taking up space?"
-                Yes     = "Move old backups to archive storage or external drive"
-                No      = "Proceed to Step 3"
-            }
-            @{
-                Step    = 3
-                Question = "Can additional storage be added quickly?"
-                Yes     = "Expand disk — contact IT vendor for emergency storage"
-                No      = "ESCALATE — Risk of system crash within hours"
-            }
+            @{ Step=1; Question="Are there old log files or temp files that can be deleted?";
+               Yes="Run disk cleanup — delete logs older than 30 days"; No="Proceed to Step 2" }
+            @{ Step=2; Question="Are there old backups taking up space?";
+               Yes="Move old backups to archive storage or external drive"; No="Proceed to Step 3" }
+            @{ Step=3; Question="Can additional storage be added quickly?";
+               Yes="Expand disk — contact IT vendor for emergency storage"; No="ESCALATE — Risk of system crash within hours" }
         )
     }
 
@@ -179,24 +125,12 @@ $script:CrisisTrees = @{
         Trigger     = "Fleet Availability below 70% or Cost above threshold"
         Title       = "Machine Breakdown Response"
         Steps       = @(
-            @{
-                Step    = 1
-                Question = "Is a backup machine or line available?"
-                Yes     = "Switch production to backup line immediately"
-                No      = "Proceed to Step 2"
-            }
-            @{
-                Step    = 2
-                Question = "Can production be rescheduled to another shift?"
-                Yes     = "Reschedule — notify shift manager and production planner"
-                No      = "Proceed to Step 3"
-            }
-            @{
-                Step    = 3
-                Question = "Is the repair estimated under 2 hours?"
-                Yes     = "Hold production — begin repair immediately"
-                No      = "ESCALATE — Notify customers of potential delivery delays"
-            }
+            @{ Step=1; Question="Is a backup machine or line available?";
+               Yes="Switch production to backup line immediately"; No="Proceed to Step 2" }
+            @{ Step=2; Question="Can production be rescheduled to another shift?";
+               Yes="Reschedule — notify shift manager and production planner"; No="Proceed to Step 3" }
+            @{ Step=3; Question="Is the repair estimated under 2 hours?";
+               Yes="Hold production — begin repair immediately"; No="ESCALATE — Notify customers of potential delivery delays" }
         )
     }
 
@@ -206,25 +140,96 @@ $script:CrisisTrees = @{
         Trigger     = "Capacity Utilisation above 95%"
         Title       = "Bed Shortage Response"
         Steps       = @(
-            @{
-                Step    = 1
-                Question = "Are any patients ready for discharge today?"
-                Yes     = "Expedite discharge process — free beds immediately"
-                No      = "Proceed to Step 2"
-            }
-            @{
-                Step    = 2
-                Question = "Can any patients be transferred to another ward?"
-                Yes     = "Coordinate transfer with receiving ward"
-                No      = "Proceed to Step 3"
-            }
-            @{
-                Step    = 3
-                Question = "Can elective procedures be postponed?"
-                Yes     = "Postpone non-urgent admissions — notify patients"
-                No      = "ESCALATE — Activate hospital overflow protocol"
-            }
+            @{ Step=1; Question="Are any patients ready for discharge today?";
+               Yes="Expedite discharge process — free beds immediately"; No="Proceed to Step 2" }
+            @{ Step=2; Question="Can any patients be transferred to another ward?";
+               Yes="Coordinate transfer with receiving ward"; No="Proceed to Step 3" }
+            @{ Step=3; Question="Can elective procedures be postponed?";
+               Yes="Postpone non-urgent admissions — notify patients"; No="ESCALATE — Activate hospital overflow protocol" }
         )
+    }
+}
+
+# Customer-specific trees stored separately
+$script:CustomerCrisisTrees = @{}
+
+# ============================================================
+# NEW-VBAFCENTERCRISISTREEE — add customer-specific tree
+# ============================================================
+function New-VBAFCenterCrisisTree {
+    <#
+    .SYNOPSIS
+        Add a customer-specific crisis tree.
+        Customer trees take priority over domain defaults.
+    .EXAMPLE
+        New-VBAFCenterCrisisTree -CustomerID "TruckCompanyDK" `
+          -CrisisName "Tom kørsel kritisk" `
+          -Trigger "Empty Driving above 40%" `
+          -Step1 "Stop alle ikke-planlagte ture" `
+          -Step2 "Ring til alle chauffører" `
+          -Step3 "Tildel ledig lastbil til ventende levering" `
+          -Step4 "Opdater dispatcher" `
+          -Step5 "Log hændelsen i TMS"
+    #>
+    param(
+        [Parameter(Mandatory)] [string] $CustomerID,
+        [Parameter(Mandatory)] [string] $CrisisName,
+        [Parameter(Mandatory)] [string] $Trigger,
+        [Parameter(Mandatory)] [string] $Step1,
+        [string] $Step2 = "",
+        [string] $Step3 = "",
+        [string] $Step4 = "",
+        [string] $Step5 = "",
+        [string] $ContactName  = "",
+        [string] $ContactPhone = ""
+    )
+
+    if (-not $script:CustomerCrisisTrees.ContainsKey($CustomerID)) {
+        $script:CustomerCrisisTrees[$CustomerID] = @()
+    }
+
+    $steps = @()
+    $stepNum = 1
+    foreach ($s in @($Step1, $Step2, $Step3, $Step4, $Step5)) {
+        if ($s -ne "") {
+            $steps += @{ Step=$stepNum; Action=$s }
+            $stepNum++
+        }
+    }
+
+    $tree = @{
+        CrisisName   = $CrisisName
+        Trigger      = $Trigger
+        Steps        = $steps
+        ContactName  = $ContactName
+        ContactPhone = $ContactPhone
+    }
+
+    $script:CustomerCrisisTrees[$CustomerID] += $tree
+
+    # Persist to disk
+    $crisisPath = Join-Path $env:USERPROFILE "VBAFCenter\crisisconfig"
+    if (-not (Test-Path $crisisPath)) { New-Item -ItemType Directory -Path $crisisPath -Force | Out-Null }
+    $script:CustomerCrisisTrees[$CustomerID] | ConvertTo-Json -Depth 5 |
+        Set-Content "$crisisPath\$CustomerID-crisis.json" -Encoding UTF8
+
+    Write-Host ("  Crisis tree added: {0}" -f $CrisisName) -ForegroundColor Green
+    Write-Host ("  Trigger          : {0}" -f $Trigger)    -ForegroundColor DarkGray
+    Write-Host ("  Steps            : {0}" -f $steps.Count) -ForegroundColor DarkGray
+}
+
+# ============================================================
+# LOAD CUSTOMER TREES FROM DISK (internal)
+# ============================================================
+function Load-VBAFCenterCustomerCrisisTrees {
+    $crisisPath = Join-Path $env:USERPROFILE "VBAFCenter\crisisconfig"
+    if (-not (Test-Path $crisisPath)) { return }
+    Get-ChildItem $crisisPath -Filter "*-crisis.json" | ForEach-Object {
+        $customerID = $_.Name -replace "-crisis\.json", ""
+        try {
+            $trees = Get-Content $_.FullName -Raw | ConvertFrom-Json
+            $script:CustomerCrisisTrees[$customerID] = @($trees)
+        } catch {}
     }
 }
 
@@ -237,6 +242,7 @@ function Start-VBAFCenterCrisis {
         [string] $CrisisType = ""
     )
 
+    # Load customer profile
     $profilePath = Join-Path $env:USERPROFILE "VBAFCenter\customers\$CustomerID.json"
     if (-not (Test-Path $profilePath)) {
         Write-Host "Customer not found: $CustomerID" -ForegroundColor Red
@@ -244,68 +250,144 @@ function Start-VBAFCenterCrisis {
     }
     $profile = Get-Content $profilePath -Raw | ConvertFrom-Json
 
+    # Load customer-specific trees from disk
+    Load-VBAFCenterCustomerCrisisTrees
+
     Write-Host ""
     Write-Host "  +--------------------------------------------------+" -ForegroundColor Red
     Write-Host "  |   VBAF-Center CRISIS RESPONSE ACTIVATED          |" -ForegroundColor Red
     Write-Host "  |   Follow the steps. Do not skip any.             |" -ForegroundColor Red
     Write-Host "  +--------------------------------------------------+" -ForegroundColor Red
-    Write-Host ("  |  Customer : {0,-39}|" -f $profile.CompanyName) -ForegroundColor White
+    Write-Host ("  |  Customer : {0,-39}|" -f $profile.CompanyName)     -ForegroundColor White
     Write-Host ("  |  Time     : {0,-39}|" -f (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")) -ForegroundColor White
     Write-Host "  +--------------------------------------------------+" -ForegroundColor Red
     Write-Host ""
 
-    # Select crisis type
-    if ($CrisisType -eq "") {
+    # ── CHECK FOR CUSTOMER-SPECIFIC TREES FIRST ──────────────
+    $hasCustomerTrees = $script:CustomerCrisisTrees.ContainsKey($CustomerID) -and
+                        $script:CustomerCrisisTrees[$CustomerID].Count -gt 0
+
+    if ($hasCustomerTrees) {
+        # Use customer-specific trees
+        $customerTrees = $script:CustomerCrisisTrees[$CustomerID]
+
         Write-Host "  Select crisis type:" -ForegroundColor Yellow
         Write-Host ""
 
-        $domain = $profile.BusinessType.ToLower()
-        $relevant = $script:CrisisTrees.Keys | Where-Object {
-            $script:CrisisTrees[$_].Domain.ToLower() -eq $domain -or
-            $domain -eq "logistics" -and $_ -like "LOGISTICS-*" -or
-            $domain -eq "it" -and $_ -like "IT-*" -or
-            $domain -eq "manufacturing" -and $_ -like "MFG-*" -or
-            $domain -eq "healthcare" -and $_ -like "HEALTH-*"
-        }
-
-        if ($relevant.Count -eq 0) { $relevant = $script:CrisisTrees.Keys }
-
         $i = 1
         $menu = @{}
-        foreach ($key in ($relevant | Sort-Object)) {
-            $tree = $script:CrisisTrees[$key]
-            Write-Host ("  {0}. {1}" -f $i, $tree.Title) -ForegroundColor White
+        foreach ($tree in $customerTrees) {
+            Write-Host ("  {0}. {1}" -f $i, $tree.CrisisName) -ForegroundColor White
             Write-Host ("     Trigger: {0}" -f $tree.Trigger) -ForegroundColor DarkGray
-            $menu[$i.ToString()] = $key
+            $menu[$i.ToString()] = $tree
             $i++
         }
 
         Write-Host ""
         $choice = Read-Host "  Enter number"
-        $CrisisType = $menu[$choice]
-        if (-not $CrisisType) {
+        $selectedTree = $menu[$choice]
+
+        if (-not $selectedTree) {
             Write-Host "  Invalid selection." -ForegroundColor Red
             return
         }
-    }
 
-    $tree = $script:CrisisTrees[$CrisisType]
-    if (-not $tree) {
-        Write-Host "Crisis type not found: $CrisisType" -ForegroundColor Red
+        Write-Host ""
+        Write-Host ("  CRISIS: {0}" -f $selectedTree.CrisisName) -ForegroundColor Red
+        Write-Host ("  Trigger: {0}" -f $selectedTree.Trigger)   -ForegroundColor Yellow
+        Write-Host ""
+
+        $startTime = Get-Date
+        $responses = @()
+
+        foreach ($step in $selectedTree.Steps) {
+            Write-Host ("  --- Step {0} ---" -f $step.Step) -ForegroundColor Cyan
+            Write-Host ("  {0}" -f $step.Action) -ForegroundColor White
+            Write-Host ""
+            $done = Read-Host "  Done? (Y/N)"
+            $responses += @{ Step=$step.Step; Action=$step.Action; Done=$done.ToUpper() }
+            Write-Host ""
+        }
+
+        if ($selectedTree.ContactName -and $selectedTree.ContactName -ne "") {
+            Write-Host ("  Contact: {0} — {1}" -f $selectedTree.ContactName, $selectedTree.ContactPhone) -ForegroundColor Yellow
+            Write-Host ""
+        }
+
+        $endTime    = Get-Date
+        $duration   = [Math]::Round(($endTime - $startTime).TotalMinutes, 1)
+        $resolution = "Resolved"
+
+        # Save crisis log
+        $historyPath = Join-Path $env:USERPROFILE "VBAFCenter\crisis"
+        if (-not (Test-Path $historyPath)) { New-Item -ItemType Directory -Path $historyPath -Force | Out-Null }
+        $logFile = Join-Path $historyPath "$CustomerID-crisis-$(Get-Date -Format 'yyyyMMdd_HHmmss').json"
+        @{
+            CustomerID = $CustomerID
+            CrisisType = $selectedTree.CrisisName
+            Title      = $selectedTree.CrisisName
+            StartTime  = $startTime.ToString("yyyy-MM-dd HH:mm:ss")
+            EndTime    = $endTime.ToString("yyyy-MM-dd HH:mm:ss")
+            Duration   = $duration
+            Resolution = $resolution
+            Responses  = $responses
+        } | ConvertTo-Json -Depth 5 | Set-Content $logFile -Encoding UTF8
+
+        Write-Host "  +--------------------------------------------------+" -ForegroundColor Green
+        Write-Host ("  |  Crisis Resolution: {0,-31}|" -f $resolution) -ForegroundColor Green
+        Write-Host ("  |  Duration  : {0} minutes{1,-30}|" -f $duration, "") -ForegroundColor White
+        Write-Host "  +--------------------------------------------------+" -ForegroundColor Green
+        Write-Host ""
         return
     }
 
+    # ── FALLBACK TO DOMAIN-BASED DEFAULT TREES ───────────────
+    $domain = $profile.BusinessType.ToLower()
+
+    # Fix: filter by Domain field only — no operator precedence issues
+    $relevant = @($script:CrisisTrees.Keys | Where-Object {
+        $script:CrisisTrees[$_].Domain.ToLower() -eq $domain
+    })
+
+    if ($relevant.Count -eq 0) {
+        Write-Host ("  No crisis trees found for domain: {0}" -f $profile.BusinessType) -ForegroundColor Yellow
+        Write-Host "  Use New-VBAFCenterCrisisTree to add customer-specific trees." -ForegroundColor DarkGray
+        return
+    }
+
+    Write-Host "  Select crisis type:" -ForegroundColor Yellow
     Write-Host ""
-    Write-Host ("  CRISIS: {0}" -f $tree.Title) -ForegroundColor Red
+
+    $i = 1
+    $menu = @{}
+    foreach ($key in ($relevant | Sort-Object)) {
+        $tree = $script:CrisisTrees[$key]
+        Write-Host ("  {0}. {1}" -f $i, $tree.Title)           -ForegroundColor White
+        Write-Host ("     Trigger: {0}" -f $tree.Trigger) -ForegroundColor DarkGray
+        $menu[$i.ToString()] = $key
+        $i++
+    }
+
+    Write-Host ""
+    $choice = Read-Host "  Enter number"
+    $selectedKey = $menu[$choice]
+    if (-not $selectedKey) {
+        Write-Host "  Invalid selection." -ForegroundColor Red
+        return
+    }
+
+    $tree      = $script:CrisisTrees[$selectedKey]
+    $startTime = Get-Date
+    $responses = @()
+    $allResolved = $true
+
+    Write-Host ""
+    Write-Host ("  CRISIS: {0}" -f $tree.Title)   -ForegroundColor Red
     Write-Host ("  Trigger: {0}" -f $tree.Trigger) -ForegroundColor Yellow
     Write-Host ""
 
-    $responses   = @()
-    $startTime   = Get-Date
-    $allResolved = $true
-
     foreach ($step in $tree.Steps) {
-        Write-Host ("  ─── Step {0} ───" -f $step.Step) -ForegroundColor Cyan
+        Write-Host ("  --- Step {0} ---" -f $step.Step) -ForegroundColor Cyan
         Write-Host ("  {0}" -f $step.Question) -ForegroundColor White
         Write-Host ""
         Write-Host "  Y = Yes    N = No" -ForegroundColor DarkGray
@@ -316,8 +398,7 @@ function Start-VBAFCenterCrisis {
         if ($answer.ToUpper() -eq "Y") {
             Write-Host ""
             Write-Host ("  ACTION: {0}" -f $step.Yes) -ForegroundColor Green
-            $responses += @{ Step=$step.Step; Question=$step.Question; Answer="Yes"; Action=$step.Yes }
-
+            $responses += @{ Step=$step.Step; Answer="Yes"; Action=$step.Yes }
             Write-Host ""
             $confirm = Read-Host "  Action taken? Mark as done (Y/N)"
             if ($confirm.ToUpper() -eq "Y") {
@@ -327,41 +408,35 @@ function Start-VBAFCenterCrisis {
         } else {
             Write-Host ""
             Write-Host ("  CONTINUE: {0}" -f $step.No) -ForegroundColor Yellow
-            $responses += @{ Step=$step.Step; Question=$step.Question; Answer="No"; Action=$step.No }
-            Write-Host ""
-
-            if ($step.No -like "ESCALATE*") {
-                $allResolved = $false
-            }
+            $responses += @{ Step=$step.Step; Answer="No"; Action=$step.No }
+            if ($step.No -like "ESCALATE*") { $allResolved = $false }
         }
         Write-Host ""
     }
 
-    $endTime     = Get-Date
-    $duration    = [Math]::Round(($endTime - $startTime).TotalMinutes, 1)
-    $resolution  = if ($allResolved) { "Resolved" } else { "Escalated" }
-    $resColor    = if ($allResolved) { "Green" } else { "Red" }
+    $endTime    = Get-Date
+    $duration   = [Math]::Round(($endTime - $startTime).TotalMinutes, 1)
+    $resolution = if ($allResolved) { "Resolved" } else { "Escalated" }
+    $resColor   = if ($allResolved) { "Green" } else { "Red" }
 
-    # Save crisis log
     $historyPath = Join-Path $env:USERPROFILE "VBAFCenter\crisis"
     if (-not (Test-Path $historyPath)) { New-Item -ItemType Directory -Path $historyPath -Force | Out-Null }
     $logFile = Join-Path $historyPath "$CustomerID-crisis-$(Get-Date -Format 'yyyyMMdd_HHmmss').json"
     @{
-        CustomerID  = $CustomerID
-        CrisisType  = $CrisisType
-        Title       = $tree.Title
-        StartTime   = $startTime.ToString("yyyy-MM-dd HH:mm:ss")
-        EndTime     = $endTime.ToString("yyyy-MM-dd HH:mm:ss")
-        Duration    = $duration
-        Resolution  = $resolution
-        Responses   = $responses
+        CustomerID = $CustomerID
+        CrisisType = $selectedKey
+        Title      = $tree.Title
+        StartTime  = $startTime.ToString("yyyy-MM-dd HH:mm:ss")
+        EndTime    = $endTime.ToString("yyyy-MM-dd HH:mm:ss")
+        Duration   = $duration
+        Resolution = $resolution
+        Responses  = $responses
     } | ConvertTo-Json -Depth 5 | Set-Content $logFile -Encoding UTF8
 
     Write-Host ""
     Write-Host "  +--------------------------------------------------+" -ForegroundColor $resColor
     Write-Host ("  |  Crisis Resolution: {0,-31}|" -f $resolution) -ForegroundColor $resColor
     Write-Host ("  |  Duration  : {0} minutes{1,-30}|" -f $duration, "") -ForegroundColor White
-    Write-Host ("  |  Logged to : {0,-35}|" -f (Split-Path $logFile -Leaf)) -ForegroundColor White
     Write-Host "  +--------------------------------------------------+" -ForegroundColor $resColor
     Write-Host ""
 }
@@ -370,39 +445,31 @@ function Start-VBAFCenterCrisis {
 # GET-VBAFCENTERCRISISTREEE
 # ============================================================
 function Get-VBAFCenterCrisisTree {
+    param([string] $CustomerID = "")
+
+    Load-VBAFCenterCustomerCrisisTrees
 
     Write-Host ""
-    Write-Host "  VBAF-Center Crisis Trees" -ForegroundColor Cyan
-    Write-Host ""
-    Write-Host ("  {0,-35} {1,-15} {2}" -f "Crisis Type", "Domain", "Steps") -ForegroundColor Yellow
-    Write-Host ("  {0}" -f ("-" * 70)) -ForegroundColor DarkGray
 
-    foreach ($key in ($script:CrisisTrees.Keys | Sort-Object)) {
-        $tree = $script:CrisisTrees[$key]
-        Write-Host ("  {0,-35} {1,-15} {2}" -f $tree.Title, $tree.Domain, $tree.Steps.Count) -ForegroundColor White
+    if ($CustomerID -ne "" -and $script:CustomerCrisisTrees.ContainsKey($CustomerID)) {
+        Write-Host ("  Customer Crisis Trees: {0}" -f $CustomerID) -ForegroundColor Cyan
+        Write-Host ""
+        Write-Host ("  {0,-35} {1}" -f "Crisis Name", "Trigger") -ForegroundColor Yellow
+        Write-Host ("  {0}" -f ("-" * 70)) -ForegroundColor DarkGray
+        foreach ($tree in $script:CustomerCrisisTrees[$CustomerID]) {
+            Write-Host ("  {0,-35} {1}" -f $tree.CrisisName, $tree.Trigger) -ForegroundColor White
+        }
+    } else {
+        Write-Host "  VBAF-Center Built-in Crisis Trees" -ForegroundColor Cyan
+        Write-Host ""
+        Write-Host ("  {0,-35} {1,-15} {2}" -f "Title", "Domain", "Steps") -ForegroundColor Yellow
+        Write-Host ("  {0}" -f ("-" * 70)) -ForegroundColor DarkGray
+        foreach ($key in ($script:CrisisTrees.Keys | Sort-Object)) {
+            $tree = $script:CrisisTrees[$key]
+            Write-Host ("  {0,-35} {1,-15} {2}" -f $tree.Title, $tree.Domain, $tree.Steps.Count) -ForegroundColor White
+        }
     }
     Write-Host ""
-}
-
-# ============================================================
-# NEW-VBAFCENTERCRISISTREEE
-# ============================================================
-function New-VBAFCenterCrisisTree {
-    param(
-        [Parameter(Mandatory)] [string] $TreeKey,
-        [Parameter(Mandatory)] [string] $Domain,
-        [Parameter(Mandatory)] [string] $Title,
-        [Parameter(Mandatory)] [string] $Trigger
-    )
-
-    $script:CrisisTrees[$TreeKey] = @{
-        Domain  = $Domain
-        Trigger = $Trigger
-        Title   = $Title
-        Steps   = @()
-    }
-
-    Write-Host ("Crisis tree added: {0}" -f $Title) -ForegroundColor Green
 }
 
 # ============================================================
@@ -435,12 +502,18 @@ function Get-VBAFCenterCrisisHistory {
     Write-Host ("  {0}" -f ("-" * 80)) -ForegroundColor DarkGray
 
     foreach ($log in $logs) {
-        $h = Get-Content $log.FullName -Raw | ConvertFrom-Json
+        $h     = Get-Content $log.FullName -Raw | ConvertFrom-Json
         $color = if ($h.Resolution -eq "Resolved") { "Green" } else { "Red" }
-        Write-Host ("  {0,-22} {1,-30} {2,-12} {3}" -f $h.StartTime, $h.Title, "$($h.Duration) min", $h.Resolution) -ForegroundColor $color
+        Write-Host ("  {0,-22} {1,-30} {2,-12} {3}" -f `
+            $h.StartTime, $h.Title, "$($h.Duration) min", $h.Resolution) -ForegroundColor $color
     }
     Write-Host ""
 }
+
+# ============================================================
+# LOAD CUSTOMER TREES ON STARTUP
+# ============================================================
+Load-VBAFCenterCustomerCrisisTrees
 
 # ============================================================
 # LOAD MESSAGE
@@ -451,12 +524,14 @@ Write-Host "  |  VBAF-Center Phase 13 - Crisis Response Tree    |" -ForegroundCo
 Write-Host "  |  Step-by-step recovery when signals go critical |" -ForegroundColor Red
 Write-Host "  +--------------------------------------------------+" -ForegroundColor Red
 Write-Host ""
-Write-Host "  Start-VBAFCenterCrisis      — activate crisis wizard"    -ForegroundColor White
-Write-Host "  Get-VBAFCenterCrisisTree    — show all crisis trees"     -ForegroundColor White
-Write-Host "  New-VBAFCenterCrisisTree    — add custom crisis tree"    -ForegroundColor White
-Write-Host "  Get-VBAFCenterCrisisHistory — show past crisis responses"-ForegroundColor White
+Write-Host "  Start-VBAFCenterCrisis      — activate crisis wizard"     -ForegroundColor White
+Write-Host "  Get-VBAFCenterCrisisTree    — show all crisis trees"      -ForegroundColor White
+Write-Host "  New-VBAFCenterCrisisTree    — add customer-specific tree" -ForegroundColor White
+Write-Host "  Get-VBAFCenterCrisisHistory — show past crisis responses" -ForegroundColor White
 Write-Host ""
 Write-Host "  Quick start:" -ForegroundColor Yellow
 Write-Host "  Start-VBAFCenterCrisis -CustomerID 'TruckCompanyDK'" -ForegroundColor Green
-Write-Host "  Get-VBAFCenterCrisisTree" -ForegroundColor Green
+Write-Host "  Get-VBAFCenterCrisisTree -CustomerID 'TruckCompanyDK'" -ForegroundColor Green
 Write-Host ""
+
+

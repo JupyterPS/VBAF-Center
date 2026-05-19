@@ -1,4 +1,4 @@
-﻿#Requires -Version 5.1
+﻿#TruckCompanyDK#Requires -Version 5.1
 <#
 .SYNOPSIS
     VBAF-Center Phase 8 — Scheduling Engine
@@ -209,13 +209,13 @@ function Invoke-VBAFCenterRun {
         if ($null -ne $result.WeightedAvg) {
             Write-Host ("  Weighted  : {0:F4}"         -f $result.WeightedAvg) -ForegroundColor Cyan
         }
-
+ 
         if ($redCount -gt 0) {
             Write-Host ("  Red signals    : {0}"       -f $redCount)     -ForegroundColor Red
         }
         if ($yellowCount -gt 0) {
             Write-Host ("  Yellow signals : {0}"       -f $yellowCount)  -ForegroundColor Yellow
-        }
+        } 
         if ($overrideApplied) {
             Write-Host ("  OVERRIDE  : {0}"            -f $actionReason) -ForegroundColor Red
         }
@@ -395,20 +395,21 @@ function Get-VBAFCenterRunHistory {
     Write-Host ""
     Write-Host "Run History: $CustomerID (last $($files.Count) runs)" -ForegroundColor Cyan
     Write-Host ("  {0,-23} {1,-4} {2,-12} {3,-6} {4,-6} {5}" -f `
-        "Timestamp","Act","Name","Red","Yellow","Reason / Command") -ForegroundColor Yellow
+        "Timestamp","Act","Name","Red","Yellow","Reason / Command") -ForegroundColor Yellow          
     Write-Host ("  {0}" -f ("-" * 90)) -ForegroundColor DarkGray
 
     foreach ($f in $files) {
         $r     = Get-Content $f.FullName -Raw | ConvertFrom-Json
         $color = if ($r.Action -ge 3) { "Red" } elseif ($r.Action -ge 2) { "Yellow" } else { "Green" }
 
-        $redCol    = if ($null -ne $r.RedSignalCount    -and $r.RedSignalCount    -gt 0) { $r.RedSignalCount.ToString()    } else { "-" }
-        $yellowCol = if ($null -ne $r.YellowSignalCount -and $r.YellowSignalCount -gt 0) { $r.YellowSignalCount.ToString() } else { "-" }
+      # $redCol    = if ($null -ne $r.RedSignalCount    -and $r.RedSignalCount    -gt 0) { $r.RedSignalCount.ToString()    } else { "-" }
+      # $yellowCol = if ($null -ne $r.YellowSignalCount -and $r.YellowSignalCount -gt 0) { $r.YellowSignalCount.ToString() } else { "-" }
         $reasonCol = if ($r.OverrideApplied) { "[OVERRIDE] $($r.ActionReason)" } else { $r.ActionCommand }
 
-        Write-Host ("  {0,-23} {1,-4} {2,-12} {3,-6} {4,-6} {5}" -f `
-            $r.Timestamp, $r.Action, $r.ActionName,
-            $redCol, $yellowCol, $reasonCol) -ForegroundColor $color
+    Write-Host ("  {0,-23} {1,-4} {2,-12} {3,-6} {4,-6} {5}" -f `
+        $r.Timestamp, $r.Action, $r.ActionName,
+        $redCol, $yellowCol, $reasonCol) -ForegroundColor $color
+
     }
     Write-Host ""
 }
