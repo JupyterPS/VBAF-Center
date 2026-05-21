@@ -180,6 +180,35 @@ function Get-VBAFCenterAIKey {
 }
 
 # ============================================================
+# REPAIR-VBAFCENTERDANISH — fix encoding of Danish characters
+# ============================================================
+function Repair-VBAFCenterDanish {
+    param([string] $Text)
+    $Text = $Text -replace 'Ã¦', 'ae' -replace 'Ã…', 'AA' -replace 'Ã¥', 'aa'
+    $Text = $Text -replace 'Ã¸', 'oe' -replace 'Ã˜', 'OE'
+    $Text = $Text -replace 'Ã¦', 'ae' -replace 'Ã†', 'AE'
+    $Text = $Text -replace 'Ã©', 'e'  -replace 'Ã¨', 'e'
+    $Text = $Text -replace 'Ã ', 'a'  -replace 'Ã¢', 'a'
+    $Text = $Text -replace 'Ã«', 'e'  -replace 'Ã¯', 'i'
+    $Text = $Text -replace 'Ã®', 'i'  -replace 'Ã´', 'o'
+    $Text = $Text -replace 'Ã»', 'u'  -replace 'Ã¹', 'u'
+    $Text = $Text -replace 'Ã§', 'c'  -replace 'Ã±', 'n'
+    # Common Danish words - direct fixes
+    $Text = $Text -replace 'rA¸de',    'roede'
+    $Text = $Text -replace 'hA¸j',     'hoej'
+    $Text = $Text -replace 'kA¦r',     'kaer'
+    $Text = $Text -replace 'brA¦nd',   'braend'
+    $Text = $Text -replace 'stofA',    'stofa'
+    $Text = $Text -replace 'A¸je',     'oje'
+    $Text = $Text -replace 'A¸kono',   'okono'
+    $Text = $Text -replace 'lA¦nge',   'laenge'
+    $Text = $Text -replace 'tilgA¦ng', 'tilgaeng'
+    $Text = $Text -replace 'forA¦ld',  'foraeld'
+    $Text = $Text -replace 'omrA¥d',   'omraad'
+    return $Text
+}
+
+# ============================================================
 # INVOKE AI CALL (internal)
 # ============================================================
 function Invoke-VBAFCenterAICall {
@@ -269,6 +298,112 @@ function Test-VBAFCenterAIProvider {
 }
 
 # ============================================================
+# GET-VBAFCENTERHISTORYSUMMARY — 30-day aggregated analysis
+# ============================================================
+function Get-VBAFCenterHistorySummary {
+    param(
+        [string] $CustomerID,
+        [int]    $Days = 30
+    )
+
+    $historyPath = Join-Path $env:USERPROFILE "VBAFCenter\history"
+    if (-not (Test-Path $historyPath)) { return "  Ingen historik tilgaengelig.`n" }
+
+    $cutoff = (Get-Date).AddDays(-$Days)
+    $files  = Get-ChildItem $historyPath -Filter "$CustomerID-*.json" |
+              Where-Object { $_.LastWriteTime -ge $cutoff } |
+              Sort-Object LastWriteTime
+
+    if ($files.Count -eq 0) { return "  Ingen historik i de seneste $Days dage.`n" }
+
+    $runs = @()
+    foreach ($f in $files) {
+        try { $runs += Get-Content $f.FullName -Raw | ConvertFrom-Json } catch {}
+    }
+
+    if ($runs.Count -eq 0) { return "  Ingen gyldige historik-poster fundet.`n" }
+
+    # Action distribution
+    $actionCounts = @{0=0;1=0;2=0;3=0}
+    foreach ($r in $runs) { $actionCounts[[int]$r.Action]++ }
+
+    # Average per day of week
+    $dayAvgs = @{}
+    $dayNames = @("Sondag","Mandag","Tirsdag","Onsdag","Torsdag","Fredag","Lordag")
+    foreach ($r in $runs) {
+        try {
+            $dt  = [DateTime]::Parse($r.Timestamp)
+            $day = [int]$dt.DayOfWeek
+            if (-not $dayAvgs.ContainsKey($day)) { $dayAvgs[$day] = @() }
+            $dayAvgs[$day] += [double]$r.AvgSignal
+        } catch {}
+    }
+
+    # Trend — last 5 vs previous 5
+    $trend = "stabil"
+    if ($runs.Count -ge 10) {
+        $recent5 = ($runs | Select-Object -Last 5  | ForEach-Object { [double]$_.AvgSignal } | Measure-Object -Average).Average
+        $prev5   = ($runs | Select-Object -First 5 | ForEach-Object { [double]$_.AvgSignal } | Measure-Object -Average).Average
+        $diff    = [Math]::Round($recent5 - $prev5, 3)
+        if ($diff -gt 0.05)       { $trend = "stigende (+$diff)" }
+        elseif ($diff -lt -0.05)  { $trend = "faldende ($diff)" }
+    }
+
+    # Override rate
+    $overrideCount = @($runs | Where-Object { $_.OverrideApplied -eq $true }).Count
+    $overridePct   = if ($runs.Count -gt 0) { [Math]::Round($overrideCount / $runs.Count * 100, 0) } else { 0 }
+
+    # Worst signal combination
+    $escalateRuns = @($runs | Where-Object { [int]$_.Action -eq 3 })
+    $worstAvg     = if ($escalateRuns.Count -gt 0) {
+        [Math]::Round(($escalateRuns | ForEach-Object { [double]$_.AvgSignal } | Measure-Object -Average).Average, 3)
+    } else { "N/A" }
+
+    # Overall average
+    $overallAvg = [Math]::Round(($runs | ForEach-Object { [double]$_.AvgSignal } | Measure-Object -Average).Average, 3)
+
+    # Build summary text
+    $summary = "HISTORIK SAMMENDRAG ($Days dage — $($runs.Count) koersler):`n"
+    $summary += "  Samlet gennemsnit   : $overallAvg`n"
+    $summary += "  Trend (nu vs start) : $trend`n"
+    $summary += "  Override rate       : $overridePct% (dispatcher korrigerede $overrideCount gange)`n"
+    $summary += "  Action fordeling    : Monitor=$($actionCounts[0]) Reassign=$($actionCounts[1]) Reroute=$($actionCounts[2]) Escalate=$($actionCounts[3])`n"
+
+    if ($escalateRuns.Count -gt 0) {
+        $summary += "  Kritiske situationer: $($escalateRuns.Count) Escalate-haendelser (gns signal ved krise: $worstAvg)`n"
+    }
+
+    # Day of week pattern
+    $dayPattern = ""
+    foreach ($day in ($dayAvgs.Keys | Sort-Object)) {
+        $avg = [Math]::Round(($dayAvgs[$day] | Measure-Object -Average).Average, 3)
+        $dayPattern += "$($dayNames[$day])=$avg  "
+    }
+    if ($dayPattern -ne "") {
+        $summary += "  Ugedags-moenster    : $dayPattern`n"
+        # Find worst day
+        $worstDay = $dayAvgs.Keys | Sort-Object { ($dayAvgs[$_] | Measure-Object -Average).Average } -Descending | Select-Object -First 1
+        $summary += "  Typisk vaerste dag  : $($dayNames[$worstDay])`n"
+    }
+
+    # Time of day pattern
+    $morningRuns   = @($runs | Where-Object { try { [DateTime]::Parse($_.Timestamp).Hour -lt 12   } catch { $false } })
+    $afternoonRuns = @($runs | Where-Object { try { $h=[DateTime]::Parse($_.Timestamp).Hour; $h -ge 12 -and $h -lt 17 } catch { $false } })
+    $eveningRuns   = @($runs | Where-Object { try { [DateTime]::Parse($_.Timestamp).Hour -ge 17  } catch { $false } })
+
+    if ($morningRuns.Count -gt 0 -and $afternoonRuns.Count -gt 0) {
+        $morningAvg   = [Math]::Round(($morningRuns   | ForEach-Object { [double]$_.AvgSignal } | Measure-Object -Average).Average, 3)
+        $afternoonAvg = [Math]::Round(($afternoonRuns | ForEach-Object { [double]$_.AvgSignal } | Measure-Object -Average).Average, 3)
+        $summary += "  Tidspunkt moenster  : Formiddag=$morningAvg  Eftermiddag=$afternoonAvg`n"
+        if ($afternoonAvg -gt $morningAvg + 0.10) {
+            $summary += "  OBS: Situationen forvaerres typisk om eftermiddagen`n"
+        }
+    }
+
+    return $summary
+}
+
+# ============================================================
 # BUILD PROMPT (internal)
 # ============================================================
 function Build-VBAFCenterAIPrompt {
@@ -280,7 +415,8 @@ function Build-VBAFCenterAIPrompt {
         [object]   $ActionMap,
         [double]   $WeightedAvg,
         [object[]] $RedSignals,
-        [object[]] $YellowSignals
+        [object[]] $YellowSignals,
+        [string]   $HistorySummary = ""
     )
 
     $signalText = ""
@@ -324,7 +460,8 @@ AKTUELLE SIGNALER:
 $signalText
 OVERSIGT: Vaegtet gns=$([Math]::Round($WeightedAvg,4)) | Roede=$redCount | Gule=$yellowCount
 
-HISTORIK (5 nyeste):
+$HistorySummary
+SENESTE 5 KOERSLER:
 $historyText
 HANDLINGER:
 $actionText
@@ -423,17 +560,23 @@ function Invoke-VBAFCenterClaudeBrain {
         }
     }
 
+    # Build 30-day history summary
+    Write-Host "  Building 30-day history summary..." -ForegroundColor DarkGray
+    $historySummary = Get-VBAFCenterHistorySummary -CustomerID $CustomerID -Days 30
+
     # Build and send prompt
     $prompt = Build-VBAFCenterAIPrompt `
         -CustomerID $CustomerID -Profile $profile -Signals $signals `
         -History $history -ActionMap $actionMap -WeightedAvg $weightedAvg `
-        -RedSignals $redSignals -YellowSignals $yellowSignals
+        -RedSignals $redSignals -YellowSignals $yellowSignals `
+        -HistorySummary $historySummary
 
     Write-Host ("  Calling {0}..." -f $p.Name) -ForegroundColor DarkGray
 
     $aiResponse = $null
     try {
         $rawText    = Invoke-VBAFCenterAICall -Provider $Provider -Prompt $prompt -APIKey $apiKey
+        $rawText    = Repair-VBAFCenterDanish -Text $rawText
         $clean      = $rawText.Trim() -replace '```json', '' -replace '```', '' -replace "`n", " "
         # Extract JSON if surrounded by other text
         if ($clean -match '\{.*\}') { $clean = $Matches[0] }
@@ -616,6 +759,9 @@ Invoke-VBAFCenterClaudeBrain -CustomerID "TruckCompanyDK" -Provider "Mistral"
 
 
 #>
+
+
+
 
 
 
