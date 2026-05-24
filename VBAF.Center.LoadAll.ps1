@@ -79,7 +79,7 @@ Write-Host "║  Start-VBAFCenterOnboarding                        ║" -Foregro
 Write-Host "║  Invoke-VBAFCenterRun -CustomerID 'TruckCompanyDK' ║" -ForegroundColor Yellow
 Write-Host "║  Start-VBAFCenterPortal                            ║" -ForegroundColor Yellow
 Write-Host "║  Start-VBAFCenterDashboard                         ║" -ForegroundColor Yellow
-Write-Host "║  Start-VBAFCenterCrisis -CustomerID 'TruckCompanyDK'║" -ForegroundColor Red
+Write-Host "║  Start-VBAFCenterCrisis -CustomerID 'NordLogistik' ║" -ForegroundColor Red
 Write-Host "╠═════════════════════════════════════════════════════╣" -ForegroundColor Cyan
 Write-Host "║  Write-back (separate console):                     ║" -ForegroundColor White
 Write-Host "║  . .\VBAF-Center\VBAF.Center.FakeTMS.ps1           ║" -ForegroundColor DarkGray

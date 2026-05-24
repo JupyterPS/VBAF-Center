@@ -38,6 +38,7 @@ Get-VBAFCenterActionMap 	        Review customer's action definitions	    When n
 Phase 7 — Onboarding wizard         
 Start-VBAFCenterOnboarding	        Full setup of a new customer in one go	    Once per customer         Purple Once per customer — setup only
 Show-VBAFCenterSummary  	        Review what is configured for a customer	When needed               Amber When needed — you decide 
+VBAF.Center.CompanySetup.ps1        Starts a new Company completely
                                     
 Phase 8 — Scheduling engine         
 Invoke-VBAFCenterRun    	        Run the full pipeline once manually	        Testing / demo            Amber When needed — you decide 
@@ -79,15 +80,22 @@ Test-VBAFCenterWriteConnection      Verify VBAF can reach the TMS               
 Invoke-VBAFCenterWriteBack          Send approved command to TMS                After dispatcher approves Amber When needed — you decide
 Undo-VBAFCenterWriteBack            Roll back a command within 5 minutes        When needed              Amber When needed — you decide
 Get-VBAFCenterWriteLog              Full audit log of all write-back actions    Weekly review            Amber When needed — you decide
+
+Phase 19 — ClaudeBrain               
+Set-VBAFCenterAIKey                 save API key for a provider
+Get-VBAFCenterAIProviders           show all providers and status
+Test-VBAFCenterAIProvider           test a provider connection
+Invoke-VBAFCenterClaudeBrain        run full AI analysis
+Get-VBAFCenterClaudeBrainHistory    show AI decision history
                                                                                 
 Fake TMS (separate console)                                                     
 Start-VBAFFakeTMS                   Start fake TMS server for Write-back demo   Demo / testing           Amber When needed — you decide
 Get-VBAFFakeTMSLog                  See all commands received by Fake TMS       When needed              Amber When needed — you decide
 Clear-VBAFFakeTMSLog                Reset the Fake TMS command log              When needed              Amber When needed — you decide
 
-Phase 19 — ClaudeBrain              For future use ONLY
 
 . "VBAF-Center\VBAF.Center.Assessment.ps1" Run ALL 4 BEFORE onboarding FOR NEED Once per customer Purple Once per customer — setup only
+
 . "VBAF-Center\VBAF.Center.TMSSimulator.ps1"
 . "VBAF-Center\VBAF.Center.TMSSimulator.Standard.ps1"
 . "VBAF-Center\VBAF.Center.TMSSimulator.Advanced.ps1"
@@ -95,10 +103,29 @@ Phase 19 — ClaudeBrain              For future use ONLY
 
 . "VBAF-Center\VBAF.Center.APIInspector.ps1"                                                              
 . "VBAF-Center\VBAF.Center.GPSInspector.ps1"  
-                                                         
-Start-VBAFCenterOnboarding covers all Purple setup functions in one go
 
-#___________________________________ TEST FAKE TMS ________________________________________________
+. "VBAF-Center\VBAF.Center.CompareEngines.ps1"   Only for comparison use One time running
+
+#___________________________________ DailyBriefing ________________________________________________
+
+Every morning at 07:00 automatically:
+Run this in a dedicated console and leave it overnight:
+
+cd "C:\Users\henni\OneDrive\WindowsPowerShell"
+. .\VBAF-Center\VBAF.Center.LoadAll.ps1
+. .\VBAF-Center\VBAF.Center.ClaudeBrain.ps1
+. .\VBAF-Center\VBAF.Center.DailyBriefing.ps1
+
+while ($true) {
+    $now = Get-Date
+    if ($now.Hour -eq 7 -and $now.Minute -eq 0) {
+        Export-VBAFCenterDailyBriefing -CustomerID "NordLogistik" -RunAIFirst -OpenBrowser
+        Start-Sleep -Seconds 61
+    }
+    Start-Sleep -Seconds 30
+}
+                                                         
+#___________________________________ TEST FAKE TMS AND WRITE BACK DISCIPLINE ________________________________________________
 
 # TERMINAL 1
 
@@ -595,4 +622,108 @@ Get-VBAFCenterAllCustomers
 | 5 | Manual | No system at all | ❌ Unreliable | Low |
 | 6 | WMI | Windows IT servers | ✅ Good on VPN | Medium |
 | 7 | Simulated | Demo and testing | ✅ Always works | Zero |
+#>
+
+<#____________________________________ ONE TIME TEST _____________________________________________________________________
+
+THE TWO MODES — SIDE BY SIDE
+MODE A — Rule-based only (what you have always had)
+  Invoke-VBAFCenterRun every 10 min
+  Decision: weighted average + thresholds
+  Output: action number + fixed template text
+  Cost: free
+
+MODE B — Mistral AI Brain (new)
+  Invoke-VBAFCenterClaudeBrain every 30 min
+  Decision: Mistral reads signals + history + context
+  Output: action + reason + dispatcher instruction + pattern
+  Cost: free (Mistral free tier)
+__
+
+THE 4-CONSOLE SETUP
+Console 1 — Rule-based scheduler (runs 24/7):
+powershellcd "C:\Users\henni\OneDrive\WindowsPowerShell"
+. .\VBAF-Center\VBAF.Center.LoadAll.ps1
+Start-VBAFCenterSchedule -CustomerID "TruckCompanyDK"
+
+Console 2 — Mistral AI Brain (every 30 min):
+powershellcd "C:\Users\henni\OneDrive\WindowsPowerShell"
+. .\VBAF-Center\VBAF.Center.LoadAll.ps1
+. .\VBAF-Center\VBAF.Center.ClaudeBrain.ps1
+while ($true) {
+    Invoke-VBAFCenterClaudeBrain -CustomerID "TruckCompanyDK" -Provider "Mistral"
+    Write-Host "Next AI run in 30 minutes..." -ForegroundColor DarkGray
+    Start-Sleep -Seconds 1800
+}
+Console 3 — Fake TMS (accepts write-back commands):
+powershellcd "C:\Users\henni\OneDrive\WindowsPowerShell"
+. .\VBAF-Center\VBAF.Center.FakeTMS.ps1
+Start-VBAFFakeTMS
+
+Console 4 — Portal (browser dashboard):
+powershellcd "C:\Users\henni\OneDrive\WindowsPowerShell"
+. .\VBAF-Center\VBAF.Center.LoadAll.ps1
+Start-VBAFCenterPortal
+__
+
+HOW TO FIRE AN EVENT AND SEE THE DIFFERENCE
+Step 1 — Run a normal cycle first:
+powershellcd "C:\Users\henni\OneDrive\WindowsPowerShell"
+. .\VBAF-Center\VBAF.Center.LoadAll.ps1
+. .\VBAF-Center\VBAF.Center.ClaudeBrain.ps1
+Invoke-VBAFCenterRun -CustomerID "TruckCompanyDK"
+Invoke-VBAFCenterClaudeBrain -CustomerID "TruckCompanyDK" -Provider "Mistral"
+
+Step 2 — Note what each recommends
+
+Step 3 — Fire a disruptive event on the Fake TMS:
+powershell# In Console 3 check what the TMS shows
+Get-VBAFFakeTMSLog
+
+Step 4 — Run both again and compare:
+powershellInvoke-VBAFCenterRun -CustomerID "TruckCompanyDK"
+Invoke-VBAFCenterClaudeBrain -CustomerID "TruckCompanyDK" -Provider "Mistral"
+
+Step 5 — If Mistral recommends Reroute or Escalate — send write-back:
+powershell. .\VBAF-Center\VBAF.Center.WriteBack.ps1
+Invoke-VBAFCenterWriteBack -CustomerID "TruckCompanyDK" -Action 2 -Note "Mistral recommended"
+
+Step 6 — Check Fake TMS received the command:
+powershellGet-VBAFFakeTMSLog
+__
+
+LONG TERM COMPARISON PLAN
+Week 1-2 — collect baseline:
+powershell# Every day check what both engines decided
+Get-VBAFCenterRunHistory -CustomerID "TruckCompanyDK"
+Get-VBAFCenterClaudeBrainHistory -CustomerID "TruckCompanyDK" -Provider "Mistral"
+
+Month 1 — learning engine feeds Mistral:
+powershell# Log every time you disagree with rule-based
+Start-VBAFCenterOverride -CustomerID "TruckCompanyDK" -VBAFAction 2 -DispatcherAction 1 -Reason "Mistral was right — rule-based was wrong"
+
+# Monthly learning report
+Invoke-VBAFCenterLearnFromHistory -CustomerID "TruckCompanyDK" -Days 30
+
+Month 2 — tune thresholds based on what Mistral consistently recommends:
+powershell# If Mistral keeps saying rule-based is too aggressive
+Set-VBAFCenterActionThresholds -CustomerID "TruckCompanyDK" -Action1 0.22 -Action2 0.45 -Action3 0.70
+__
+
+WHAT TO WATCH FOR
+SituationRule-based saysMistral saysWinnerBoth signals GreenMonitorMonitorTie1 signal YellowMonitorReassign — explains whyMistral1 signal RedReroute (override rule)Escalate + pattern + instructionMistralGradual drift upwardMonitor (avg still low)Watch — avg rising 3 days in a rowMistralSudden spikeEscalateEscalate + specific actionTie
+The gradual drift row is where Mistral wins — rule-based only sees the current snapshot. Mistral reads the history and spots the trend.
+__
+
+THE SCORECARD — KEEP THIS WEEKLY
+Week | Rule-based action   | Mistral action | Which was right | Notes
+--------|-------------|-----------|------------------|------
+Wk 1  |                   |                |                         |
+Wk 2  |                   |                |                         |
+Wk 3  |                   |                |                         |
+Wk 4  |                   |                |                         |
+After 4 weeks you will know whether Mistral adds value on top of rule-based — or whether they agree most of the time and the difference is only in how well the instruction is written.
+That answer is worth knowing before you pitch it to a real customer. 🎯🇩🇰
+
+
 #>

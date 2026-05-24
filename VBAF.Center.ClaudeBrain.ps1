@@ -209,50 +209,70 @@ function Repair-VBAFCenterDanish {
 }
 
 # ============================================================
-# INVOKE AI CALL (internal)
+# INVOKE AI CALL (internal) — with auto-retry on 429
 # ============================================================
 function Invoke-VBAFCenterAICall {
     param([string]$Provider, [string]$Prompt, [string]$APIKey)
 
-    $p = $script:AIProviders[$Provider]
+    $p          = $script:AIProviders[$Provider]
+    $maxRetries = 3
+    $retryWait  = 65  # seconds — just over Mistral 1-per-minute limit
 
-    if ($p.Format -eq "Anthropic") {
-        $body = @{
-            model      = $p.Model
-            max_tokens = 1000
-            messages   = @(@{ role="user"; content=$Prompt })
-        } | ConvertTo-Json -Depth 5
+    for ($attempt = 1; $attempt -le $maxRetries; $attempt++) {
 
-        $headers = @{
-            "x-api-key"         = $APIKey
-            "anthropic-version" = "2023-06-01"
-            "content-type"      = "application/json"
+        try {
+            if ($p.Format -eq "Anthropic") {
+                $body = @{
+                    model      = $p.Model
+                    max_tokens = 1000
+                    messages   = @(@{ role="user"; content=[string]$Prompt })
+                } | ConvertTo-Json -Depth 5
+
+                $headers = @{
+                    "x-api-key"         = $APIKey
+                    "anthropic-version" = "2023-06-01"
+                    "content-type"      = "application/json"
+                }
+
+                $response = Invoke-RestMethod -Uri $p.URL -Method POST -Headers $headers -Body $body -ErrorAction Stop
+                return $response.content[0].text
+
+            } else {
+                $promptString = [string]$Prompt
+                $bodyObj = [ordered]@{
+                    model    = [string]$p.Model
+                    messages = @([ordered]@{ role="user"; content=$promptString })
+                }
+                $body      = $bodyObj | ConvertTo-Json -Depth 5
+                $bodyBytes = [System.Text.Encoding]::UTF8.GetBytes($body)
+
+                $headers = @{
+                    "Authorization" = "Bearer $APIKey"
+                    "Content-Type"  = "application/json; charset=utf-8"
+                }
+
+                if ($Provider -eq "OpenRouter") {
+                    $headers["HTTP-Referer"] = "https://github.com/JupyterPS/VBAF-Center"
+                    $headers["X-Title"]      = "VBAF-Center"
+                }
+
+                $response = Invoke-RestMethod -Uri $p.URL -Method POST -Headers $headers -Body $bodyBytes -ErrorAction Stop
+                return $response.choices[0].message.content
+            }
+
+        } catch {
+            $errMsg = $_.Exception.Message
+            if ($errMsg -like "*429*" -or $errMsg -like "*Too Many*") {
+                if ($attempt -lt $maxRetries) {
+                    Write-Host ("  Rate limit hit — waiting {0} seconds before retry {1}/{2}..." -f $retryWait, $attempt, $maxRetries) -ForegroundColor Yellow
+                    Start-Sleep -Seconds $retryWait
+                } else {
+                    throw "Rate limit exceeded after $maxRetries attempts. Try again in a few minutes."
+                }
+            } else {
+                throw $_
+            }
         }
-
-        $response = Invoke-RestMethod -Uri $p.URL -Method POST -Headers $headers -Body $body -ErrorAction Stop
-        return $response.content[0].text
-
-    } else {
-        $promptString = [string]$Prompt
-        $bodyObj = [ordered]@{
-            model    = [string]$p.Model
-            messages = @([ordered]@{ role="user"; content=$promptString })
-        }
-        $body      = $bodyObj | ConvertTo-Json -Depth 5
-        $bodyBytes = [System.Text.Encoding]::UTF8.GetBytes($body)
-
-        $headers = @{
-            "Authorization" = "Bearer $APIKey"
-            "Content-Type"  = "application/json; charset=utf-8"
-        }
-
-        if ($Provider -eq "OpenRouter") {
-            $headers["HTTP-Referer"] = "https://github.com/JupyterPS/VBAF-Center"
-            $headers["X-Title"]      = "VBAF-Center"
-        }
-
-        $response = Invoke-RestMethod -Uri $p.URL -Method POST -Headers $headers -Body $bodyBytes -ErrorAction Stop
-        return $response.choices[0].message.content
     }
 }
 
@@ -404,6 +424,99 @@ function Get-VBAFCenterHistorySummary {
 }
 
 # ============================================================
+# GET-VBAFCENTERAIOVERRIDECONTEXT — feed overrides back to Mistral
+# ============================================================
+function Get-VBAFCenterAIOverrideContext {
+    <#
+    .SYNOPSIS
+        Reads override history and previous AI decisions to build
+        a feedback context for the next Mistral prompt.
+        This closes the loop — Mistral learns from its own mistakes.
+    #>
+    param(
+        [string] $CustomerID,
+        [int]    $Last = 10
+    )
+
+    $overridePath = Join-Path $env:USERPROFILE "VBAFCenter\overrides\$CustomerID-overrides.json"
+    $historyPath  = Join-Path $env:USERPROFILE "VBAFCenter\history"
+    $actionNames  = @("Monitor","Reassign","Reroute","Escalate")
+
+    $lines = @()
+
+    # Load dispatcher overrides
+    if (Test-Path $overridePath) {
+        try {
+            $overrides = @(Get-Content $overridePath -Raw | ConvertFrom-Json)
+            $recent    = $overrides | Select-Object -Last $Last
+
+            foreach ($o in $recent) {
+                $vbafAction = $actionNames[[int]($o.VBAFAction | Select-Object -First 1)]
+                $dispAction = $actionNames[[int]($o.DispatcherAction | Select-Object -First 1)]
+                $reason     = if ($o.Reason) { [string]$o.Reason } else { "ingen begrundelse" }
+                $ts         = [string]$o.Timestamp
+
+                if ($vbafAction -ne $dispAction) {
+                    $lines += "  $ts : AI anbefalede $vbafAction — dispatcher valgte $dispAction — Begrundelse: $reason"
+                }
+            }
+        } catch {}
+    }
+
+    # Load previous AI decisions from daily log
+    $logPath = Join-Path $env:USERPROFILE "VBAFCenter\dailylog"
+    if (Test-Path $logPath) {
+        $logFiles = Get-ChildItem $logPath -Filter "$CustomerID-*.log" |
+                    Sort-Object LastWriteTime -Descending |
+                    Select-Object -First 3
+
+        foreach ($lf in $logFiles) {
+            $logLines = Get-Content $lf.FullName -ErrorAction SilentlyContinue
+            if ($logLines) {
+                foreach ($ll in ($logLines | Select-Object -Last 3)) {
+                    $lines += "  Tidligere AI log: $ll"
+                }
+            }
+        }
+    }
+
+    # Load AI brain history to find patterns
+    if (Test-Path $historyPath) {
+        $aiFiles = Get-ChildItem $historyPath -Filter "$CustomerID-*.json" |
+                   Sort-Object LastWriteTime -Descending |
+                   Select-Object -First 20
+
+        $aiDecisions = @()
+        foreach ($f in $aiFiles) {
+            try {
+                $h = Get-Content $f.FullName -Raw | ConvertFrom-Json
+                if ($h.Source -like "AI-*") { $aiDecisions += $h }
+            } catch {}
+        }
+
+        if ($aiDecisions.Count -gt 0) {
+            # Find cases where AI said Escalate repeatedly
+            $escalateCount = @($aiDecisions | Where-Object { [int]$_.Action -eq 3 }).Count
+            if ($escalateCount -gt ($aiDecisions.Count * 0.6)) {
+                $lines += "  OBS: AI har anbefalet Escalate i $escalateCount af $($aiDecisions.Count) seneste koersler — overvej om terskler skal justeres"
+            }
+
+            # Check agreement with overrides
+            $overrideCount = @($aiDecisions | Where-Object { $_.OverrideApplied -eq $true }).Count
+            if ($overrideCount -gt 0) {
+                $lines += "  Override rate for AI-beslutninger: $overrideCount af $($aiDecisions.Count) havde roed-signal override"
+            }
+        }
+    }
+
+    if ($lines.Count -eq 0) {
+        return "  Ingen tidligere AI-anbefalinger eller dispatcher-overrides registreret endnu.`n  Systemet laerer efterhaanden som dispatcher logger overrides via Start-VBAFCenterOverride."
+    }
+
+    return $lines -join "`n"
+}
+
+# ============================================================
 # BUILD PROMPT (internal)
 # ============================================================
 function Build-VBAFCenterAIPrompt {
@@ -416,7 +529,8 @@ function Build-VBAFCenterAIPrompt {
         [double]   $WeightedAvg,
         [object[]] $RedSignals,
         [object[]] $YellowSignals,
-        [string]   $HistorySummary = ""
+        [string]   $HistorySummary = "",
+        [string]   $OverrideHistoryText = "  Ingen tidligere AI-anbefalinger registreret endnu."
     )
 
     $signalText = ""
@@ -465,10 +579,13 @@ SENESTE 5 KOERSLER:
 $historyText
 HANDLINGER:
 $actionText
+TIDLIGERE AI ANBEFALINGER OG UDFALD:
+$overrideHistoryText
 OPGAVE - returner KUN dette JSON uden markdown eller forklaring:
-{"Action":<0-3>,"ActionName":"<Monitor/Reassign/Reroute/Escalate>","Reason":"<2-3 saetninger>","Instruction":"<1-2 konkrete saetninger til dispatcher>","Pattern":"<1 saetning eller tom>","Confidence":"<Hoej/Medium/Lav>"}
+{"Action":<0-3>,"ActionName":"<Monitor/Reassign/Reroute/Escalate>","Reason":"<2-3 saetninger>","Instruction":"<1-2 konkrete saetninger til dispatcher>","Pattern":"<1 saetning eller tom>","Confidence":"<Hoj/Medium/Lav>"}
 
 REGLER: 1 roed=min Action 2 | 2+ roede=min Action 3 | avg>0.75=Action 3 | avg>0.50=Action 2 | avg>0.25=Action 1
+Brug overrides til at laere hvad der virker for DENNE kunde. Hvis dispatcher gentagne gange vaelger lavere action end AI — vaer mere forsigtig.
 "@
 }
 
@@ -488,7 +605,8 @@ function Invoke-VBAFCenterClaudeBrain {
     param(
         [Parameter(Mandatory)] [string] $CustomerID,
         [ValidateSet("Claude","Gemini","Groq","OpenRouter","Mistral")]
-        [string] $Provider = "Gemini"
+        [string] $Provider = "Gemini",
+        [switch] $SuppressCrisis
     )
 
     $apiKey = Get-VBAFCenterAIKey -Provider $Provider
@@ -564,12 +682,17 @@ function Invoke-VBAFCenterClaudeBrain {
     Write-Host "  Building 30-day history summary..." -ForegroundColor DarkGray
     $historySummary = Get-VBAFCenterHistorySummary -CustomerID $CustomerID -Days 30
 
+    # Build override feedback context
+    Write-Host "  Loading override feedback context..." -ForegroundColor DarkGray
+    $overrideContext = Get-VBAFCenterAIOverrideContext -CustomerID $CustomerID
+
     # Build and send prompt
     $prompt = Build-VBAFCenterAIPrompt `
         -CustomerID $CustomerID -Profile $profile -Signals $signals `
         -History $history -ActionMap $actionMap -WeightedAvg $weightedAvg `
         -RedSignals $redSignals -YellowSignals $yellowSignals `
-        -HistorySummary $historySummary
+        -HistorySummary $historySummary `
+        -OverrideHistoryText $overrideContext
 
     Write-Host ("  Calling {0}..." -f $p.Name) -ForegroundColor DarkGray
 
@@ -581,6 +704,14 @@ function Invoke-VBAFCenterClaudeBrain {
         # Extract JSON if surrounded by other text
         if ($clean -match '\{.*\}') { $clean = $Matches[0] }
         $aiResponse = $clean | ConvertFrom-Json
+        # Fix confidence encoding
+        if ($aiResponse.Confidence) {
+            $conf = [string]$aiResponse.Confidence
+            $conf = $conf -replace "Hoej","Høj" -replace "HOej","Høj" -replace "Hoj","Høj"
+            $conf = $conf -replace "Haj","Høj"  -replace "High","Høj"
+            $conf = $conf -replace "Lav","Lav"  -replace "Low","Lav"
+            $aiResponse.Confidence = $conf
+        }
     } catch {
         Write-Host ("  AI call failed: {0}" -f $_.Exception.Message) -ForegroundColor Red
         Write-Host "  Raw response was:" -ForegroundColor DarkGray
@@ -640,14 +771,26 @@ function Invoke-VBAFCenterClaudeBrain {
     $histFile = Join-Path $historyPath "$CustomerID-$(Get-Date -Format 'yyyyMMdd_HHmmss_fff').json"
     $result | ConvertTo-Json -Depth 5 | Set-Content $histFile -Encoding UTF8
 
-    # Crisis if Action 3
+    # Crisis if Action 3 — only if not running in loop mode
     if ($action -ge 3) {
-        Write-Host "  [CRISIS] AI recommends Escalate — activating crisis response!" -ForegroundColor Red
+        Write-Host "  [CRISIS] AI recommends Escalate!" -ForegroundColor Red
         try { [Console]::Beep(800,400); Start-Sleep -Milliseconds 100; [Console]::Beep(1200,800) } catch {}
-        if (Get-Command Start-VBAFCenterCrisis -ErrorAction SilentlyContinue) {
-            Start-VBAFCenterCrisis -CustomerID $CustomerID
+        if (-not $SuppressCrisis) {
+            if (Get-Command Start-VBAFCenterCrisis -ErrorAction SilentlyContinue) {
+                Start-VBAFCenterCrisis -CustomerID $CustomerID
+            }
+        } else {
+            Write-Host "  [CRISIS] Crisis wizard suppressed in loop mode. Check portal." -ForegroundColor DarkYellow
         }
     }
+
+    # Write decision to daily log
+    $logPath = Join-Path $env:USERPROFILE "VBAFCenter\dailylog"
+    if (-not (Test-Path $logPath)) { New-Item -ItemType Directory -Path $logPath -Force | Out-Null }
+    $logFile = Join-Path $logPath "$CustomerID-$(Get-Date -Format 'yyyyMMdd').log"
+    $logLine = "{0} | {1} | Action {2} {3} | Conf {4} | {5}" -f `
+        (Get-Date).ToString("HH:mm:ss"), $Provider, $action, $actionName, $confidence, $reason
+    $logBytes = [System.Text.Encoding]::UTF8.GetBytes($logLine + [Environment]::NewLine); [System.IO.File]::AppendAllText($logFile, $logLine + [Environment]::NewLine, [System.Text.Encoding]::UTF8)
 
     return $result
 }
@@ -748,7 +891,6 @@ if ($configured.Count -gt 0) {
     Write-Host "  4. Analyse: Invoke-VBAFCenterClaudeBrain -CustomerID ""TruckCompanyDK"" -Provider ""Gemini""" -ForegroundColor DarkGray
 }
 Write-Host ""
-
 <#
 
 Set-VBAFCenterAIKey -Provider "Mistral" -APIKey "PvPxsvxKVk1SoefDnGbsW9gnjWTiMHOJ"
@@ -759,6 +901,7 @@ Invoke-VBAFCenterClaudeBrain -CustomerID "TruckCompanyDK" -Provider "Mistral"
 
 
 #>
+
 
 
 
