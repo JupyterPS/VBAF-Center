@@ -46,8 +46,6 @@ $basePath = Split-Path -Parent $MyInvocation.MyCommand.Path
 . (Join-Path $basePath "VBAF.Center.ActionThresholds.ps1")
 # Phase 18 — Write-back
 . (Join-Path $basePath "VBAF.Center.WriteBack.ps1")
-# Phase 19 — ClaudeBrain 
-. (Join-Path $basePath "VBAF.Center.ClaudeBrain.ps1") 
 
 Write-Host ""
 Write-Host "╔════════════════════════════════════════════════════╗" -ForegroundColor Cyan
@@ -72,14 +70,13 @@ Write-Host "║  Phase 15 Weighted Signals       — loaded          ║" -Foreg
 Write-Host "║  Phase 16 Learning Engine        — loaded          ║" -ForegroundColor Cyan
 Write-Host "║  Phase 17 Smart Action Map       — loaded          ║" -ForegroundColor Cyan
 Write-Host "║  Phase 18 Write-back             — loaded          ║" -ForegroundColor Cyan
-Write-Host "║  Phase 19 ClaudeBrain            — loaded          ║" -ForegroundColor Cyan
 Write-Host "╠═════════════════════════════════════════════════════╣" -ForegroundColor Cyan
 Write-Host "║  Quick start:                                       ║" -ForegroundColor White
 Write-Host "║  Start-VBAFCenterOnboarding                        ║" -ForegroundColor Yellow
 Write-Host "║  Invoke-VBAFCenterRun -CustomerID 'TruckCompanyDK' ║" -ForegroundColor Yellow
 Write-Host "║  Start-VBAFCenterPortal                            ║" -ForegroundColor Yellow
 Write-Host "║  Start-VBAFCenterDashboard                         ║" -ForegroundColor Yellow
-Write-Host "║  Start-VBAFCenterCrisis -CustomerID 'NordLogistik' ║" -ForegroundColor Red
+Write-Host "║  Start-VBAFCenterCrisis -CustomerID 'TruckCompanyDK'║" -ForegroundColor Red
 Write-Host "╠═════════════════════════════════════════════════════╣" -ForegroundColor Cyan
 Write-Host "║  Write-back (separate console):                     ║" -ForegroundColor White
 Write-Host "║  . .\VBAF-Center\VBAF.Center.FakeTMS.ps1           ║" -ForegroundColor DarkGray

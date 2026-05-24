@@ -21,6 +21,7 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
 .arg-val{color:#2C2C2A;font-weight:500}
 .arg-opt{color:#1D9E75;font-weight:500}
 .note{font-size:11px;color:#888780;margin-top:6px;font-style:italic}
+.auto-note{font-size:12px;color:#04342C;background:#d4f0e4;border-radius:8px;padding:10px 12px;border:0.5px solid #5DCAA5;margin-top:10px;font-weight:500;font-family:Arial,sans-serif}
 .cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
 .cols3{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:10px}
 .ref-table{width:100%;font-size:12px;border-collapse:collapse}
@@ -32,22 +33,25 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
 .com-label{font-size:11px;color:#5F5E5A;margin-bottom:4px}
 .com-value{font-size:13px;font-weight:500;color:#2C2C2A}
 .new-badge{font-size:10px;font-weight:500;padding:1px 6px;border-radius:10px;background:#1D9E7520;color:#1D9E75;border:0.5px solid #1D9E7540;margin-left:6px;vertical-align:middle}
+.ai-badge{font-size:10px;font-weight:500;padding:1px 6px;border-radius:10px;background:#26215C20;color:#26215C;border:0.5px solid #26215C40;margin-left:6px;vertical-align:middle}
 </style>
 </head>
 <body>
 <div class="title">VBAF-Center — complete onboarding cheat sheet</div>
-<div class="subtitle">Every prompt · Every argument · Every command · All 18 phases</div>
+<div class="subtitle">Every prompt · Every argument · Every command · All 19 phases + Daily Briefing · v1.0.33</div>
 
+<!-- LOAD FIRST -->
 <div class="phase">
   <div class="phase-header" style="background:#EEEDFE;border-bottom:0.5px solid #AFA9EC">
     <span class="phase-num" style="background:#CECBF6;color:#26215C">Load first</span>
     <span class="phase-title" style="color:#26215C">Always load before anything else</span>
   </div>
   <div class="phase-body">
-    <div class="args" style="margin-top:10px">. .\VBAF-Center\VBAF.Center.LoadAll.ps1</div>
+    <div class="args" style="margin-top:10px">cd "C:\Users\henni\OneDrive\WindowsPowerShell"<br>. .\VBAF-Center\VBAF.Center.LoadAll.ps1</div>
   </div>
 </div>
 
+<!-- PHASE 1 -->
 <div class="phase">
   <div class="phase-header" style="background:#EEEDFE;border-bottom:0.5px solid #AFA9EC">
     <span class="phase-num" style="background:#CECBF6;color:#26215C">Phase 1</span>
@@ -88,6 +92,7 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
   </div>
 </div>
 
+<!-- PHASE 2 -->
 <div class="phase">
   <div class="phase-header" style="background:#EEEDFE;border-bottom:0.5px solid #AFA9EC">
     <span class="phase-num" style="background:#CECBF6;color:#26215C">Phase 2</span>
@@ -116,6 +121,7 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
   </div>
 </div>
 
+<!-- PHASE 3 -->
 <div class="phase">
   <div class="phase-header" style="background:#E1F5EE;border-bottom:0.5px solid #5DCAA5">
     <span class="phase-num" style="background:#9FE1CB;color:#04342C">Phase 3</span>
@@ -152,9 +158,9 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
         </div>
       </div>
     </div>
-    <div class="note" style="margin-top:8px">RawMin / RawMax — customer decides based on their real-world data. Ask: "Hvad er den laveste/højeste værdi I nogensinde har set?"</div>
-    <div class="note">GoodBelow / BadAbove — optional Phase 14 thresholds. Ask: "Hvornår er I tilfredse?" and "Hvornår begynder I at blive bekymrede?"</div>
-    <div class="note">Weight — optional Phase 15 importance 1-5. Ask: "Hvilken signal holder dig mest vågen om natten?" → Weight 5</div>
+    <div class="note" style="margin-top:8px">RawMin / RawMax — ask: "Hvad er den laveste/højeste værdi I nogensinde har set?"</div>
+    <div class="note">GoodBelow / BadAbove — ask: "Hvornår er I tilfredse?" and "Hvornår begynder I at blive bekymrede?"</div>
+    <div class="note">Weight — ask: "Hvilken signal holder dig mest vågen om natten?" → Weight 5</div>
     <div class="cols" style="margin-top:10px">
       <div>
         <div class="fn">Get-VBAFCenterSignal</div>
@@ -173,13 +179,14 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
   </div>
 </div>
 
+<!-- PHASE 4 -->
 <div class="phase">
   <div class="phase-header" style="background:#E1F5EE;border-bottom:0.5px solid #5DCAA5">
     <span class="phase-num" style="background:#9FE1CB;color:#04342C">Phase 4</span>
     <span class="phase-title" style="color:#04342C">Normalisation — AUTOMATIC</span>
   </div>
   <div class="phase-body">
-    <div style="font-size:12px;color:#04342C;background:#d4f0e4;border-radius:8px;padding:10px 12px;border:0.5px solid #5DCAA5;margin-top:10px;font-weight:500">
+    <div class="auto-note">
       Phase 4 runs automatically inside Invoke-VBAFCenterRun every 10 minutes.<br>
       You never need to call it manually in daily operation.<br>
       Method is set once during onboarding Step 4 — MinMax recommended for logistics.
@@ -207,6 +214,7 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
   </div>
 </div>
 
+<!-- PHASE 5 -->
 <div class="phase">
   <div class="phase-header" style="background:#E6F1FB;border-bottom:0.5px solid #85B7EB">
     <span class="phase-num" style="background:#B5D4F4;color:#042C53">Phase 5</span>
@@ -237,6 +245,7 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
   </div>
 </div>
 
+<!-- PHASE 6 -->
 <div class="phase">
   <div class="phase-header" style="background:#E6F1FB;border-bottom:0.5px solid #85B7EB">
     <span class="phase-num" style="background:#B5D4F4;color:#042C53">Phase 6</span>
@@ -272,6 +281,7 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
   </div>
 </div>
 
+<!-- PHASE 7 -->
 <div class="phase">
   <div class="phase-header" style="background:#FAEEDA;border-bottom:0.5px solid #EF9F27">
     <span class="phase-num" style="background:#FAC775;color:#412402">Phase 7</span>
@@ -313,7 +323,7 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
       <div style="height:4px"></div>
       <div class="arg-row"><span class="arg-key">Signal 3 name</span><span class="arg-val">[Enter to finish]</span></div>
       <div style="height:6px"></div>
-      <div style="font-size:11px;color:#888780;margin-bottom:2px">Step 4/7 — Normalisation</div>
+      <div style="font-size:11px;color:#888780;margin-bottom:2px">Step 4/7 — Normalisation method</div>
       <div class="arg-row"><span class="arg-key">Method</span><span class="arg-val">MinMax</span></div>
       <div style="height:6px"></div>
       <div style="font-size:11px;color:#888780;margin-bottom:2px">Step 5/7 — Action map</div>
@@ -326,7 +336,7 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
       <div class="arg-row"><span class="arg-key">Action 3 name</span><span class="arg-val">Escalate</span></div>
       <div class="arg-row"><span class="arg-key">Action 3 command</span><span class="arg-val">Call operations manager immediately</span></div>
       <div style="height:6px"></div>
-      <div style="font-size:11px;color:#888780;margin-bottom:2px">Step 6/7 — Action thresholds (Phase 17 — customer sensitivity)</div>
+      <div style="font-size:11px;color:#888780;margin-bottom:2px">Step 6/7 — Action thresholds (Phase 17)</div>
       <div class="arg-row"><span class="arg-key">Set custom thresholds? Y/N</span><span class="arg-val">Y</span></div>
       <div class="arg-row"><span class="arg-key">Reassign threshold</span><span class="arg-val">0.20</span></div>
       <div class="arg-row"><span class="arg-key">Reroute threshold</span><span class="arg-val">0.40</span></div>
@@ -336,12 +346,13 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
       <div style="font-size:11px;color:#888780;margin-bottom:2px">Step 7/7 — Schedule</div>
       <div class="arg-row"><span class="arg-key">Check interval</span><span class="arg-val">10</span></div>
     </div>
-    <div class="note" style="margin-top:6px">Signals: up to 10 · GoodBelow/BadAbove: ask customer their numbers · Weight: ask "Hvilken signal holder dig mest vågen om natten?"</div>
+    <div class="note" style="margin-top:6px">Signals: up to 10 · Weight: ask "Hvilken signal holder dig mest vågen om natten?"</div>
     <div class="fn" style="margin-top:10px">Show-VBAFCenterSummary</div>
     <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
   </div>
 </div>
 
+<!-- PHASE 8 -->
 <div class="phase">
   <div class="phase-header" style="background:#FAEEDA;border-bottom:0.5px solid #EF9F27">
     <span class="phase-num" style="background:#FAC775;color:#412402">Phase 8</span>
@@ -356,22 +367,22 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
         <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
       </div>
       <div>
-        <div class="fn">Start-VBAFCenterSchedule — shadow (24h)</div>
+        <div class="fn">Start-VBAFCenterSchedule — go live (separate console)</div>
         <div class="args">
           <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
-          <div class="arg-row"><span class="arg-key">MaxRuns</span><span class="arg-val">48</span></div>
-          <div class="note">Use 3 for quick testing</div>
+          <div style="font-size:11px;color:#888780;margin-top:4px">Ctrl+C to stop · runs every 10 min</div>
         </div>
-        <div class="fn" style="margin-top:10px">Start-VBAFCenterSchedule — go live</div>
+        <div class="fn" style="margin-top:10px">Start-VBAFCenterSchedule — shadow test</div>
         <div class="args">
           <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
-          <div style="font-size:11px;color:#888780;margin-top:4px">Ctrl+C to stop</div>
+          <div class="arg-row"><span class="arg-key">MaxRuns</span><span class="arg-val">3</span></div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
+<!-- PHASE 9-13 -->
 <div class="phase">
   <div class="phase-header" style="background:#EAF3DE;border-bottom:0.5px solid #97C459">
     <span class="phase-num" style="background:#C0DD97;color:#173404">Phase 9-13</span>
@@ -380,39 +391,58 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
   <div class="phase-body">
     <div class="cols">
       <div>
-        <div class="fn">Phase 9 — web portal</div>
-        <div class="args">Start-VBAFCenterPortal<div style="font-size:11px;color:#888780">Opens at http://localhost:8080</div></div>
+        <div class="fn">Phase 9 — web portal (separate console)</div>
+        <div class="args">Start-VBAFCenterPortal<div style="font-size:11px;color:#888780">http://localhost:8080 · Accept/Override buttons · Threshold Yes/No</div></div>
+        <div class="fn" style="margin-top:10px">Phase 9 — push threshold suggestion to portal</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">NordLogistik</span></div>
+          <div class="arg-row"><span class="arg-key">SuggestedAction1</span><span class="arg-val">0.22</span></div>
+          <div class="arg-row"><span class="arg-key">SuggestedAction2</span><span class="arg-val">0.45</span></div>
+          <div class="arg-row"><span class="arg-key">SuggestedAction3</span><span class="arg-val">0.68</span></div>
+          <div class="arg-row"><span class="arg-key">Reason</span><span class="arg-val">Dispatcher overrode 8 of last 10 Escalates</span></div>
+        </div>
+        <div class="note">Function: Save-VBAFCenterThresholdSuggestion</div>
         <div class="fn" style="margin-top:10px">Phase 11 — dashboard</div>
-        <div class="args">Start-VBAFCenterDashboard<div style="font-size:11px;color:#888780">Opens at http://localhost:8081</div></div>
+        <div class="args">Start-VBAFCenterDashboard<div style="font-size:11px;color:#888780">http://localhost:8081</div></div>
         <div class="fn" style="margin-top:10px">Phase 13 — crisis tree</div>
         <div class="args">Start-VBAFCenterCrisis<div class="arg-row"><span class="arg-key">-CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
+        <div class="fn" style="margin-top:10px">Phase 13 — add customer-specific crisis tree</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
+          <div class="arg-row"><span class="arg-key">CrisisName</span><span class="arg-val">Tom kørsel kritisk</span></div>
+          <div class="arg-row"><span class="arg-key">Trigger</span><span class="arg-val">Empty Driving above 40%</span></div>
+          <div class="arg-row"><span class="arg-key">Step1</span><span class="arg-val">Stop alle ikke-planlagte ture</span></div>
+          <div class="arg-row"><span class="arg-key">Step2..5</span><span class="arg-val">...</span></div>
+        </div>
+        <div class="note">Function: New-VBAFCenterCrisisTree · Get-VBAFCenterCrisisTree -CustomerID 'X'</div>
       </div>
       <div>
         <div class="fn">Phase 10 — auto-connector</div>
         <div class="args">Start-VBAFCenterAutoConnect<div class="arg-row"><span class="arg-key">-CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
         <div class="fn" style="margin-top:10px">Phase 12 — billing</div>
         <div class="args">New-VBAFCenterInvoice<div class="arg-row"><span class="arg-key">-CustomerID</span><span class="arg-val">TruckCompanyDK</span></div><div class="arg-row"><span class="arg-key">-InvoiceType</span><span class="arg-val">Monthly</span></div></div>
+        <div class="fn" style="margin-top:10px">Phase 13 — crisis history</div>
+        <div class="args">Get-VBAFCenterCrisisHistory<div class="arg-row"><span class="arg-key">-CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- PHASES 14-18 — INTELLIGENCE LAYER -->
-
+<!-- PHASES 14-18 -->
 <div class="phase">
   <div class="phase-header" style="background:#E0F4F4;border-bottom:0.5px solid #5BBFBF">
     <span class="phase-num" style="background:#9FD9D9;color:#033636">Phase 14</span>
-    <span class="phase-title" style="color:#033636">Signal thresholds <span class="new-badge">NEW</span></span>
+    <span class="phase-title" style="color:#033636">Signal thresholds</span>
   </div>
   <div class="phase-body">
-    <div class="note" style="margin-top:10px;margin-bottom:8px">Each signal gets its own Green/Yellow/Red colour. A single RED signal overrides the average and raises the action level.</div>
+    <div class="note" style="margin-top:10px;margin-bottom:8px">Each signal gets Green/Yellow/Red colour. 1 RED → minimum Reroute. 2+ RED → minimum Escalate.</div>
     <div class="cols">
       <div>
         <div class="fn">Get-VBAFCenterSignalStatus</div>
         <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
         <div class="fn" style="margin-top:10px">Invoke-VBAFCenterThresholdCheck</div>
         <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
-        <div class="note">Shows only Red and Yellow signals — silent if all Green</div>
+        <div class="note">Silent if all Green — shows only Red and Yellow</div>
       </div>
       <div>
         <div class="fn">Set-VBAFCenterSignalThreshold</div>
@@ -423,20 +453,19 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
           <div class="arg-row"><span class="arg-key">BadAbove</span><span class="arg-val">35</span></div>
           <div class="arg-row"><span class="arg-key">Weight</span><span class="arg-val">4</span></div>
         </div>
-        <div class="note">Tune thresholds without full reconfiguration. All 3 parameters are optional.</div>
+        <div class="note">Tune without full reconfiguration. All 3 parameters optional.</div>
       </div>
     </div>
-    <div class="note" style="margin-top:8px">Override rules: 1 RED → minimum Reroute &nbsp;|&nbsp; 2+ RED → minimum Escalate &nbsp;|&nbsp; 2+ YELLOW → minimum Reassign</div>
   </div>
 </div>
 
 <div class="phase">
   <div class="phase-header" style="background:#E0F4F4;border-bottom:0.5px solid #5BBFBF">
     <span class="phase-num" style="background:#9FD9D9;color:#033636">Phase 16</span>
-    <span class="phase-title" style="color:#033636">Learning engine <span class="new-badge">NEW</span></span>
+    <span class="phase-title" style="color:#033636">Learning engine</span>
   </div>
   <div class="phase-body">
-    <div class="note" style="margin-top:10px;margin-bottom:8px">VBAF gets smarter from dispatcher overrides. After 30 days of real data it suggests threshold improvements.</div>
+    <div class="note" style="margin-top:10px;margin-bottom:8px">Logs dispatcher overrides. After 30 days suggests threshold improvements. Override reason feeds back into AI Brain.</div>
     <div class="cols">
       <div>
         <div class="fn">Start-VBAFCenterOverride</div>
@@ -446,7 +475,7 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
           <div class="arg-row"><span class="arg-key">DispatcherAction</span><span class="arg-val">2</span></div>
           <div class="arg-row"><span class="arg-key">Reason</span><span class="arg-val">Situation resolved itself</span></div>
         </div>
-        <div class="note">Call immediately after a run where dispatcher disagreed</div>
+        <div class="note">OR — dispatcher clicks Override in portal — automatic</div>
         <div class="fn" style="margin-top:10px">Get-VBAFCenterOverrideHistory</div>
         <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
       </div>
@@ -456,10 +485,8 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
           <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
           <div class="arg-row"><span class="arg-key">Days</span><span class="arg-val">30</span></div>
         </div>
-        <div class="note">Run monthly. Needs 5+ overrides to suggest threshold changes.</div>
+        <div class="note">Run monthly. Needs 5+ overrides to suggest changes.</div>
         <div class="fn" style="margin-top:10px">Get-VBAFCenterLearningReport</div>
-        <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
-        <div class="fn" style="margin-top:10px">Clear-VBAFCenterLearningData</div>
         <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
       </div>
     </div>
@@ -469,10 +496,10 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
 <div class="phase">
   <div class="phase-header" style="background:#E0F4F4;border-bottom:0.5px solid #5BBFBF">
     <span class="phase-num" style="background:#9FD9D9;color:#033636">Phase 17</span>
-    <span class="phase-title" style="color:#033636">Smart action map <span class="new-badge">NEW</span></span>
+    <span class="phase-title" style="color:#033636">Smart action map</span>
   </div>
   <div class="phase-body">
-    <div class="note" style="margin-top:10px;margin-bottom:8px">Each customer gets their own action sensitivity thresholds. Default is 0.25 / 0.50 / 0.75.</div>
+    <div class="note" style="margin-top:10px;margin-bottom:8px">Each customer gets own thresholds. Default 0.25 / 0.50 / 0.75. Dispatcher can approve changes via portal Yes/No button.</div>
     <div class="cols3">
       <div>
         <div class="fn">Set-VBAFCenterActionThresholds</div>
@@ -495,20 +522,20 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
           <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
           <div class="arg-row"><span class="arg-key">SimulatedAverage</span><span class="arg-val">0.55</span></div>
         </div>
-        <div class="note">Simulate which action fires before going live</div>
+        <div class="note">Simulate before going live</div>
       </div>
     </div>
-    <div class="note" style="margin-top:8px">Ask customer: "Hvornår vil du ringes op med det samme?" → Action3 threshold</div>
+    <div class="note" style="margin-top:8px">Ask: "Hvornår vil du ringes op med det samme?" → Action3 threshold</div>
   </div>
 </div>
 
 <div class="phase">
   <div class="phase-header" style="background:#E0F4F4;border-bottom:0.5px solid #5BBFBF">
     <span class="phase-num" style="background:#9FD9D9;color:#033636">Phase 18</span>
-    <span class="phase-title" style="color:#033636">Write-back <span class="new-badge">NEW</span></span>
+    <span class="phase-title" style="color:#033636">Write-back</span>
   </div>
   <div class="phase-body">
-    <div class="note" style="margin-top:10px;margin-bottom:8px">VBAF now acts — not just advises. Dispatcher approves, TMS executes. Full audit log with 5-minute rollback.</div>
+    <div class="note" style="margin-top:10px;margin-bottom:8px">VBAF acts — not just advises. Dispatcher clicks Accept in portal → TMS executes. 5-minute rollback window.</div>
     <div class="cols">
       <div>
         <div class="fn">New-VBAFCenterWriteConfig</div>
@@ -516,27 +543,23 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
           <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
           <div class="arg-row"><span class="arg-key">TMSBaseURL</span><span class="arg-val">http://localhost:8082</span></div>
         </div>
-        <div class="note">For demo: use localhost:8082 (Fake TMS). For production: replace with real TMS URL.</div>
+        <div class="note">Demo: localhost:8082 (Fake TMS) · Production: real TMS URL</div>
         <div class="fn" style="margin-top:10px">Test-VBAFCenterWriteConnection</div>
-        <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
-        <div class="fn" style="margin-top:10px">Get-VBAFCenterWriteConfig</div>
         <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
       </div>
       <div>
-        <div class="fn">Invoke-VBAFCenterWriteBack</div>
+        <div class="fn">Invoke-VBAFCenterWriteBack — manual</div>
         <div class="args">
           <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
           <div class="arg-row"><span class="arg-key">Action</span><span class="arg-val">2</span></div>
-          <div class="arg-row"><span class="arg-key">TruckID</span><span class="arg-opt">DK-4471 &nbsp;← optional</span></div>
-          <div class="arg-row"><span class="arg-key">JobID</span><span class="arg-opt">J-3001 &nbsp;← optional</span></div>
-          <div class="arg-row"><span class="arg-key">Note</span><span class="arg-opt">Dispatcher approved &nbsp;← optional</span></div>
+          <div class="arg-row"><span class="arg-key">Note</span><span class="arg-opt">Dispatcher approved ← optional</span></div>
         </div>
+        <div class="note">OR — dispatcher clicks Accept in portal — fully automatic</div>
         <div class="fn" style="margin-top:10px">Undo-VBAFCenterWriteBack</div>
         <div class="args">
           <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div>
           <div class="arg-row"><span class="arg-key">ActionID</span><span class="arg-val">WB-20260425_172303</span></div>
         </div>
-        <div class="note">Rollback available for 5 minutes after action</div>
         <div class="fn" style="margin-top:10px">Get-VBAFCenterWriteLog</div>
         <div class="args"><div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">TruckCompanyDK</span></div></div>
       </div>
@@ -544,13 +567,14 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
   </div>
 </div>
 
+<!-- FAKE TMS -->
 <div class="phase">
   <div class="phase-header" style="background:#E0F4F4;border-bottom:0.5px solid #5BBFBF">
     <span class="phase-num" style="background:#9FD9D9;color:#033636">Fake TMS</span>
-    <span class="phase-title" style="color:#033636">Separate console — for Write-back testing and demos <span class="new-badge">NEW</span></span>
+    <span class="phase-title" style="color:#033636">Separate console — Write-back testing and demos</span>
   </div>
   <div class="phase-body">
-    <div class="note" style="margin-top:10px;margin-bottom:8px">Simulates a real TMS on port 8082. Always run in a separate PowerShell console. Never in ISE.</div>
+    <div class="note" style="margin-top:10px;margin-bottom:8px">Simulates real TMS on port 8082. Always separate console. Never ISE.</div>
     <div class="args" style="margin-bottom:8px">
       cd "C:\Users\henni\OneDrive\WindowsPowerShell"<br>
       . .\VBAF-Center\VBAF.Center.FakeTMS.ps1<br>
@@ -566,14 +590,113 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
         <div class="args" style="color:#888780;font-size:11px">(no arguments) — resets the log</div>
       </div>
     </div>
-    <div class="note" style="margin-top:8px">Fleet: 5 trucks (DK-4471, DK-3892, DK-5511, DK-2244, DK-7731) · 5 jobs (J-2847 to J-3002)</div>
+    <div class="note" style="margin-top:8px">Fleet: DK-4471, DK-3892, DK-5511, DK-2244, DK-7731 · Jobs: J-2847 to J-3002</div>
   </div>
 </div>
 
+<!-- PHASE 19 — AI BRAIN -->
+<div class="phase">
+  <div class="phase-header" style="background:#EEEDFE;border-bottom:0.5px solid #AFA9EC">
+    <span class="phase-num" style="background:#CECBF6;color:#26215C">Phase 19</span>
+    <span class="phase-title" style="color:#26215C">AI Brain — multi-provider <span class="new-badge">NEW</span></span>
+  </div>
+  <div class="phase-body">
+    <div class="note" style="margin-top:10px;margin-bottom:8px">Reads signals + 30-day history → calls Mistral/Gemini/Claude → returns reason in Danish + pattern + dispatcher instruction. Learns from overrides over time.</div>
+    <div class="cols">
+      <div>
+        <div class="fn">Set-VBAFCenterAIKey — save once</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">Provider</span><span class="arg-val">Mistral</span></div>
+          <div class="arg-row"><span class="arg-key">APIKey</span><span class="arg-val">your-key-here</span></div>
+        </div>
+        <div class="note">Free key: https://console.mistral.ai/api-keys</div>
+        <div class="fn" style="margin-top:10px">Get-VBAFCenterAIProviders</div>
+        <div class="args" style="color:#888780;font-size:11px">(no arguments) — shows all providers and key status</div>
+        <div class="fn" style="margin-top:10px">Test-VBAFCenterAIProvider</div>
+        <div class="args"><div class="arg-row"><span class="arg-key">Provider</span><span class="arg-val">Mistral</span></div></div>
+      </div>
+      <div>
+        <div class="fn">Invoke-VBAFCenterClaudeBrain — once</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">NordLogistik</span></div>
+          <div class="arg-row"><span class="arg-key">Provider</span><span class="arg-val">Mistral</span></div>
+        </div>
+        <div class="fn" style="margin-top:10px">Invoke-VBAFCenterClaudeBrain — loop (separate console)</div>
+        <div class="args" style="font-size:11px">
+          while ($true) {<br>
+          &nbsp;&nbsp;Invoke-VBAFCenterClaudeBrain -CustomerID "NordLogistik" -Provider "Mistral" -SuppressCrisis<br>
+          &nbsp;&nbsp;Start-Sleep -Seconds 1800<br>
+          }
+        </div>
+        <div class="fn" style="margin-top:10px">Get-VBAFCenterClaudeBrainHistory</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">NordLogistik</span></div>
+          <div class="arg-row"><span class="arg-key">Provider</span><span class="arg-opt">Mistral ← optional filter</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="fn" style="margin-top:10px">AI Brain daily decision log</div>
+    <div class="args">Get-Content "$env:USERPROFILE\VBAFCenter\dailylog\NordLogistik-$(Get-Date -Format 'yyyyMMdd').log"</div>
+    <div style="margin-top:10px">
+      <table class="ref-table">
+        <tr><th>Provider</th><th>Free</th><th>Model</th><th>Get key at</th></tr>
+        <tr><td>Mistral</td><td>FREE</td><td>mistral-small-latest</td><td>console.mistral.ai/api-keys</td></tr>
+        <tr><td>Gemini</td><td>FREE</td><td>gemini-2.0-flash</td><td>aistudio.google.com/app/apikey</td></tr>
+        <tr><td>Groq</td><td>FREE</td><td>llama-3.3-70b</td><td>console.groq.com/keys</td></tr>
+        <tr><td>OpenRouter</td><td>FREE</td><td>deepseek-r1:free</td><td>openrouter.ai/keys</td></tr>
+        <tr><td>Claude</td><td>Paid</td><td>claude-sonnet-4</td><td>console.anthropic.com</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- DAILY BRIEFING -->
+<div class="phase">
+  <div class="phase-header" style="background:#EEEDFE;border-bottom:0.5px solid #AFA9EC">
+    <span class="phase-num" style="background:#CECBF6;color:#26215C">Daily Briefing</span>
+    <span class="phase-title" style="color:#26215C">HTML report — opens in browser <span class="new-badge">NEW</span></span>
+  </div>
+  <div class="phase-body">
+    <div class="note" style="margin-top:10px;margin-bottom:8px">Generates a clean HTML briefing from history + AI Brain. Designed for the dispatcher — no PowerShell needed.</div>
+    <div class="cols">
+      <div>
+        <div class="fn">Export-VBAFCenterDailyBriefing — from existing data</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">NordLogistik</span></div>
+          <div class="arg-row"><span class="arg-key">-OpenBrowser</span><span class="arg-opt">← opens immediately</span></div>
+        </div>
+        <div class="fn" style="margin-top:10px">Export-VBAFCenterDailyBriefing — run AI first</div>
+        <div class="args">
+          <div class="arg-row"><span class="arg-key">CustomerID</span><span class="arg-val">NordLogistik</span></div>
+          <div class="arg-row"><span class="arg-key">-RunAIFirst</span><span class="arg-opt">← calls Mistral first</span></div>
+          <div class="arg-row"><span class="arg-key">-OpenBrowser</span><span class="arg-opt">← opens immediately</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="fn">Auto-generate every morning at 07:00 (separate console)</div>
+        <div class="args" style="font-size:11px">
+          while ($true) {<br>
+          &nbsp;&nbsp;if ((Get-Date).Hour -eq 7 -and (Get-Date).Minute -eq 0) {<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;Export-VBAFCenterDailyBriefing -CustomerID "NordLogistik" -RunAIFirst -OpenBrowser<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;Start-Sleep -Seconds 61<br>
+          &nbsp;&nbsp;}<br>
+          &nbsp;&nbsp;Start-Sleep -Seconds 30<br>
+          }
+        </div>
+        <div class="fn" style="margin-top:10px">Get-VBAFCenterBriefingPath</div>
+        <div class="args" style="color:#888780;font-size:11px">(no arguments) — shows saved briefings</div>
+      </div>
+    </div>
+    <div class="note" style="margin-top:8px">Saved to: %USERPROFILE%\VBAFCenter\briefings\CustomerID-latest.html</div>
+    <div class="note">Contains: summary cards · AI assessment · signal bars · action distribution · AI decision log</div>
+  </div>
+</div>
+
+<!-- REFERENCE -->
 <div class="phase">
   <div class="phase-header" style="background:#F1EFE8;border-bottom:0.5px solid #B4B2A9">
     <span class="phase-num" style="background:#D3D1C7;color:#2C2C2A">Reference</span>
-    <span class="phase-title" style="color:#2C2C2A">Agents · Sources · Actions · Commercial</span>
+    <span class="phase-title" style="color:#2C2C2A">Agents · Sources · Actions · Production · Commercial</span>
   </div>
   <div class="phase-body">
     <div class="cols">
@@ -590,9 +713,7 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
           <tr><td>IT Operations</td><td>IncidentResponder</td></tr>
           <tr><td>Full automation</td><td>AutoPilot</td></tr>
         </table>
-      </div>
-      <div>
-        <div class="fn">Source type reference</div>
+        <div class="fn" style="margin-top:10px">Source type reference</div>
         <table class="ref-table">
           <tr><th>Type</th><th>When to use</th></tr>
           <tr><td>Simulated</td><td>Demo and shadow mode</td></tr>
@@ -601,13 +722,24 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
           <tr><td>WMI</td><td>Windows IT data</td></tr>
           <tr><td>Manual</td><td>Customer types the number</td></tr>
         </table>
-        <div class="fn" style="margin-top:10px">Action numbers</div>
+      </div>
+      <div>
+        <div class="fn">Action numbers</div>
         <table class="ref-table">
           <tr><th>No.</th><th>Name</th><th>Meaning</th><th>Special</th></tr>
           <tr><td>0</td><td>Monitor</td><td>All good</td><td></td></tr>
           <tr><td>1</td><td>Reassign</td><td>Move resource</td><td></td></tr>
           <tr><td>2</td><td>Reroute</td><td>Change approach</td><td></td></tr>
-          <tr><td>3</td><td>Escalate</td><td>Call human now</td><td>Crisis + alarm + popup</td></tr>
+          <tr><td>3</td><td>Escalate</td><td>Call human now</td><td>Crisis + alarm + Accept/Override in portal</td></tr>
+        </table>
+        <div class="fn" style="margin-top:10px">5-console production setup</div>
+        <table class="ref-table">
+          <tr><th>Console</th><th>Command</th></tr>
+          <tr><td>1 — Scheduler</td><td>Start-VBAFCenterSchedule -CustomerID "X"</td></tr>
+          <tr><td>2 — AI Brain</td><td>while loop · Invoke-VBAFCenterClaudeBrain -SuppressCrisis</td></tr>
+          <tr><td>3 — Portal</td><td>Start-VBAFCenterPortal</td></tr>
+          <tr><td>4 — Fake TMS</td><td>Start-VBAFFakeTMS</td></tr>
+          <tr><td>5 — Briefing</td><td>while loop · Export-VBAFCenterDailyBriefing at 07:00</td></tr>
         </table>
       </div>
     </div>
@@ -633,7 +765,7 @@ body{font-family:Arial,sans-serif;color:#2C2C2A;background:#f4f4f0;padding:24px}
 </div>
 
 <div style="text-align:center;color:#888780;font-size:12px;padding:24px 0">
-  VBAF-Center v1.0.26 · Roskilde, Denmark · Built with PowerShell 5.1
+  VBAF-Center v1.0.33 · Roskilde, Denmark · Built with PowerShell 5.1 · AI Brain powered by Mistral
 </div>
 </body>
 </html>

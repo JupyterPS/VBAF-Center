@@ -30,7 +30,7 @@ CompanyName = 'VBAF'
 Copyright = '(c) 2026 Henning. All rights reserved.'
 
 # Description of the functionality provided by this module
-Description = 'VBAF-Center - Welcome Center gateway connecting business problems to the right VBAF AI agent'
+Description = 'VBAF-Center - Smart monitoring platform with AI Brain (Mistral/Gemini/Claude), daily HTML briefing, write-back to TMS and dispatcher portal with Accept/Override buttons'
 
 # Minimum version of the Windows PowerShell engine required by this module
 PowerShellVersion = '5.1'
@@ -95,7 +95,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = 'VBAF', 'AI', 'DQN', 'Automation', 'Enterprise', 'WelcomeCenter', 'Gateway'
+        Tags = 'VBAF', 'AI', 'Mistral', 'Automation', 'Enterprise', 'Logistics', 'Monitoring', 'Dashboard', 'Portal'
 
         # A URL to the license for this module.
         LicenseUri = 'https://github.com/JupyterPS/VBAF-Center/blob/master/LICENSE'
