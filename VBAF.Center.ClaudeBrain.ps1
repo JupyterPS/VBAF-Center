@@ -128,7 +128,8 @@ function Set-VBAFCenterAIKey {
     $p = $script:AIProviders[$Provider]
     Write-Host ""
     Write-Host ("  API key saved: {0}" -f $p.Name) -ForegroundColor Green
-    Write-Host ("  Free  : {0}" -f (if ($p.Free) { "Yes — " + $p.Description } else { "No (paid)" })) -ForegroundColor White
+    $freeLabel = if ($p.Free) { "Yes -- " + $p.Description } else { "No (paid)" }
+    Write-Host ("  Free  : {0}" -f $freeLabel) -ForegroundColor White
     Write-Host ("  Model : {0}" -f $p.Model) -ForegroundColor White
     Write-Host ("  Test  : Test-VBAFCenterAIProvider -Provider ""{0}""" -f $Provider) -ForegroundColor DarkGray
     Write-Host ""

@@ -1,8 +1,4 @@
-﻿. (Join-Path $basePath "VBAF-Center\VBAF.Center.Publish.ps1")                 # GIT
-Publish-VBAFCenter
-
-. (Join-Path $basePath "VBAF-Center\VBAF.Center.LoadAll.ps1")
-
+﻿
 Phase 1 — Customer profile          CustomerID: TruckCompanyDK
 New-VBAFCenterCustomer	            First time you onboard a new customer	    Once per customer         Purple Once per customer — setup only
 Get-VBAFCenterCustomer	            Look up one customer's details	            When needed               Amber When needed — you decide             
@@ -87,6 +83,27 @@ Get-VBAFCenterAIProviders           show all providers and status
 Test-VBAFCenterAIProvider           test a provider connection
 Invoke-VBAFCenterClaudeBrain        run full AI analysis
 Get-VBAFCenterClaudeBrainHistory    show AI decision history
+
+#___________________________________ VBAF-Center — Load The Rest _______________________________________________
+
+
+cd "C:\Users\henni\OneDrive\WindowsPowerShell"
+   . .\VBAF-Center\VBAF.Center.LoadAll.ps1
+
+. (Join-Path $basePath "VBAF-Center\VBAF.Center.LoadAll.ps1")
+
+. (Join-Path $basePath "VBAF-Center\VBAF.Center.Publish.ps1")                 # GIT
+Publish-VBAFCenter
+
+
+. "VBAF-Center\VBAF.Center.APIInspector.ps1"                                                              
+. "VBAF-Center\VBAF.Center.GPSInspector.ps1"  
+. "VBAF-Center\VBAF.Center.TMSSimulator.ps1"
+. "VBAF-Center\VBAF.Center.TMSSimulator.Standard.ps1"
+. "VBAF-Center\VBAF.Center.TMSSimulator.Advanced.ps1"
+. "VBAF-Center\VBAF.Center.TMSSimulator.Full.ps1" 
+. "VBAF-Center\VBAF.Center.FakeTMS.ps1" 
+
                                                                                 
 Fake TMS (separate console)                                                     
 Start-VBAFFakeTMS                   Start fake TMS server for Write-back demo   Demo / testing           Amber When needed — you decide
@@ -94,17 +111,63 @@ Get-VBAFFakeTMSLog                  See all commands received by Fake TMS       
 Clear-VBAFFakeTMSLog                Reset the Fake TMS command log              When needed              Amber When needed — you decide
 
 
-. "VBAF-Center\VBAF.Center.Assessment.ps1" Run ALL 4 BEFORE onboarding FOR NEED Once per customer Purple Once per customer — setup only
 
-. "VBAF-Center\VBAF.Center.TMSSimulator.ps1"
-. "VBAF-Center\VBAF.Center.TMSSimulator.Standard.ps1"
-. "VBAF-Center\VBAF.Center.TMSSimulator.Advanced.ps1"
-. "VBAF-Center\VBAF.Center.TMSSimulator.Full.ps1"    
 
-. "VBAF-Center\VBAF.Center.APIInspector.ps1"                                                              
-. "VBAF-Center\VBAF.Center.GPSInspector.ps1"  
+
+
 
 . "VBAF-Center\VBAF.Center.CompareEngines.ps1"   Only for comparison use One time running
+
+#__________________________________________________________________________________
+
+
+Inspectors
+. .\VBAF-Center\VBAF.Center.GPSInspector.ps1
+Start-VBAFCenterGPSInspector -CustomerID "NordLogistik"
+
+. .\VBAF-Center\VBAF.Center.APIInspector.ps1
+Invoke-VBAFCenterAPIInspector -URL "https://..." -CustomerID "NordLogistik" -SignalIndex "Signal1"
+
+
+Simulatos
+# Simple (score 8-15) — 2 signals
+. .\VBAF-Center\VBAF.Center.TMSSimulator.ps1
+Show-VBAFTMSStatus
+Invoke-VBAFTMSEvent -Event "WeatherEvent"
+Invoke-VBAFTMSDayReplay -CustomerID "NordLogistik" -FireEvents
+
+# Standard (score 16-25) — 4 signals
+. .\VBAF-Center\VBAF.Center.TMSSimulator.Standard.ps1
+Show-VBAFTMSStdStatus
+Invoke-VBAFTMSStdEvent -Event "FuelPriceSpike"
+Invoke-VBAFTMSStdDayReplay -CustomerID "NordLogistik" -FireEvents
+
+# Advanced (score 26-32) — 6 signals
+. .\VBAF-Center\VBAF.Center.TMSSimulator.Advanced.ps1
+Show-VBAFTMSAdvStatus
+Invoke-VBAFTMSAdvEvent -Event "DriverSickDay"
+Invoke-VBAFTMSAdvDayReplay -CustomerID "NordLogistik" -FireEvents
+
+# Full (score 33-40) — 10 signals
+. .\VBAF-Center\VBAF.Center.TMSSimulator.Full.ps1
+Show-VBAFTMSFullStatus
+Invoke-VBAFTMSFullEvent -Event "HighDemandSurge"
+Invoke-VBAFTMSFullDayReplay -CustomerID "NordLogistik" -FireEvents
+
+
+Onboarding	    Start-VBAFCenterOnboarding
+Run pipeline	Invoke-VBAFCenterRun -CustomerID "NordLogistik"
+Schedule 24/7   Start-VBAFCenterSchedule -CustomerID "NordLogistik"
+Portal		    Start-VBAFCenterPortal
+Dashboard	    Start-VBAFCenterDashboard
+Crisis tree  	Start-VBAFCenterCrisis -CustomerID "NordLogistik"
+AI Brain		Invoke-VBAFCenterClaudeBrain -CustomerID "NordLogistik" -Provider "Mistral"
+Daily briefing	Export-VBAFCenterDailyBriefing -CustomerID "NordLogistik" -OpenBrowser
+Assessment	    Start-VBAFCenterAssessment
+Learning	    Invoke-VBAFCenterLearnFromHistory -CustomerID "NordLogistik" -Days 30
+Write-back  	Invoke-VBAFCenterWriteBack -CustomerID "NordLogistik" -Action 2
+Override log	Start-VBAFCenterOverride -CustomerID "NordLogistik" - VBAF Action 3 -
+		        DispatcherAction 2 -Reason "..."
 
 #___________________________________ DailyBriefing ________________________________________________
 
@@ -167,7 +230,8 @@ Start-VBAFCenterDashboard
 
 cd "C:\Users\henni\OneDrive\WindowsPowerShell"        # console 4  NB: It gives an error  >>>  run beneath in the browser command line
 . .\VBAF-Center\VBAF.Center.LoadAll.ps1
-Start-VBAFCenterPortal                                  
+
+Start-Get-VBAFCenterPortalURLs                                  
 
 http://localhost:8080/?customer=TruckCompanyDK&token=GXE08I   THIS IS THE WAY TO: Start-VBAFCenterPortal fra BROWSER
 http://localhost:8080/?customer=NordLogistik&token=D2W6PZ
