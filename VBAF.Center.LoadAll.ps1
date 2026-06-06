@@ -41,7 +41,7 @@ $basePath = Split-Path -Parent $MyInvocation.MyCommand.Path
 . (Join-Path $basePath "VBAF.Center.Billing.ps1")
 # Phase 13 — Crisis Response Tree (customer-specific trees)
 . (Join-Path $basePath "VBAF.Center.CrisisTree.ps1")
-# Phase 14/15 — Signal Thresholds and Weights (built into SignalAcquisition.ps1, Phase 3)
+# Phase 14/15 — Signal Thresholds and Weights (built into SignalAcquisition.ps1, in Phase 3)
 # Assessment
 . (Join-Path $basePath "VBAF.Center.Assessment.ps1")
 # Phase 16 — Learning Engine
@@ -52,50 +52,52 @@ $basePath = Split-Path -Parent $MyInvocation.MyCommand.Path
 . (Join-Path $basePath "VBAF.Center.WriteBack.ps1")
 # Phase 19 — AI Brain (multi-provider: Claude, Gemini, Groq, OpenRouter, Mistral)
 . (Join-Path $basePath "VBAF.Center.ClaudeBrain.ps1")
+# Company Setup — full setup + delete in one command
+. (Join-Path $basePath "VBAF.Center.CompanySetup.ps1")
 # Daily Briefing — HTML report for dispatcher
 . (Join-Path $basePath "VBAF.Center.DailyBriefing.ps1")
 
 Write-Host ""
-Write-Host "╔══════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+Write-Host "╔═════════════════════════════════════════════════════╗" -ForegroundColor Cyan
 Write-Host "║       VBAF-Center v1.0.36 — Ready                   ║" -ForegroundColor Cyan
 Write-Host "║       Smart Monitoring — Powered by AI              ║" -ForegroundColor Cyan
-Write-Host "╠══════════════════════════════════════════════════════╣" -ForegroundColor Cyan
-Write-Host "║  Phase 1  Customer Profile        — loaded          ║" -ForegroundColor White
-Write-Host "║  Phase 2  Problem Classification  — loaded          ║" -ForegroundColor White
-Write-Host "║  Phase 3  Signal Acquisition      — loaded          ║" -ForegroundColor White
-Write-Host "║  Phase 4  Normalisation           — AUTOMATIC       ║" -ForegroundColor White
-Write-Host "║  Phase 5  Agent Router            — loaded          ║" -ForegroundColor White
-Write-Host "║  Phase 6  Action Interpreter      — loaded          ║" -ForegroundColor White
-Write-Host "║  Phase 7  Customer Onboarding UI  — loaded          ║" -ForegroundColor White
-Write-Host "║  Phase 8  Scheduling Engine       — loaded          ║" -ForegroundColor White
-Write-Host "║  Phase 9  Web Portal              — loaded          ║" -ForegroundColor White
-Write-Host "║  Phase 10 Auto-Connector          — loaded          ║" -ForegroundColor White
-Write-Host "║  Phase 11 Multi-Customer Dashboard — loaded         ║" -ForegroundColor White
-Write-Host "║  Phase 12 Billing Engine          — loaded          ║" -ForegroundColor White
-Write-Host "║  Phase 13 Crisis Response Tree    — loaded          ║" -ForegroundColor White
-Write-Host "║  Phase 14 Signal Thresholds       — loaded          ║" -ForegroundColor Cyan
-Write-Host "║  Phase 15 Weighted Signals        — loaded          ║" -ForegroundColor Cyan
-Write-Host "║  Phase 16 Learning Engine         — loaded          ║" -ForegroundColor Cyan
-Write-Host "║  Phase 17 Smart Action Map        — loaded          ║" -ForegroundColor Cyan
-Write-Host "║  Phase 18 Write-back              — loaded          ║" -ForegroundColor Cyan
-Write-Host "║  Assessment           — loaded                      ║
-║  Phase 19 AI Brain (multi-provider) — loaded        ║" -ForegroundColor Green
-Write-Host "║  Daily Briefing HTML              — loaded          ║" -ForegroundColor Green
-Write-Host "╠══════════════════════════════════════════════════════╣" -ForegroundColor Cyan
-Write-Host "║  Quick start:                                        ║" -ForegroundColor White
+Write-Host "╠═════════════════════════════════════════════════════╣" -ForegroundColor Cyan
+Write-Host "║  Phase 1  Customer Profile          — loaded        ║" -ForegroundColor White
+Write-Host "║  Phase 2  Problem Classification    — loaded        ║" -ForegroundColor White
+Write-Host "║  Phase 3  Signal Acquisition        — loaded        ║" -ForegroundColor White
+Write-Host "║  Phase 4  Normalisation             — AUTOMATIC     ║" -ForegroundColor White
+Write-Host "║  Phase 5  Agent Router              — loaded        ║" -ForegroundColor White
+Write-Host "║  Phase 6  Action Interpreter        — loaded        ║" -ForegroundColor White
+Write-Host "║  Phase 7  Customer Onboarding UI    — loaded        ║" -ForegroundColor White
+Write-Host "║  Phase 8  Scheduling Engine         — loaded        ║" -ForegroundColor White
+Write-Host "║  Phase 9  Web Portal                — loaded        ║" -ForegroundColor White
+Write-Host "║  Phase 10 Auto-Connector            — loaded        ║" -ForegroundColor White
+Write-Host "║  Phase 11 Multi-Customer Dashboard  — loaded        ║" -ForegroundColor White
+Write-Host "║  Phase 12 Billing Engine            — loaded        ║" -ForegroundColor White
+Write-Host "║  Phase 13 Crisis Response Tree      — loaded        ║" -ForegroundColor White
+Write-Host "║  Phase 14 Signal Thresholds         — loaded        ║" -ForegroundColor Cyan
+Write-Host "║  Phase 15 Weighted Signals          — loaded        ║" -ForegroundColor Cyan
+Write-Host "║  Phase 16 Learning Engine           — loaded        ║" -ForegroundColor Cyan
+Write-Host "║  Phase 17 Smart Action Map          — loaded        ║" -ForegroundColor Cyan
+Write-Host "║  Phase 18 Write-back                — loaded        ║" -ForegroundColor Cyan
+Write-Host "║  Assessment                         — loaded        ║"
+Write-Host "║  Phase 19 AI Brain (multi-provider) — loaded        ║" -ForegroundColor Green
+Write-Host "║  Daily Briefing HTML                — loaded        ║" -ForegroundColor Green
+Write-Host "╠═════════════════════════════════════════════════════╣" -ForegroundColor Cyan
+Write-Host "║  Quick start:                                       ║" -ForegroundColor White
 Write-Host "║  Start-VBAFCenterOnboarding                         ║" -ForegroundColor Yellow
 Write-Host "║  Invoke-VBAFCenterRun -CustomerID 'NordLogistik'    ║" -ForegroundColor Yellow
 Write-Host "║  Start-VBAFCenterPortal                             ║" -ForegroundColor Yellow
 Write-Host "║  Start-VBAFCenterDashboard                          ║" -ForegroundColor Yellow
 Write-Host "║  Export-VBAFCenterDailyBriefing -CustomerID 'X' -OpenBrowser ║" -ForegroundColor Yellow
-Write-Host "╠══════════════════════════════════════════════════════╣" -ForegroundColor Cyan
-Write-Host "║  AI Brain (needs API key):                           ║" -ForegroundColor White
+Write-Host "╠═════════════════════════════════════════════════════╣" -ForegroundColor Cyan
+Write-Host "║  AI Brain (needs API key):                          ║" -ForegroundColor White
 Write-Host "║  Set-VBAFCenterAIKey -Provider 'Mistral' -APIKey '' ║" -ForegroundColor Green
 Write-Host "║  Invoke-VBAFCenterClaudeBrain -CustomerID 'X'       ║" -ForegroundColor Green
 Write-Host "║  Invoke-VBAFCenterClaudeBrain -CustomerID 'X' -SuppressCrisis ║" -ForegroundColor Green
-Write-Host "╠══════════════════════════════════════════════════════╣" -ForegroundColor Cyan
-Write-Host "║  Separate consoles:                                  ║" -ForegroundColor White
+Write-Host "╠═════════════════════════════════════════════════════╣" -ForegroundColor Cyan
+Write-Host "║  Separate consoles:                                 ║" -ForegroundColor White
 Write-Host "║  . .\VBAF-Center\VBAF.Center.FakeTMS.ps1            ║" -ForegroundColor DarkGray
 Write-Host "║  Start-VBAFFakeTMS                                  ║" -ForegroundColor DarkGray
-Write-Host "╚══════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Host "╚═════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""

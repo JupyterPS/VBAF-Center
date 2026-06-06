@@ -34,8 +34,11 @@ Get-VBAFCenterActionMap 	        Review customer's action definitions	    When n
 Phase 7 — Onboarding wizard         
 Start-VBAFCenterOnboarding	        Full setup of a new customer in one go	    Once per customer         Purple Once per customer — setup only
 Show-VBAFCenterSummary  	        Review what is configured for a customer	When needed               Amber When needed — you decide 
-VBAF.Center.CompanySetup.ps1        Starts a new Company completely
-                                    
+New-VBAFCenterCompanySetup          Starts a new Company completely
+Remove-VBAFCenterCompany -CustomerID "TestCompanyDK"
+New-VBAFCenterCompanySetup -CustomerID "TestCompanyDK" -CompanyName "Test Company DK" -Contact "ceo@testcompanydk.dk"
+Get-VBAFCenterSetupStatus -CustomerID "TestCompanyDK"
+                                   
 Phase 8 — Scheduling engine         
 Invoke-VBAFCenterRun    	        Run the full pipeline once manually	        Testing / demo            Amber When needed — you decide 
 Start-VBAFCenterSchedule	        Start automatic checking on a schedule	    Shadow / go-live          Green Daily / automatic — runs itself  
@@ -54,8 +57,7 @@ Get-VBAFCenterSignalStatus          See Green/Yellow/Red colour per signal      
 Invoke-VBAFCenterThresholdCheck     Show only Red and Yellow signals            When needed              Amber When needed — you decide
 Set-VBAFCenterSignalThreshold       Tune thresholds without full reconfiguration When needed             Amber When needed — you decide
 
-Phase 15 — Weighted Signals
-(built into Phase 3 — use -Weight parameter on New-VBAFCenterSignalConfig)
+Phase 15 — Weighted Signals         (built into Phase 3 — use -Weight parameter on New-VBAFCenterSignalConfig)
 
 Phase 16 — Learning Engine
 Start-VBAFCenterOverride            Log a dispatcher override immediately       After each override      Amber When needed — you decide
@@ -87,13 +89,7 @@ Get-VBAFCenterClaudeBrainHistory    show AI decision history
 #___________________________________ VBAF-Center — Load The Rest _______________________________________________
 
 
-cd "C:\Users\henni\OneDrive\WindowsPowerShell"
-   . .\VBAF-Center\VBAF.Center.LoadAll.ps1
-
 . (Join-Path $basePath "VBAF-Center\VBAF.Center.LoadAll.ps1")
-
-. (Join-Path $basePath "VBAF-Center\VBAF.Center.Publish.ps1")                 # GIT
-Publish-VBAFCenter
 
 
 . "VBAF-Center\VBAF.Center.APIInspector.ps1"                                                              
@@ -103,6 +99,11 @@ Publish-VBAFCenter
 . "VBAF-Center\VBAF.Center.TMSSimulator.Advanced.ps1"
 . "VBAF-Center\VBAF.Center.TMSSimulator.Full.ps1" 
 . "VBAF-Center\VBAF.Center.FakeTMS.ps1" 
+. "VBAF-Center\VBAF.Center.CompanyTest.ps1"
+
+
+. (Join-Path $basePath "VBAF-Center\VBAF.Center.Publish.ps1")                 # GIT
+Publish-VBAFCenter
 
                                                                                 
 Fake TMS (separate console)                                                     
@@ -111,23 +112,12 @@ Get-VBAFFakeTMSLog                  See all commands received by Fake TMS       
 Clear-VBAFFakeTMSLog                Reset the Fake TMS command log              When needed              Amber When needed — you decide
 
 
-
-
-
-
-
-. "VBAF-Center\VBAF.Center.CompareEngines.ps1"   Only for comparison use One time running
-
-#__________________________________________________________________________________
-
-
 Inspectors
 . .\VBAF-Center\VBAF.Center.GPSInspector.ps1
 Start-VBAFCenterGPSInspector -CustomerID "NordLogistik"
 
 . .\VBAF-Center\VBAF.Center.APIInspector.ps1
-Invoke-VBAFCenterAPIInspector -URL "https://..." -CustomerID "NordLogistik" -SignalIndex "Signal1"
-
+Invoke-VBAFCenterAPIInspector -URL "https://api.open-meteo.com/v1/forecast?latitude=55.6415&longitude=12.0803&current=wind_speed_10m,precipitation,temperature_2m" -CustomerID "NordLogistik" -SignalIndex "Signal1"
 
 Simulatos
 # Simple (score 8-15) — 2 signals
@@ -155,21 +145,25 @@ Invoke-VBAFTMSFullEvent -Event "HighDemandSurge"
 Invoke-VBAFTMSFullDayReplay -CustomerID "NordLogistik" -FireEvents
 
 
-Onboarding	    Start-VBAFCenterOnboarding
-Run pipeline	Invoke-VBAFCenterRun -CustomerID "NordLogistik"
-Schedule 24/7   Start-VBAFCenterSchedule -CustomerID "NordLogistik"
-Portal		    Start-VBAFCenterPortal
-Dashboard	    Start-VBAFCenterDashboard
-Crisis tree  	Start-VBAFCenterCrisis -CustomerID "NordLogistik"
-AI Brain		Invoke-VBAFCenterClaudeBrain -CustomerID "NordLogistik" -Provider "Mistral"
-Daily briefing	Export-VBAFCenterDailyBriefing -CustomerID "NordLogistik" -OpenBrowser
-Assessment	    Start-VBAFCenterAssessment
-Learning	    Invoke-VBAFCenterLearnFromHistory -CustomerID "NordLogistik" -Days 30
-Write-back  	Invoke-VBAFCenterWriteBack -CustomerID "NordLogistik" -Action 2
-Override log	Start-VBAFCenterOverride -CustomerID "NordLogistik" - VBAF Action 3 -
-		        DispatcherAction 2 -Reason "..."
+How to get started:
+Onboarding	       (Start-VBAFCenterOnboarding)
+                   Remove-VBAFCenterCompany -CustomerID "TestCompanyDK"
+                   New-VBAFCenterCompanySetup -CustomerID "TestCompanyDK" -CompanyName "Test Company DK" -Contact "ceo@testcompanydk.dk"
+Run pipeline	   Invoke-VBAFCenterRun -CustomerID "NordLogistik"
+Schedule 24/7      Start-VBAFCenterSchedule -CustomerID "NordLogistik"
+Portal		       Start-VBAFCenterPortal
+Dashboard	       Start-VBAFCenterDashboard
+Crisis tree  	   Start-VBAFCenterCrisis -CustomerID "NordLogistik"
+AI Brain		   Invoke-VBAFCenterClaudeBrain -CustomerID "NordLogistik" -Provider "Mistral"
+Assessment	       Start-VBAFCenterAssessment
+Learning	       Invoke-VBAFCenterLearnFromHistory -CustomerID "NordLogistik" -Days 30
+Write-back  	   Invoke-VBAFCenterWriteBack -CustomerID "NordLogistik" -Action 2 
+Override log	   Start-VBAFCenterOverride -CustomerID "NordLogistik" -VBAFAction 3 -DispatcherAction 2 -Reason "Situationen løste sig selv inden jeg nåede at handle"
 
-#___________________________________ DailyBriefing ________________________________________________
+* Daily briefing   Export-VBAFCenterDailyBriefing -CustomerID "NordLogistik" -OpenBrowser
+* Test Fake TMS
+
+#___________________________________ * DailyBriefing ________________________________________________
 
 Every morning at 07:00 automatically:
 Run this in a dedicated console and leave it overnight:
@@ -188,7 +182,7 @@ while ($true) {
     Start-Sleep -Seconds 30
 }
                                                          
-#___________________________________ TEST FAKE TMS AND WRITE BACK DISCIPLINE ________________________________________________
+#___________________________________ * TEST FAKE TMS AND WRITE BACK DISCIPLINE ________________________________________________
 
 # TERMINAL 1
 
