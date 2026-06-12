@@ -1,4 +1,12 @@
-﻿
+﻿Go to: https://account.microsoft.com/security
+Click: Advanced security options
+Scroll to: App passwords
+Click: Create a new app password
+Name it: VBAF-Center
+Copy the generated password — looks like: xxxx-xxxx-xxxx-xxxx
+
+
+
 Phase 1 — Customer profile          CustomerID: TruckCompanyDK
 New-VBAFCenterCustomer	            First time you onboard a new customer	    Once per customer         Purple Once per customer — setup only
 Get-VBAFCenterCustomer	            Look up one customer's details	            When needed               Amber When needed — you decide             
@@ -35,9 +43,7 @@ Phase 7 — Onboarding wizard
 Start-VBAFCenterOnboarding	        Full setup of a new customer in one go	    Once per customer         Purple Once per customer — setup only
 Show-VBAFCenterSummary  	        Review what is configured for a customer	When needed               Amber When needed — you decide 
 New-VBAFCenterCompanySetup          Starts a new Company completely
-Remove-VBAFCenterCompany -CustomerID "TestCompanyDK"
-New-VBAFCenterCompanySetup -CustomerID "TestCompanyDK" -CompanyName "Test Company DK" -Contact "ceo@testcompanydk.dk"
-Get-VBAFCenterSetupStatus -CustomerID "TestCompanyDK"
+See below * Onboarding *
                                    
 Phase 8 — Scheduling engine         
 Invoke-VBAFCenterRun    	        Run the full pipeline once manually	        Testing / demo            Amber When needed — you decide 
@@ -89,7 +95,8 @@ Get-VBAFCenterClaudeBrainHistory    show AI decision history
 #___________________________________ VBAF-Center — Load The Rest _______________________________________________
 
 
-. (Join-Path $basePath "VBAF-Center\VBAF.Center.LoadAll.ps1")
+cd "C:\Users\henni\OneDrive\WindowsPowerShell"
+. .\VBAF-Center\VBAF.Center.LoadAll.ps1
 
 
 . "VBAF-Center\VBAF.Center.APIInspector.ps1"                                                              
@@ -98,18 +105,11 @@ Get-VBAFCenterClaudeBrainHistory    show AI decision history
 . "VBAF-Center\VBAF.Center.TMSSimulator.Standard.ps1"
 . "VBAF-Center\VBAF.Center.TMSSimulator.Advanced.ps1"
 . "VBAF-Center\VBAF.Center.TMSSimulator.Full.ps1" 
-. "VBAF-Center\VBAF.Center.FakeTMS.ps1" 
-. "VBAF-Center\VBAF.Center.CompanyTest.ps1"
+. "VBAF-Center\VBAF.Center.ReferenceCard.ps1" 
 
 
 . (Join-Path $basePath "VBAF-Center\VBAF.Center.Publish.ps1")                 # GIT
 Publish-VBAFCenter
-
-                                                                                
-Fake TMS (separate console)                                                     
-Start-VBAFFakeTMS                   Start fake TMS server for Write-back demo   Demo / testing           Amber When needed — you decide
-Get-VBAFFakeTMSLog                  See all commands received by Fake TMS       When needed              Amber When needed — you decide
-Clear-VBAFFakeTMSLog                Reset the Fake TMS command log              When needed              Amber When needed — you decide
 
 
 Inspectors
@@ -146,9 +146,6 @@ Invoke-VBAFTMSFullDayReplay -CustomerID "NordLogistik" -FireEvents
 
 
 How to get started:
-Onboarding	       (Start-VBAFCenterOnboarding)
-                   Remove-VBAFCenterCompany -CustomerID "TestCompanyDK"
-                   New-VBAFCenterCompanySetup -CustomerID "TestCompanyDK" -CompanyName "Test Company DK" -Contact "ceo@testcompanydk.dk"
 Run pipeline	   Invoke-VBAFCenterRun -CustomerID "NordLogistik"
 Schedule 24/7      Start-VBAFCenterSchedule -CustomerID "NordLogistik"
 Portal		       Start-VBAFCenterPortal
@@ -160,18 +157,27 @@ Learning	       Invoke-VBAFCenterLearnFromHistory -CustomerID "NordLogistik" -Da
 Write-back  	   Invoke-VBAFCenterWriteBack -CustomerID "NordLogistik" -Action 2 
 Override log	   Start-VBAFCenterOverride -CustomerID "NordLogistik" -VBAFAction 3 -DispatcherAction 2 -Reason "Situationen løste sig selv inden jeg nåede at handle"
 
+* Onboarding	   Start-VBAFCenterOnboarding OR see below for onboarding in one go
 * Daily briefing   Export-VBAFCenterDailyBriefing -CustomerID "NordLogistik" -OpenBrowser
 * Test Fake TMS
+* Reference card   Export-VBAFCenterReferenceCard -CustomerID "NordLogistik" -OpenBrowser
 
-#___________________________________ * DailyBriefing ________________________________________________
+#___________________________________ * Onboarding * ________________________________________________
+
+cd "C:\Users\henni\OneDrive\WindowsPowerShell"
+. .\VBAF-Center\VBAF.Center.LoadAll.ps1
+. .\VBAF-Center\VBAF.Center.CompanySetup.ps1
+Remove-VBAFCenterCompany -CustomerID "TestCompanyDK"
+New-VBAFCenterCompanySetup -CustomerID "TestCompanyDK" -CompanyName "Test Company DK" -Contact "ceo@testcompanydk.dk" -AlertPhone "+4542441015"
+Get-VBAFCenterSetupStatus -CustomerID "TestCompanyDK"
+
+#___________________________________ * DailyBriefing * ________________________________________________
 
 Every morning at 07:00 automatically:
 Run this in a dedicated console and leave it overnight:
 
 cd "C:\Users\henni\OneDrive\WindowsPowerShell"
 . .\VBAF-Center\VBAF.Center.LoadAll.ps1
-. .\VBAF-Center\VBAF.Center.ClaudeBrain.ps1
-. .\VBAF-Center\VBAF.Center.DailyBriefing.ps1
 
 while ($true) {
     $now = Get-Date
@@ -181,8 +187,22 @@ while ($true) {
     }
     Start-Sleep -Seconds 30
 }
+
+#___________________________________ * Reference card (Threshold figures per Customer) * ________________________________________________
+
+cd "C:\Users\henni\OneDrive\WindowsPowerShell"
+. .\VBAF-Center\VBAF.Center.LoadAll.ps1
+. .\VBAF-Center\VBAF.Center.ReferenceCard.ps1
+
+Export-VBAFCenterReferenceCard -CustomerID "NordLogistik" -OpenBrowser
                                                          
-#___________________________________ * TEST FAKE TMS AND WRITE BACK DISCIPLINE ________________________________________________
+#___________________________________ * TEST FAKE TMS AND WRITE BACK DISCIPLINE * ________________________________________________
+
+Fake TMS (separate console)                                                     
+Start-VBAFFakeTMS                   Start fake TMS server for Write-back demo   Demo / testing           Amber When needed — you decide
+Get-VBAFFakeTMSLog                  See all commands received by Fake TMS       When needed              Amber When needed — you decide
+Clear-VBAFFakeTMSLog                Reset the Fake TMS command log              When needed              Amber When needed — you decide
+
 
 # TERMINAL 1
 
@@ -197,7 +217,6 @@ Start-VBAFFakeTMS
 
 cd "C:\Users\henni\OneDrive\WindowsPowerShell"
 . .\VBAF-Center\VBAF.Center.LoadAll.ps1
-. .\VBAF-Center\VBAF.Center.WriteBack.ps1
 
 # In your original console 2 (not the Fake TMS one) run:
 New-VBAFCenterWriteConfig -CustomerID "TruckCompanyDK" -TMSBaseURL "http://localhost:8082"
@@ -225,10 +244,45 @@ Start-VBAFCenterDashboard
 cd "C:\Users\henni\OneDrive\WindowsPowerShell"        # console 4  NB: It gives an error  >>>  run beneath in the browser command line
 . .\VBAF-Center\VBAF.Center.LoadAll.ps1
 
-Start-Get-VBAFCenterPortalURLs                                  
+Get-VBAFCenterPortalURLs                                
 
 http://localhost:8080/?customer=TruckCompanyDK&token=GXE08I   THIS IS THE WAY TO: Start-VBAFCenterPortal fra BROWSER
 http://localhost:8080/?customer=NordLogistik&token=D2W6PZ
+
+#___________________________________ CHECK IF MAILSYSTEM IS ALL SET ________________________________________________
+
+$CustomerID = "NordLogistik"
+$schedFile  = "$env:USERPROFILE\VBAFCenter\schedules\$CustomerID-schedule.json"
+
+Write-Host ""
+Write-Host "  VBAF Email Alert Verification — $CustomerID" -ForegroundColor Cyan
+Write-Host ("  {0}" -f ("-" * 50)) -ForegroundColor DarkGray
+
+# 1 — AlertEmail
+if (Test-Path $schedFile) {
+    $sched = Get-Content $schedFile -Raw | ConvertFrom-Json
+    $ok = { Write-Host ("  {0,-30} {1}" -f $args[0], "OK") -ForegroundColor Green }
+    $no = { Write-Host ("  {0,-30} {1}" -f $args[0], "MISSING") -ForegroundColor Red }
+
+    if ($sched.AlertEmail)   { &$ok "AlertEmail" }   else { &$no "AlertEmail" }
+    if ($sched.SMTPServer)   { &$ok "SMTPServer" }   else { &$no "SMTPServer" }
+    if ($sched.SMTPUser)     { &$ok "SMTPUser" }     else { &$no "SMTPUser" }
+    if ($sched.SMTPPassword) { &$ok "SMTPPassword" } else { &$no "SMTPPassword" }
+} else {
+    Write-Host "  Schedule file not found!" -ForegroundColor Red
+}
+
+# 2 — Internet
+$online = Test-Connection "smtp-mail.outlook.com" -Count 1 -Quiet
+if ($online) { Write-Host ("  {0,-30} {1}" -f "PC online (Outlook reachable)", "OK") -ForegroundColor Green }
+else         { Write-Host ("  {0,-30} {1}" -f "PC online (Outlook reachable)", "OFFLINE") -ForegroundColor Red }
+
+# 3 — Scheduler running
+$schedRunning = Get-Command Start-VBAFCenterSchedule -ErrorAction SilentlyContinue
+if ($schedRunning) { Write-Host ("  {0,-30} {1}" -f "Scheduler loaded", "OK") -ForegroundColor Green }
+else               { Write-Host ("  {0,-30} {1}" -f "Scheduler loaded", "NOT LOADED") -ForegroundColor Red }
+
+Write-Host ""
 
 #___________________________________ RESET FILES IN BETWEEN TEST'S ________________________________________________
 
@@ -255,7 +309,7 @@ Write-Host "Clean slate — all test data removed!" -ForegroundColor Green
 Get-VBAFCenterAllCustomers              # CHECK    
 
 
-<#___________________ ALLE NEDENSTÅENDE DATA ER AT FINDE PÅ GITHUB VBAF-CENTER (PAGES) __________________
+<#___________ ALL BENEATH DATA, YOU'LL FIND ON GITHUB VBAF-CENTER (PAGES) as onboarding cheat sheet __________________
 
 CustomerID   : TruckCompanyDK
 CompanyName  : Truck Company DK
@@ -707,9 +761,8 @@ Start-VBAFCenterSchedule -CustomerID "TruckCompanyDK"
 Console 2 — Mistral AI Brain (every 30 min):
 powershellcd "C:\Users\henni\OneDrive\WindowsPowerShell"
 . .\VBAF-Center\VBAF.Center.LoadAll.ps1
-. .\VBAF-Center\VBAF.Center.ClaudeBrain.ps1
 while ($true) {
-    Invoke-VBAFCenterClaudeBrain -CustomerID "TruckCompanyDK" -Provider "Mistral"
+    Invoke-VBAFCenterClaudeBrain -CustomerID "TruckCompanyDK" -Provider "Mistral" -SuppressCrisis
     Write-Host "Next AI run in 30 minutes..." -ForegroundColor DarkGray
     Start-Sleep -Seconds 1800
 }
@@ -722,13 +775,21 @@ Console 4 — Portal (browser dashboard):
 powershellcd "C:\Users\henni\OneDrive\WindowsPowerShell"
 . .\VBAF-Center\VBAF.Center.LoadAll.ps1
 Start-VBAFCenterPortal
+
+Console 5 — Daily Briefing at 07:00:
+while ($true) {
+    if ((Get-Date).Hour -eq 7 -and (Get-Date).Minute -eq 0) {
+        Export-VBAFCenterDailyBriefing -CustomerID "TruckCompanyDK" -RunAIFirst -OpenBrowser
+        Start-Sleep -Seconds 61
+    }
+    Start-Sleep -Seconds 30
+}
 __
 
 HOW TO FIRE AN EVENT AND SEE THE DIFFERENCE
 Step 1 — Run a normal cycle first:
 powershellcd "C:\Users\henni\OneDrive\WindowsPowerShell"
 . .\VBAF-Center\VBAF.Center.LoadAll.ps1
-. .\VBAF-Center\VBAF.Center.ClaudeBrain.ps1
 Invoke-VBAFCenterRun -CustomerID "TruckCompanyDK"
 Invoke-VBAFCenterClaudeBrain -CustomerID "TruckCompanyDK" -Provider "Mistral"
 
@@ -743,7 +804,6 @@ powershellInvoke-VBAFCenterRun -CustomerID "TruckCompanyDK"
 Invoke-VBAFCenterClaudeBrain -CustomerID "TruckCompanyDK" -Provider "Mistral"
 
 Step 5 — If Mistral recommends Reroute or Escalate — send write-back:
-powershell. .\VBAF-Center\VBAF.Center.WriteBack.ps1
 Invoke-VBAFCenterWriteBack -CustomerID "TruckCompanyDK" -Action 2 -Note "Mistral recommended"
 
 Step 6 — Check Fake TMS received the command:

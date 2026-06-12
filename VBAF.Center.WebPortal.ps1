@@ -11,6 +11,7 @@
     Phase 15 — Signal weight displayed per signal
     Phase 18 — Accept/Override buttons for write-back
     Phase 16 — Threshold suggestion Yes/No buttons
+    Option C  — Daglig Briefing button opens in new tab
 
     Functions:
       Start-VBAFCenterPortal      — start the web portal
@@ -53,7 +54,8 @@ function Get-VBAFCenterPortalURLs {
         $s = Get-Content $file.FullName -Raw | ConvertFrom-Json
         if ($s.PortalToken) {
             Write-Host ("  Customer : {0}" -f $s.CustomerID) -ForegroundColor White
-            Write-Host ("  URL      : http://localhost:{0}/?customer={1}&token={2}" -f $Port, $s.CustomerID, $s.PortalToken) -ForegroundColor Yellow
+            Write-Host ("  Portal   : http://localhost:{0}/?customer={1}&token={2}" -f $Port, $s.CustomerID, $s.PortalToken) -ForegroundColor Yellow
+            Write-Host ("  Briefing : http://localhost:{0}/briefing?customer={1}&token={2}" -f $Port, $s.CustomerID, $s.PortalToken) -ForegroundColor Cyan
             Write-Host ""
         }
     }
@@ -63,7 +65,7 @@ function Get-VBAFCenterPortalURLs {
 # CUSTOMER TABS
 # ============================================================
 function Get-PortalCustomerTabs {
-    param([string]$CurrentCustomerID, [int]$Port = 8080)
+    param([string]$CurrentCustomerID, [string]$CurrentToken, [int]$Port = 8080)
     $schedPath = Join-Path $env:USERPROFILE "VBAFCenter\schedules"
     $tabs = ""
     if (Test-Path $schedPath) {
@@ -77,6 +79,9 @@ function Get-PortalCustomerTabs {
             }
         }
     }
+    # Daglig Briefing button — always in tabs bar, opens in new tab
+    $briefingURL = "http://localhost:$Port/briefing?customer=$CurrentCustomerID&token=$CurrentToken"
+    $tabs += "<a href='$briefingURL' target='_blank' class='tab-briefing'>&#128197; Daglig Briefing</a>"
     return $tabs
 }
 
@@ -105,7 +110,7 @@ function Resolve-PortalSignalStatus {
 # ============================================================
 function Get-PortalThresholdSuggestion {
     param([string]$CustomerID)
-    $suggPath = Join-Path $env:USERPROFILE "VBAFCenter\suggestions\$CustomerID-suggestion.json"
+    $suggPath    = Join-Path $env:USERPROFILE "VBAFCenter\suggestions\$CustomerID-suggestion.json"
     $dismissPath = Join-Path $env:USERPROFILE "VBAFCenter\suggestions\$CustomerID-dismissed.txt"
     if (-not (Test-Path $suggPath)) { return $null }
     if (Test-Path $dismissPath) {
@@ -118,7 +123,7 @@ function Get-PortalThresholdSuggestion {
 }
 
 # ============================================================
-# SAVE THRESHOLD SUGGESTION (call from Learning Engine)
+# SAVE THRESHOLD SUGGESTION
 # ============================================================
 function Save-VBAFCenterThresholdSuggestion {
     param(
@@ -131,14 +136,49 @@ function Save-VBAFCenterThresholdSuggestion {
     $suggPath = Join-Path $env:USERPROFILE "VBAFCenter\suggestions"
     if (-not (Test-Path $suggPath)) { New-Item -ItemType Directory -Path $suggPath -Force | Out-Null }
     @{
-        CustomerID      = $CustomerID
+        CustomerID       = $CustomerID
         SuggestedAction1 = $SuggestedAction1
         SuggestedAction2 = $SuggestedAction2
         SuggestedAction3 = $SuggestedAction3
-        Reason          = $Reason
-        CreatedAt       = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
+        Reason           = $Reason
+        CreatedAt        = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
     } | ConvertTo-Json | Set-Content "$suggPath\$CustomerID-suggestion.json" -Encoding UTF8
     Write-Host ("Threshold suggestion saved for: {0}" -f $CustomerID) -ForegroundColor Green
+}
+
+# ============================================================
+# SERVE DAILY BRIEFING
+# ============================================================
+function Get-PortalBriefingHTML {
+    param([string]$CustomerID)
+    $briefingPath = Join-Path $env:USERPROFILE "VBAFCenter\briefings\$CustomerID-latest.html"
+    if (Test-Path $briefingPath) {
+        return Get-Content $briefingPath -Raw -Encoding UTF8
+    }
+    # No briefing yet — return helpful page
+    return @"
+<!DOCTYPE html><html lang='da'><head><meta charset='UTF-8'>
+<title>VBAF-Center — Daglig Briefing</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Arial,sans-serif;background:#f4f4f0;display:flex;align-items:center;justify-content:center;min-height:100vh}
+  .box{background:#fff;border-radius:12px;padding:40px;text-align:center;max-width:480px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+  .icon{font-size:48px;margin-bottom:16px}
+  h1{font-size:20px;color:#2C2C2A;margin-bottom:8px}
+  p{font-size:14px;color:#888;line-height:1.7;margin-bottom:12px}
+  code{background:#f4f4f0;padding:4px 8px;border-radius:4px;font-size:12px;color:#0B7EA3}
+</style>
+</head><body>
+<div class='box'>
+  <div class='icon'>&#128197;</div>
+  <h1>Daglig Briefing</h1>
+  <p>Ingen briefing er genereret endnu for <b>$CustomerID</b>.</p>
+  <p>Kør denne kommando for at generere briefingen:</p>
+  <p><code>Export-VBAFCenterDailyBriefing -CustomerID "$CustomerID" -RunAIFirst -OpenBrowser</code></p>
+  <p style='color:#1D9E75;font-size:13px'>Briefingen genereres automatisk hver morgen kl. 07:00 når den daglige loop kører.</p>
+</div>
+</body></html>
+"@
 }
 
 # ============================================================
@@ -201,7 +241,7 @@ function Get-PortalCustomerData {
 
     if (Test-Path $historyPath) {
         $latestFile = Get-ChildItem $historyPath -Filter "$CustomerID-*.json" |
-                      Sort-Object LastWriteTime -Descending | Select-Object -First 1
+                      Sort-Object Name -Descending | Select-Object -First 1
         if ($latestFile) {
             $h               = Get-Content $latestFile.FullName -Raw | ConvertFrom-Json
             $action          = [int]$h.Action
@@ -229,7 +269,7 @@ function Get-PortalCustomerData {
     $history = @()
     if (Test-Path $historyPath) {
         Get-ChildItem $historyPath -Filter "$CustomerID-*.json" |
-            Sort-Object LastWriteTime -Descending | Select-Object -First 10 | ForEach-Object {
+            Sort-Object Name -Descending | Select-Object -First 10 | ForEach-Object {
                 $h = Get-Content $_.FullName -Raw | ConvertFrom-Json
                 $history += @{
                     Timestamp         = $h.Timestamp
@@ -237,15 +277,14 @@ function Get-PortalCustomerData {
                     ActionName        = $h.ActionName
                     AvgSignal         = $h.AvgSignal
                     WeightedAvg       = $h.WeightedAvg
-                    ActionReason      = if ($h.ActionReason)         { $h.ActionReason }         else { "" }
-                    OverrideApplied   = if ($null -ne $h.OverrideApplied)  { [bool]$h.OverrideApplied  } else { $false }
-                    RedSignalCount    = if ($null -ne $h.RedSignalCount)   { [int]$h.RedSignalCount    } else { 0 }
-                    YellowSignalCount = if ($null -ne $h.YellowSignalCount){ [int]$h.YellowSignalCount } else { 0 }
+                    ActionReason      = if ($h.ActionReason)              { $h.ActionReason }              else { "" }
+                    OverrideApplied   = if ($null -ne $h.OverrideApplied) { [bool]$h.OverrideApplied }     else { $false }
+                    RedSignalCount    = if ($null -ne $h.RedSignalCount)   { [int]$h.RedSignalCount }       else { 0 }
+                    YellowSignalCount = if ($null -ne $h.YellowSignalCount){ [int]$h.YellowSignalCount }    else { 0 }
                 }
             }
     }
 
-    # Current thresholds
     $thresholds = $null
     $schedFile  = Join-Path $env:USERPROFILE "VBAFCenter\schedules\$CustomerID-schedule.json"
     if (Test-Path $schedFile) {
@@ -278,7 +317,7 @@ function Get-PortalCustomerData {
 }
 
 # ============================================================
-# HANDLE POST — write-back accept/override + threshold
+# HANDLE POST
 # ============================================================
 function Invoke-PortalPostAction {
     param([string]$CustomerID, [string]$PostBody, [int]$Port)
@@ -294,9 +333,7 @@ function Invoke-PortalPostAction {
     $postAction = $params["postaction"]
 
     switch ($postAction) {
-
         "accept" {
-            # Dispatcher accepts VBAF recommendation — write to TMS
             Write-Host ("  [PORTAL] Accept clicked — CustomerID: {0}" -f $CustomerID) -ForegroundColor Green
             if (Get-Command Invoke-VBAFCenterWriteBack -ErrorAction SilentlyContinue) {
                 $actionNum = [int]$params["action"]
@@ -306,9 +343,7 @@ function Invoke-PortalPostAction {
                 Write-Host "  [PORTAL] WriteBack module not loaded." -ForegroundColor Yellow
             }
         }
-
         "override" {
-            # Dispatcher overrides — log the reason
             Write-Host ("  [PORTAL] Override clicked — CustomerID: {0}" -f $CustomerID) -ForegroundColor Yellow
             $vbafAction = [int]$params["vbafaction"]
             $dispAction = [int]$params["dispaction"]
@@ -317,28 +352,20 @@ function Invoke-PortalPostAction {
             if (Get-Command Start-VBAFCenterOverride -ErrorAction SilentlyContinue) {
                 Start-VBAFCenterOverride -CustomerID $CustomerID -VBAFAction $vbafAction -DispatcherAction $dispAction -Reason $reason
                 Write-Host ("  [PORTAL] Override logged: VBAF={0} Dispatcher={1}" -f $vbafAction, $dispAction) -ForegroundColor Yellow
-            } else {
-                Write-Host "  [PORTAL] Override module not loaded." -ForegroundColor Yellow
             }
         }
-
         "apply-threshold" {
-            # Dispatcher approves suggested threshold change
             Write-Host ("  [PORTAL] Threshold apply clicked — CustomerID: {0}" -f $CustomerID) -ForegroundColor Cyan
             $a1 = [double]$params["a1"]
             $a2 = [double]$params["a2"]
             $a3 = [double]$params["a3"]
             if (Get-Command Set-VBAFCenterActionThresholds -ErrorAction SilentlyContinue) {
                 Set-VBAFCenterActionThresholds -CustomerID $CustomerID -Action1 $a1 -Action2 $a2 -Action3 $a3
-                Write-Host ("  [PORTAL] Thresholds applied: {0} / {1} / {2}" -f $a1, $a2, $a3) -ForegroundColor Green
             }
-            # Remove suggestion
             $suggFile = Join-Path $env:USERPROFILE "VBAFCenter\suggestions\$CustomerID-suggestion.json"
             if (Test-Path $suggFile) { Remove-Item $suggFile -Force }
         }
-
         "dismiss-threshold" {
-            # Dispatcher dismisses threshold suggestion for 7 days
             Write-Host ("  [PORTAL] Threshold dismissed — CustomerID: {0}" -f $CustomerID) -ForegroundColor DarkGray
             $dismissPath = Join-Path $env:USERPROFILE "VBAFCenter\suggestions"
             if (-not (Test-Path $dismissPath)) { New-Item -ItemType Directory -Path $dismissPath -Force | Out-Null }
@@ -352,7 +379,7 @@ function Invoke-PortalPostAction {
 # ============================================================
 function Get-PortalDeniedHTML {
     return @"
-<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'>
+<!DOCTYPE html><html lang='da'><head><meta charset='UTF-8'>
 <title>VBAF-Center — Access Denied</title>
 <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;background:#f4f4f0;display:flex;align-items:center;justify-content:center;min-height:100vh}.box{background:#fff;border-radius:12px;padding:40px;text-align:center;max-width:400px}.icon{font-size:48px;margin-bottom:16px}h1{font-size:20px;color:#E24B4A;margin-bottom:8px}p{font-size:14px;color:#888;line-height:1.6}</style>
 </head><body><div class='box'><div class='icon'>&#128274;</div><h1>Access Denied</h1><p>This portal requires a valid customer URL with token.<br><br>Contact your VBAF-Center administrator.</p></div></body></html>
@@ -368,7 +395,7 @@ function Get-PortalHTML {
     $data = Get-PortalCustomerData -CustomerID $CustomerID
     if (-not $data) { return Get-PortalDeniedHTML }
 
-    $tabs       = Get-PortalCustomerTabs -CurrentCustomerID $CustomerID -Port $Port
+    $tabs       = Get-PortalCustomerTabs -CurrentCustomerID $CustomerID -CurrentToken $Token -Port $Port
     $suggestion = Get-PortalThresholdSuggestion -CustomerID $CustomerID
     $baseURL    = "http://localhost:$Port/?customer=$CustomerID&token=$Token"
 
@@ -419,7 +446,6 @@ function Get-PortalHTML {
     $gc = @($data.Signals | Where-Object { $_.Color -eq "#1D9E75" }).Count
     $signalSummary = "<span style='color:#1D9E75;font-weight:500;margin-right:12px'>&#9679; $gc OK</span><span style='color:#EF9F27;font-weight:500;margin-right:12px'>&#9679; $yc Watch</span><span style='color:#E24B4A;font-weight:500'>&#9679; $rc Red</span>"
 
-    # ── WRITE-BACK BUTTONS ────────────────────────────────────
     $actionNum  = $data.Action
     $actionName = $data.ActionName
 
@@ -430,18 +456,14 @@ function Get-PortalHTML {
   <div class='rec-command'>$($data.ActionCommand)</div>
   <div class='rec-avg'>$avgDisplay</div>
   $(if ($data.ActionReason -ne "" -and -not $data.OverrideApplied) { "<div class='rec-reason'>$($data.ActionReason)</div>" })
-
   <div class='action-buttons'>
     <div style='font-size:12px;color:#888;margin-bottom:10px;margin-top:16px;text-transform:uppercase;letter-spacing:0.5px'>Dispatcher Action</div>
-
     <form method='POST' action='$baseURL' style='display:inline'>
       <input type='hidden' name='postaction' value='accept'>
       <input type='hidden' name='action' value='$actionNum'>
       <button type='submit' class='btn-accept'>&#10003; Accept &amp; Execute</button>
     </form>
-
     <button class='btn-override' onclick="document.getElementById('override-form-$actionNum').style.display='block';this.style.display='none'">&#10007; Override</button>
-
     <div id='override-form-$actionNum' style='display:none;margin-top:12px;background:#fafafa;padding:14px;border-radius:8px;border:0.5px solid #ddd'>
       <form method='POST' action='$baseURL'>
         <input type='hidden' name='postaction' value='override'>
@@ -462,7 +484,6 @@ function Get-PortalHTML {
 </div>
 "@
 
-    # ── THRESHOLD SUGGESTION ──────────────────────────────────
     $thresholdSection = ""
     if ($suggestion) {
         $thresholdSection = @"
@@ -506,7 +527,6 @@ function Get-PortalHTML {
 "@
     }
 
-    # Message banner (after POST)
     $messageBanner = ""
     if ($Message -ne "") {
         $messageBanner = "<div style='background:#E1F5EE;border-left:4px solid #1D9E75;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px;color:#04342C'>&#10003; $Message</div>"
@@ -514,7 +534,7 @@ function Get-PortalHTML {
 
     return @"
 <!DOCTYPE html>
-<html lang='en'>
+<html lang='da'>
 <head>
 <meta charset='UTF-8'>
 <meta http-equiv='refresh' content='600'>
@@ -525,10 +545,12 @@ function Get-PortalHTML {
   .header{background:#2C2C2A;color:#fff;padding:16px 32px;display:flex;align-items:center;justify-content:space-between}
   .header h1{font-size:18px;font-weight:500}
   .header .ts{font-size:12px;color:#888}
-  .tabs{background:#1a1a18;padding:0 32px;display:flex;gap:4px}
+  .tabs{background:#1a1a18;padding:0 32px;display:flex;align-items:center;gap:4px}
   .tab{display:inline-block;padding:10px 20px;color:#aaa;text-decoration:none;font-size:13px;border-bottom:3px solid transparent}
   .tab:hover{color:#fff;background:#2C2C2A}
   .tab.active{color:#fff;border-bottom:3px solid #EF9F27}
+  .tab-briefing{display:inline-block;padding:8px 16px;color:#1D9E75;text-decoration:none;font-size:13px;font-weight:500;border:1px solid #1D9E7560;border-radius:6px;margin-left:auto;background:#1D9E7515}
+  .tab-briefing:hover{background:#1D9E7530;color:#fff}
   .container{max-width:980px;margin:24px auto;padding:0 24px}
   .card{background:#fff;border-radius:8px;padding:20px 24px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
   .card-header{display:flex;justify-content:space-between;align-items:center;font-size:16px;font-weight:500;margin-bottom:8px}
@@ -650,30 +672,34 @@ function Start-VBAFCenterPortal {
             if (-not $token)      { $token      = "" }
 
             $valid = Test-PortalToken -CustomerID $customerID -Token $token
-
-            $html    = ""
+            $html  = ""
             $message = ""
 
             if ($valid) {
-                # Handle POST requests (button clicks)
-                if ($request.HttpMethod -eq "POST") {
-                    $reader   = [System.IO.StreamReader]::new($request.InputStream)
-                    $postBody = $reader.ReadToEnd()
-                    $reader.Close()
-
-                    Write-Host ("  [POST] {0} — {1}" -f $customerID, $postBody) -ForegroundColor Cyan
-
-                    Invoke-PortalPostAction -CustomerID $customerID -PostBody $postBody -Port $Port
-
-                    # Extract action for message
-                    if ($postBody -like "*postaction=accept*")            { $message = "Action accepted and sent to TMS." }
-                    elseif ($postBody -like "*postaction=override*")      { $message = "Override logged. VBAF will learn from this." }
-                    elseif ($postBody -like "*postaction=apply-threshold*") { $message = "Thresholds updated successfully." }
-                    elseif ($postBody -like "*postaction=dismiss-threshold*") { $message = "Suggestion dismissed for 7 days." }
+                # ── Briefing endpoint ─────────────────────────
+                if ($request.Url.AbsolutePath -eq "/briefing") {
+                    $html = Get-PortalBriefingHTML -CustomerID $customerID
+                    Write-Host ("  [{0}] BRIEFING {1}" -f (Get-Date -Format "HH:mm:ss"), $customerID) -ForegroundColor Cyan
                 }
+                # ── Main portal ───────────────────────────────
+                else {
+                    if ($request.HttpMethod -eq "POST") {
+                        $reader   = [System.IO.StreamReader]::new($request.InputStream)
+                        $postBody = $reader.ReadToEnd()
+                        $reader.Close()
 
-                $html = Get-PortalHTML -CustomerID $customerID -Token $token -Port $Port -Message $message
-                Write-Host ("  [{0}] GET {1}" -f (Get-Date -Format "HH:mm:ss"), $customerID) -ForegroundColor Green
+                        Write-Host ("  [POST] {0} — {1}" -f $customerID, $postBody) -ForegroundColor Cyan
+                        Invoke-PortalPostAction -CustomerID $customerID -PostBody $postBody -Port $Port
+
+                        if ($postBody -like "*postaction=accept*")              { $message = "Action accepted and sent to TMS." }
+                        elseif ($postBody -like "*postaction=override*")        { $message = "Override logged. VBAF will learn from this." }
+                        elseif ($postBody -like "*postaction=apply-threshold*") { $message = "Thresholds updated successfully." }
+                        elseif ($postBody -like "*postaction=dismiss-threshold*") { $message = "Suggestion dismissed for 7 days." }
+                    }
+
+                    $html = Get-PortalHTML -CustomerID $customerID -Token $token -Port $Port -Message $message
+                    Write-Host ("  [{0}] GET {1}" -f (Get-Date -Format "HH:mm:ss"), $customerID) -ForegroundColor Green
+                }
             } else {
                 $html = Get-PortalDeniedHTML
                 Write-Host ("  [{0}] Denied: {1}" -f (Get-Date -Format "HH:mm:ss"), $request.RawUrl) -ForegroundColor Red
@@ -714,11 +740,12 @@ Write-Host "  |   VBAF-Center Phase 9 — Web Portal               |" -Foregroun
 Write-Host "  |   Phase 14: threshold colours + override banner   |" -ForegroundColor Cyan
 Write-Host "  |   Phase 15: signal weights displayed              |" -ForegroundColor Cyan
 Write-Host "  |   Phase 18: Accept/Override write-back buttons    |" -ForegroundColor Cyan
-Write-Host "  |   Phase 16: Threshold suggestion Yes/No          |" -ForegroundColor Cyan
+Write-Host "  |   Phase 16: Threshold suggestion Yes/No           |" -ForegroundColor Cyan
+Write-Host "  |   Option C: Daglig Briefing button in portal      |" -ForegroundColor Green
 Write-Host "  +--------------------------------------------------+" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "  Start-VBAFCenterPortal          — open browser dashboard"    -ForegroundColor White
-Write-Host "  Stop-VBAFCenterPortal           — stop the portal"           -ForegroundColor White
-Write-Host "  Get-VBAFCenterPortalURLs        — show all customer URLs"    -ForegroundColor White
-Write-Host "  Save-VBAFCenterThresholdSuggestion — push suggestion to portal" -ForegroundColor White
+Write-Host "  Start-VBAFCenterPortal             — open browser dashboard"     -ForegroundColor White
+Write-Host "  Stop-VBAFCenterPortal              — stop the portal"            -ForegroundColor White
+Write-Host "  Get-VBAFCenterPortalURLs           — show all customer URLs"     -ForegroundColor White
+Write-Host "  Save-VBAFCenterThresholdSuggestion — push suggestion to portal"  -ForegroundColor White
 Write-Host ""
