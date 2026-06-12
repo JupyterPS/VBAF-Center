@@ -9,6 +9,7 @@
     Phase 14 — RED signal override raises minimum action level
     Phase 15 — Weighted average passed through full pipeline
     Phase 17 — Customer-specific thresholds honoured end-to-end
+    Email     — Outlook SMTP alert on Action 3 with 30 min cooldown
 
     Functions:
       Invoke-VBAFCenterRun      — run full pipeline once
@@ -152,7 +153,7 @@ function Invoke-VBAFCenterRun {
     $histFile = Join-Path $script:HistoryPath "$CustomerID-$(Get-Date -Format 'yyyyMMdd_HHmmss_fff').json"
     $result | ConvertTo-Json -Depth 5 | Set-Content $histFile -Encoding UTF8
 
-    # ── Step 6 — Final action display (no duplicates) ─────────
+    # ── Step 6 — Final action display ─────────────────────────
     if (-not $Silent) {
         $color = @("Green","Yellow","DarkYellow","Red")[$action]
         Write-Host ("  Action    : {0} — {1}" -f $action, $actionName)   -ForegroundColor $color
@@ -171,6 +172,7 @@ function Invoke-VBAFCenterRun {
             Write-Host ""
         }
 
+        # Sound alarm
         try {
             [Console]::Beep(800,400)
             Start-Sleep -Milliseconds 100
@@ -180,6 +182,7 @@ function Invoke-VBAFCenterRun {
             if (-not $Silent) { Write-Host "  [NOTIFY] Sound alarm fired." -ForegroundColor Yellow }
         } catch {}
 
+        # Crisis popup
         try {
             Add-Type -AssemblyName System.Windows.Forms
             Add-Type -AssemblyName System.Drawing
@@ -220,24 +223,59 @@ function Invoke-VBAFCenterRun {
             if (-not $Silent) { Write-Host "  [NOTIFY] Popup failed — $($_.Exception.Message)" -ForegroundColor DarkGray }
         }
 
+        # ── SMS alert via Textbelt — 30-minute cooldown ─────
         if (Test-Path $schedFile) {
             $schedData = Get-Content $schedFile -Raw | ConvertFrom-Json
-            if ($schedData.AlertEmail -and $schedData.AlertEmail -ne "") {
-                try {
-                    Send-MailMessage `
-                        -To         $schedData.AlertEmail `
-                        -From       "vbaf@yourdomain.dk" `
-                        -Subject    ("VBAF CRISIS — Action 3 fired for {0}" -f $CustomerID) `
-                        -Body       ("VBAF-Center detected a critical situation for {0} at {1}.`n`nAction  : Escalate`nCommand : {2}`nReason  : {3}" -f `
-                                     $CustomerID,(Get-Date -Format "yyyy-MM-dd HH:mm:ss"),$actionCommand,$actionReason) `
-                        -SmtpServer "smtp.yourdomain.dk"
-                    if (-not $Silent) { Write-Host "  [NOTIFY] Email sent to $($schedData.AlertEmail)." -ForegroundColor Yellow }
-                } catch {
-                    if (-not $Silent) { Write-Host "  [NOTIFY] Email failed — check SMTP settings." -ForegroundColor DarkGray }
+
+            if ($schedData.AlertPhone -and $schedData.AlertPhone -ne "") {
+
+                # Check 30-minute cooldown
+                $lastAlertFile = Join-Path $script:SchedulePath "$CustomerID-lastalert.txt"
+                $sendSMS       = $true
+
+                if (Test-Path $lastAlertFile) {
+                    try {
+                        $lastAlert = [DateTime]::Parse((Get-Content $lastAlertFile -Raw).Trim())
+                        if ((Get-Date) - $lastAlert -lt [TimeSpan]::FromMinutes(30)) {
+                            $sendSMS     = $false
+                            $minutesLeft = [int](30 - ((Get-Date) - $lastAlert).TotalMinutes)
+                            if (-not $Silent) {
+                                Write-Host ("  [NOTIFY] SMS skipped — cooldown active ({0} min remaining)." -f $minutesLeft) -ForegroundColor DarkGray
+                            }
+                        }
+                    } catch { $sendSMS = $true }
+                }
+
+                if ($sendSMS) {
+                    try {
+                        $smsText = ("VBAF KRISE {0} kl.{1} - Abn portalen nu!" -f $CustomerID, (Get-Date -Format "HH:mm"))
+
+                        $smsResult = Invoke-RestMethod `
+                            -Method POST `
+                            -Uri    "https://textbelt.com/text" `
+                            -Body   @{
+                                phone   = $schedData.AlertPhone
+                                message = $smsText
+                                key     = "textbelt"
+                            }
+
+                        # Save timestamp for cooldown
+                        (Get-Date).ToString("yyyy-MM-dd HH:mm:ss") | Set-Content $lastAlertFile -Encoding UTF8
+
+                        if ($smsResult.success) {
+                            if (-not $Silent) { Write-Host ("  [NOTIFY] SMS sendt til {0}." -f $schedData.AlertPhone) -ForegroundColor Yellow }
+                        } else {
+                            if (-not $Silent) { Write-Host ("  [NOTIFY] SMS fejlede — {0}" -f $smsResult.error) -ForegroundColor DarkGray }
+                        }
+
+                    } catch {
+                        if (-not $Silent) { Write-Host ("  [NOTIFY] SMS fejlede — {0}" -f $_.Exception.Message) -ForegroundColor DarkGray }
+                    }
                 }
             }
         }
 
+        # Crisis tree
         if (Get-Command Start-VBAFCenterCrisis -ErrorAction SilentlyContinue) {
             Start-VBAFCenterCrisis -CustomerID $CustomerID
         } else {
@@ -299,7 +337,7 @@ function Get-VBAFCenterRunHistory {
     Initialize-VBAFCenterScheduleStore
 
     $files = Get-ChildItem $script:HistoryPath -Filter "$CustomerID-*.json" |
-             Sort-Object LastWriteTime -Descending |
+             Sort-Object Name -Descending |
              Select-Object -First $Last
 
     if ($files.Count -eq 0) {
@@ -330,7 +368,7 @@ function Get-VBAFCenterRunHistory {
 # ============================================================
 # LOAD MESSAGE
 # ============================================================
-Write-Host "VBAF-Center Phase 8 loaded  [Scheduling Engine + Phase 14/15/17 pipeline]" -ForegroundColor Cyan
+Write-Host "VBAF-Center Phase 8 loaded  [Scheduling Engine + Phase 14/15/17 + SMS alert]" -ForegroundColor Cyan
 Write-Host "  Invoke-VBAFCenterRun         — run full pipeline once"    -ForegroundColor White
 Write-Host "  Start-VBAFCenterSchedule     — start auto-checking"       -ForegroundColor White
 Write-Host "  Get-VBAFCenterRunHistory     — show recent results"       -ForegroundColor White

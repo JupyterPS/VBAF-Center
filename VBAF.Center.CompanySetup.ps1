@@ -45,6 +45,7 @@ function New-VBAFCenterCompanySetup {
         [double] $Threshold2   = 0.50,
         [double] $Threshold3   = 0.72,
         [string] $TMSBaseURL   = "http://localhost:8082",
+        [string] $AlertPhone   = "",
         [bool]   $BuildHistory = $true,
         [int]    $HistoryRuns  = 30
     )
@@ -130,16 +131,18 @@ function New-VBAFCenterCompanySetup {
         Write-Host "  Action map created." -ForegroundColor Green
     }
 
+    # Create schedule file — required by Set-VBAFCenterActionThresholds
+    $schedPath2 = Join-Path $env:USERPROFILE "VBAFCenter\schedules"
+    if (-not (Test-Path $schedPath2)) { New-Item -ItemType Directory -Path $schedPath2 -Force | Out-Null }
+    $schedFile2 = Join-Path $schedPath2 "$CustomerID-schedule.json"
+    if (-not (Test-Path $schedFile2)) {
+        $token2 = -join ((65..90)+(97..122) | Get-Random -Count 6 | ForEach-Object {[char]$_})
+        @{ CustomerID=$CustomerID; IntervalMinutes=10; NormMethod="MinMax"; Active=$true; PortalToken=$token2 } | ConvertTo-Json | Set-Content $schedFile2 -Encoding UTF8
+        Write-Host "  Schedule file created." -ForegroundColor Green
+    }
     # ── Step 4 — Thresholds ───────────────────────────────────
     Write-Host ""
     Write-Host "  Step 4/7 — Action thresholds (Phase 17)..." -ForegroundColor Yellow
-    $schedPath = Join-Path $env:USERPROFILE "VBAFCenter\schedules"
-    if (-not (Test-Path $schedPath)) { New-Item -ItemType Directory -Path $schedPath -Force | Out-Null }
-    $schedFile = Join-Path $schedPath "$CustomerID-schedule.json"
-    if (-not (Test-Path $schedFile)) {
-        $token = -join ((65..90)+(97..122) | Get-Random -Count 6 | ForEach-Object {[char]$_})
-        @{ CustomerID=$CustomerID; IntervalMinutes=10; NormMethod="MinMax"; Active=$true; PortalToken=$token } | ConvertTo-Json | Set-Content $schedFile -Encoding UTF8
-    }
     if (Get-Command Set-VBAFCenterActionThresholds -ErrorAction SilentlyContinue) {
         Set-VBAFCenterActionThresholds `
             -CustomerID $CustomerID `
@@ -147,6 +150,17 @@ function New-VBAFCenterCompanySetup {
             -Action2    $Threshold2 `
             -Action3    $Threshold3 | Out-Null
         Write-Host ("  Thresholds set: Reassign={0} Reroute={1} Escalate={2}" -f $Threshold1, $Threshold2, $Threshold3) -ForegroundColor Green
+    }
+
+    # Add AlertPhone to schedule file if provided
+    if ($AlertPhone -ne "") {
+        $schedFile2 = Join-Path $env:USERPROFILE "VBAFCenter\schedules\$CustomerID-schedule.json"
+        if (Test-Path $schedFile2) {
+            $s2 = Get-Content $schedFile2 -Raw | ConvertFrom-Json
+            $s2 | Add-Member -NotePropertyName AlertPhone -NotePropertyValue $AlertPhone -Force
+            $s2 | ConvertTo-Json | Set-Content $schedFile2 -Encoding UTF8
+            Write-Host ("  SMS alert   : {0}" -f $AlertPhone) -ForegroundColor Green
+        }
     }
 
     # ── Step 5 — Write-back Config ────────────────────────────
@@ -282,13 +296,13 @@ function New-VBAFCenterCompanySetup {
             $histFile = Join-Path $historyPath ("$CustomerID-{0:yyyyMMdd_HHmmss_fff}.json" -f $runTime.AddMilliseconds($run))
             $entry | ConvertTo-Json -Depth 5 | Set-Content $histFile -Encoding UTF8
 
-            Write-Host ("  Run {0}/{1}" -f ($run+1), $HistoryRuns) -ForegroundColor Cyan
+            Write-Host ("  Run {0}/{1}" -f ($run+1), $HistoryRuns) -ForegroundColor DarkGray
         }
 
         Write-Host ("  {0} history runs built." -f $HistoryRuns) -ForegroundColor Green
     } else {
         Write-Host ""
-        Write-Host "  Step 7/7 — History skipped (-BuildHistory `$false)." -ForegroundColor Cyan
+        Write-Host "  Step 7/7 — History skipped (-BuildHistory `$false)." -ForegroundColor DarkGray
     }
 
     # ── Summary ───────────────────────────────────────────────
@@ -301,25 +315,27 @@ function New-VBAFCenterCompanySetup {
     Write-Host ("  CustomerID  : {0}" -f $CustomerID)    -ForegroundColor White
     Write-Host ("  Signals     : {0} configured"  -f $Signals) -ForegroundColor White
     Write-Host ("  Thresholds  : {0} / {1} / {2}" -f $Threshold1, $Threshold2, $Threshold3) -ForegroundColor White
+    $phoneDisplay = if ($AlertPhone -ne "") { $AlertPhone } else { "Not configured" }
+    Write-Host ("  SMS alert   : {0}" -f $phoneDisplay) -ForegroundColor White
     Write-Host ("  Crisis tree : 5 scenarios")            -ForegroundColor White
     Write-Host ("  History     : {0} runs built" -f $(if ($BuildHistory) { $HistoryRuns } else { "skipped" })) -ForegroundColor White
     Write-Host ""
     Write-Host "  Next steps:" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "  1. Run rule-based pipeline:" -ForegroundColor White
-    Write-Host ("     Invoke-VBAFCenterRun -CustomerID '{0}' | Out-Null" -f $CustomerID) -ForegroundColor Cyan
+    Write-Host ("     Invoke-VBAFCenterRun -CustomerID '{0}' | Out-Null" -f $CustomerID) -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "  2. Run AI Brain:" -ForegroundColor White
-    Write-Host ("     Invoke-VBAFCenterClaudeBrain -CustomerID '{0}' -Provider 'Mistral' -SuppressCrisis" -f $CustomerID) -ForegroundColor Cyan
+    Write-Host ("     Invoke-VBAFCenterClaudeBrain -CustomerID '{0}' -Provider 'Mistral' -SuppressCrisis" -f $CustomerID) -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "  3. Open daily briefing:" -ForegroundColor White
-    Write-Host ("     Export-VBAFCenterDailyBriefing -CustomerID '{0}' -RunAIFirst -OpenBrowser" -f $CustomerID) -ForegroundColor Cyan
+    Write-Host ("     Export-VBAFCenterDailyBriefing -CustomerID '{0}' -RunAIFirst -OpenBrowser" -f $CustomerID) -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "  4. Start portal:" -ForegroundColor White
-    Write-Host "     Start-VBAFCenterPortal" -ForegroundColor Cyan
+    Write-Host "     Start-VBAFCenterPortal" -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "  5. Get portal URL:" -ForegroundColor White
-    Write-Host "     Get-VBAFCenterPortalURLs" -ForegroundColor Cyan
+    Write-Host "     Get-VBAFCenterPortalURLs" -ForegroundColor DarkGray
     Write-Host ""
 }
 
@@ -339,7 +355,7 @@ function Get-VBAFCenterSetupStatus {
 
     Write-Host ""
     Write-Host ("  Setup Status: {0}" -f $CustomerID) -ForegroundColor Cyan
-    Write-Host ("  {0}" -f ("-" * 45)) -ForegroundColor Cyan
+    Write-Host ("  {0}" -f ("-" * 45)) -ForegroundColor DarkGray
 
     $checks = @(
         @{ Label="Customer profile";  Path="$base\customers\$CustomerID.json" }
@@ -371,7 +387,7 @@ function Get-VBAFCenterSetupStatus {
         $sched = Get-Content $schedFile -Raw | ConvertFrom-Json
         if ($sched.PortalToken) {
             Write-Host ("  {0,-22} {1}" -f "Portal token", $sched.PortalToken) -ForegroundColor Green
-            Write-Host ("  {0,-22} http://localhost:8080/?customer={1}&token={2}" -f "Portal URL", $CustomerID, $sched.PortalToken) -ForegroundColor Cyan
+            Write-Host ("  {0,-22} http://localhost:8080/?customer={1}&token={2}" -f "Portal URL", $CustomerID, $sched.PortalToken) -ForegroundColor DarkGray
         }
     }
 
@@ -432,7 +448,7 @@ function Remove-VBAFCenterCompany {
     foreach ($t in $targets) {
         if (Test-Path $t.Path) {
             Remove-Item $t.Path -Force
-            Write-Host ("  Removed: {0}" -f $t.Label) -ForegroundColor Cyan
+            Write-Host ("  Removed: {0}" -f $t.Label) -ForegroundColor DarkGray
             $removed++
         }
     }
@@ -450,7 +466,7 @@ function Remove-VBAFCenterCompany {
         $files = Get-ChildItem $w.Pattern -ErrorAction SilentlyContinue
         if ($files.Count -gt 0) {
             $files | Remove-Item -Force
-            Write-Host ("  Removed: {0} ({1} files)" -f $w.Label, $files.Count) -ForegroundColor Cyan
+            Write-Host ("  Removed: {0} ({1} files)" -f $w.Label, $files.Count) -ForegroundColor DarkGray
             $removed += $files.Count
         }
     }
@@ -478,12 +494,11 @@ Write-Host "  Get-VBAFCenterSetupStatus   — check customer config"   -Foregrou
 Write-Host "  Remove-VBAFCenterCompany     — delete customer and all data" -ForegroundColor White
 Write-Host ""
 Write-Host "  Example:" -ForegroundColor Yellow
+Write-Host "  New-VBAFCenterCompanySetup \`" -ForegroundColor DarkGray
+Write-Host "    -CustomerID  'TruckCompanyDK' \`" -ForegroundColor DarkGray
+Write-Host "    -CompanyName 'Truck Company DK' \`" -ForegroundColor DarkGray
+Write-Host "    -Contact     'ceo@truckcompanydk.dk' \`" -ForegroundColor DarkGray
+Write-Host "    -Problem     'Too many idle trucks and late deliveries' \`" -ForegroundColor DarkGray
+Write-Host "    -Signals     10 \`" -ForegroundColor DarkGray
+Write-Host "    -BuildHistory `$true" -ForegroundColor DarkGray
 Write-Host ""
-Write-Host "  New-VBAFCenterCompanySetup ``" -ForegroundColor Cyan
-Write-Host "    -CustomerID   'TruckCompanyDK' ``" -ForegroundColor Cyan
-Write-Host "    -CompanyName  'Truck Company DK' ``" -ForegroundColor Cyan
-Write-Host "    -Contact      'ceo@truckcompanydk.dk' ``" -ForegroundColor Cyan
-Write-Host "    -Problem      'Too many idle trucks' ``" -ForegroundColor Cyan
-Write-Host "    -Signals      10 ``" -ForegroundColor Cyan
-Write-Host "    -BuildHistory `$true" -ForegroundColor Cyan
-
