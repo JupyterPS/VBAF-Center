@@ -23,6 +23,12 @@ HTML briefing that opens in the browser before the first truck leaves the depot.
 
 ---
 
+## Architecture
+
+![VBAF-Center Architecture](VBAF-Center-Architecture.png)
+
+---
+
 ## The Honest Description
 
 VBAF-Center has two engines running side by side:
@@ -302,5 +308,6 @@ MIT License — see LICENSE for details.
 Built with Claude (Anthropic) · PowerShell ISE · PS 5.1
 
 > *"The rule engine catches it. The AI Brain explains why it keeps happening."*
+
 
 
