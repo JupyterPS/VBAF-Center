@@ -20,7 +20,8 @@
     Functions:
       Start-VBAFCenterCrisis       — activate crisis response wizard
       Get-VBAFCenterCrisisTree     — show all crisis trees
-      New-VBAFCenterCrisisTree     — add custom crisis tree
+      New-VBAFCenterCrisisTree     — add/replace customer-specific tree (no duplicates)
+      Remove-VBAFCenterCrisisTree  — remove one customer crisis tree by name
       Get-VBAFCenterCrisisHistory  — show past crisis responses
 #>
 
@@ -154,13 +155,18 @@ $script:CrisisTrees = @{
 $script:CustomerCrisisTrees = @{}
 
 # ============================================================
-# NEW-VBAFCENTERCRISISTREEE — add customer-specific tree
+# NEW-VBAFCENTERCRISISTREE — add or replace customer-specific tree
 # ============================================================
 function New-VBAFCenterCrisisTree {
     <#
     .SYNOPSIS
         Add a customer-specific crisis tree.
         Customer trees take priority over domain defaults.
+
+        If a tree with the same CrisisName already exists for this
+        customer, it is REPLACED — not duplicated. Safe to run
+        New-VBAFCenterCompanySetup multiple times without piling up
+        duplicate crisis trees.
     .EXAMPLE
         New-VBAFCenterCrisisTree -CustomerID "TruckCompanyDK" `
           -CrisisName "Tom kørsel kritisk" `
@@ -184,6 +190,10 @@ function New-VBAFCenterCrisisTree {
         [string] $ContactPhone = ""
     )
 
+    # Make sure any trees already on disk are loaded first —
+    # otherwise we would overwrite them with an empty in-memory list.
+    Load-VBAFCenterCustomerCrisisTrees
+
     if (-not $script:CustomerCrisisTrees.ContainsKey($CustomerID)) {
         $script:CustomerCrisisTrees[$CustomerID] = @()
     }
@@ -205,7 +215,13 @@ function New-VBAFCenterCrisisTree {
         ContactPhone = $ContactPhone
     }
 
-    $script:CustomerCrisisTrees[$CustomerID] += $tree
+    # ── De-duplicate by CrisisName — replace if it already exists ──
+    $existing  = @($script:CustomerCrisisTrees[$CustomerID])
+    $before    = $existing.Count
+    $filtered  = @($existing | Where-Object { $_.CrisisName -ne $CrisisName })
+    $replaced  = ($filtered.Count -lt $before)
+
+    $script:CustomerCrisisTrees[$CustomerID] = @($filtered) + @($tree)
 
     # Persist to disk
     $crisisPath = Join-Path $env:USERPROFILE "VBAFCenter\crisisconfig"
@@ -213,9 +229,54 @@ function New-VBAFCenterCrisisTree {
     $script:CustomerCrisisTrees[$CustomerID] | ConvertTo-Json -Depth 5 |
         Set-Content "$crisisPath\$CustomerID-crisis.json" -Encoding UTF8
 
-    Write-Host ("  Crisis tree added: {0}" -f $CrisisName) -ForegroundColor Green
-    Write-Host ("  Trigger          : {0}" -f $Trigger)    -ForegroundColor DarkGray
-    Write-Host ("  Steps            : {0}" -f $steps.Count) -ForegroundColor DarkGray
+    if ($replaced) {
+        Write-Host ("  Crisis tree replaced : {0}" -f $CrisisName) -ForegroundColor Yellow
+    } else {
+        Write-Host ("  Crisis tree added    : {0}" -f $CrisisName) -ForegroundColor Green
+    }
+    Write-Host ("  Trigger              : {0}" -f $Trigger)    -ForegroundColor DarkGray
+    Write-Host ("  Steps                : {0}" -f $steps.Count) -ForegroundColor DarkGray
+    Write-Host ("  Total trees for {0} : {1}" -f $CustomerID, $script:CustomerCrisisTrees[$CustomerID].Count) -ForegroundColor DarkGray
+}
+
+# ============================================================
+# REMOVE-VBAFCENTERCRISISTREE — remove one tree by name
+# ============================================================
+function Remove-VBAFCenterCrisisTree {
+    <#
+    .SYNOPSIS
+        Remove a single customer-specific crisis tree by name.
+    .EXAMPLE
+        Remove-VBAFCenterCrisisTree -CustomerID "NordLogistik" -CrisisName "Tom kørsel kritisk"
+    #>
+    param(
+        [Parameter(Mandatory)] [string] $CustomerID,
+        [Parameter(Mandatory)] [string] $CrisisName
+    )
+
+    Load-VBAFCenterCustomerCrisisTrees
+
+    if (-not $script:CustomerCrisisTrees.ContainsKey($CustomerID)) {
+        Write-Host "No crisis trees found for: $CustomerID" -ForegroundColor Yellow
+        return
+    }
+
+    $before   = @($script:CustomerCrisisTrees[$CustomerID])
+    $after    = @($before | Where-Object { $_.CrisisName -ne $CrisisName })
+    $removed  = $before.Count - $after.Count
+
+    if ($removed -eq 0) {
+        Write-Host ("  Not found: {0}" -f $CrisisName) -ForegroundColor Yellow
+        return
+    }
+
+    $script:CustomerCrisisTrees[$CustomerID] = $after
+
+    $crisisPath = Join-Path $env:USERPROFILE "VBAFCenter\crisisconfig"
+    $after | ConvertTo-Json -Depth 5 | Set-Content "$crisisPath\$CustomerID-crisis.json" -Encoding UTF8
+
+    Write-Host ("  Removed {0} entr{1} matching: {2}" -f $removed, $(if($removed -eq 1){"y"}else{"ies"}), $CrisisName) -ForegroundColor Green
+    Write-Host ("  Remaining trees for {0}: {1}" -f $CustomerID, $after.Count) -ForegroundColor DarkGray
 }
 
 # ============================================================
@@ -234,7 +295,7 @@ function Load-VBAFCenterCustomerCrisisTrees {
 }
 
 # ============================================================
-# START-VBAFCENTERCROSS
+# START-VBAFCENTERCRISIS
 # ============================================================
 function Start-VBAFCenterCrisis {
     param(
@@ -442,7 +503,7 @@ function Start-VBAFCenterCrisis {
 }
 
 # ============================================================
-# GET-VBAFCENTERCRISISTREEE
+# GET-VBAFCENTERCRISISTREE
 # ============================================================
 function Get-VBAFCenterCrisisTree {
     param([string] $CustomerID = "")
@@ -459,6 +520,8 @@ function Get-VBAFCenterCrisisTree {
         foreach ($tree in $script:CustomerCrisisTrees[$CustomerID]) {
             Write-Host ("  {0,-35} {1}" -f $tree.CrisisName, $tree.Trigger) -ForegroundColor White
         }
+        Write-Host ""
+        Write-Host ("  Total: {0} trees" -f $script:CustomerCrisisTrees[$CustomerID].Count) -ForegroundColor DarkGray
     } else {
         Write-Host "  VBAF-Center Built-in Crisis Trees" -ForegroundColor Cyan
         Write-Host ""
@@ -524,14 +587,13 @@ Write-Host "  |  VBAF-Center Phase 13 - Crisis Response Tree    |" -ForegroundCo
 Write-Host "  |  Step-by-step recovery when signals go critical |" -ForegroundColor Red
 Write-Host "  +--------------------------------------------------+" -ForegroundColor Red
 Write-Host ""
-Write-Host "  Start-VBAFCenterCrisis      — activate crisis wizard"     -ForegroundColor White
-Write-Host "  Get-VBAFCenterCrisisTree    — show all crisis trees"      -ForegroundColor White
-Write-Host "  New-VBAFCenterCrisisTree    — add customer-specific tree" -ForegroundColor White
-Write-Host "  Get-VBAFCenterCrisisHistory — show past crisis responses" -ForegroundColor White
+Write-Host "  Start-VBAFCenterCrisis      — activate crisis wizard"          -ForegroundColor White
+Write-Host "  Get-VBAFCenterCrisisTree    — show all crisis trees"           -ForegroundColor White
+Write-Host "  New-VBAFCenterCrisisTree    — add/replace customer tree"       -ForegroundColor White
+Write-Host "  Remove-VBAFCenterCrisisTree — remove one customer tree"        -ForegroundColor White
+Write-Host "  Get-VBAFCenterCrisisHistory — show past crisis responses"      -ForegroundColor White
 Write-Host ""
 Write-Host "  Quick start:" -ForegroundColor Yellow
 Write-Host "  Start-VBAFCenterCrisis -CustomerID 'TruckCompanyDK'" -ForegroundColor Green
 Write-Host "  Get-VBAFCenterCrisisTree -CustomerID 'TruckCompanyDK'" -ForegroundColor Green
 Write-Host ""
-
-
