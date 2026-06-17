@@ -1,10 +1,9 @@
 ﻿# VBAF-Center — Smart Monitoring Platform
 
-**v1.0.33 · PowerShell 5.1 · AI-powered · Built on VBAF v4.0.0**
+**v1.0.41 · PowerShell 5.1 · AI-powered · Standalone**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PowerShell](https://img.shields.io/badge/PowerShell-5.1-blue.svg)](https://microsoft.com/powershell)
-[![VBAF](https://img.shields.io/badge/VBAF-v4.0.0-green.svg)](https://www.powershellgallery.com/packages/VBAF)
 
 ---
 
@@ -20,12 +19,6 @@ On top of the rule-based engine, an AI Brain (Mistral, Gemini, Claude) reads
 HTML briefing that opens in the browser before the first truck leaves the depot.
 
 > **The rule engine catches the problem. The AI Brain explains why it keeps happening.**
-
----
-
-## Architecture
-
-![VBAF-Center Architecture](VBAF-Center-Architecture.svg)
 
 ---
 
@@ -75,7 +68,7 @@ Your systems (GPS, TMS, ERP...)
          | live signals every 10 minutes
          v
 +------------------------------------------------------------+
-|                  VBAF-Center v1.0.33                       |
+|                  VBAF-Center v1.0.41                       |
 |                                                            |
 |  Phase 1-8:   Signal pipeline (read, normalise, decide)    |
 |  Phase 9:     Web portal — Accept/Override buttons         |
@@ -107,7 +100,6 @@ Daily briefing opens at 07:00:
 
 ```powershell
 # Install
-Install-Module VBAF -Scope CurrentUser
 Install-Module VBAF-Center -Scope CurrentUser
 
 # Load
@@ -245,17 +237,6 @@ The briefing contains:
 
 ---
 
-## Commercial Model
-
-| Complexity | Signals | Onboarding | Monthly |
-|---|---|---|---|
-| Simple | 2 | DKK 15.000 | DKK 3.000 |
-| Standard | 4 | DKK 18.000 | DKK 4.500 |
-| Advanced | 6 | DKK 22.000 | DKK 6.000 |
-| Full | 10 | DKK 25.000 | DKK 8.000 |
-
----
-
 ## Production Console Setup
 
 ```
@@ -290,7 +271,6 @@ Console 5 — Morning briefing at 07:00
 
 - Windows 10 or 11
 - PowerShell 5.1
-- VBAF v4.0.0 (`Install-Module VBAF`)
 - Free Mistral API key for AI Brain (optional but recommended)
 
 ---
@@ -308,8 +288,3 @@ MIT License — see LICENSE for details.
 Built with Claude (Anthropic) · PowerShell ISE · PS 5.1
 
 > *"The rule engine catches it. The AI Brain explains why it keeps happening."*
-
-
-
-
-
