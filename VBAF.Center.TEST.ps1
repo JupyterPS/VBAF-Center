@@ -754,32 +754,33 @@ __
 
 THE 4-CONSOLE SETUP
 Console 1 — Rule-based scheduler (runs 24/7):
-powershellcd "C:\Users\henni\OneDrive\WindowsPowerShell"
+cd "C:\Users\henni\OneDrive\WindowsPowerShell"
 . .\VBAF-Center\VBAF.Center.LoadAll.ps1
-Start-VBAFCenterSchedule -CustomerID "TruckCompanyDK"
+Start-VBAFCenterSchedule -CustomerID "NordLogistik"
 
 Console 2 — Mistral AI Brain (every 30 min):
-powershellcd "C:\Users\henni\OneDrive\WindowsPowerShell"
+cd "C:\Users\henni\OneDrive\WindowsPowerShell"
 . .\VBAF-Center\VBAF.Center.LoadAll.ps1
 while ($true) {
-    Invoke-VBAFCenterClaudeBrain -CustomerID "TruckCompanyDK" -Provider "Mistral" -SuppressCrisis
+    Invoke-VBAFCenterClaudeBrain -CustomerID "NordLogistik" -Provider "Mistral" -SuppressCrisis
     Write-Host "Next AI run in 30 minutes..." -ForegroundColor DarkGray
     Start-Sleep -Seconds 1800
 }
+
 Console 3 — Fake TMS (accepts write-back commands):
-powershellcd "C:\Users\henni\OneDrive\WindowsPowerShell"
+cd "C:\Users\henni\OneDrive\WindowsPowerShell"
 . .\VBAF-Center\VBAF.Center.FakeTMS.ps1
 Start-VBAFFakeTMS
 
 Console 4 — Portal (browser dashboard):
-powershellcd "C:\Users\henni\OneDrive\WindowsPowerShell"
+cd "C:\Users\henni\OneDrive\WindowsPowerShell"
 . .\VBAF-Center\VBAF.Center.LoadAll.ps1
 Start-VBAFCenterPortal
 
 Console 5 — Daily Briefing at 07:00:
 while ($true) {
     if ((Get-Date).Hour -eq 7 -and (Get-Date).Minute -eq 0) {
-        Export-VBAFCenterDailyBriefing -CustomerID "TruckCompanyDK" -RunAIFirst -OpenBrowser
+        Export-VBAFCenterDailyBriefing -CustomerID "NordLogistik" -RunAIFirst -OpenBrowser
         Start-Sleep -Seconds 61
     }
     Start-Sleep -Seconds 30

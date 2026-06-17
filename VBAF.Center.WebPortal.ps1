@@ -537,7 +537,7 @@ function Get-PortalHTML {
 <html lang='da'>
 <head>
 <meta charset='UTF-8'>
-<meta http-equiv='refresh' content='600'>
+<meta http-equiv='refresh' content='60'>
 <title>VBAF-Center — $($data.Profile.CompanyName)</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -580,7 +580,7 @@ function Get-PortalHTML {
 <body>
 <div class='header'>
   <h1>VBAF-Center Portal</h1>
-  <span class='ts'>Live · Auto-refresh 10 min · $($data.Timestamp)</span>
+  <span class='ts'>Live · Auto-refresh 1 min · $($data.Timestamp)</span>
 </div>
 <div class='tabs'>$tabs</div>
 <div class='container'>
@@ -749,3 +749,4 @@ Write-Host "  Stop-VBAFCenterPortal              — stop the portal"           
 Write-Host "  Get-VBAFCenterPortalURLs           — show all customer URLs"     -ForegroundColor White
 Write-Host "  Save-VBAFCenterThresholdSuggestion — push suggestion to portal"  -ForegroundColor White
 Write-Host ""
+
