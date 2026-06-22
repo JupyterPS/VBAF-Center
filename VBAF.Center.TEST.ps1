@@ -1,12 +1,4 @@
-﻿Go to: https://account.microsoft.com/security
-Click: Advanced security options
-Scroll to: App passwords
-Click: Create a new app password
-Name it: VBAF-Center
-Copy the generated password — looks like: xxxx-xxxx-xxxx-xxxx
-
-
-
+﻿
 Phase 1 — Customer profile          CustomerID: TruckCompanyDK
 New-VBAFCenterCustomer	            First time you onboard a new customer	    Once per customer         Purple Once per customer — setup only
 Get-VBAFCenterCustomer	            Look up one customer's details	            When needed               Amber When needed — you decide             
@@ -846,3 +838,5 @@ That answer is worth knowing before you pitch it to a real customer. 🎯🇩�
 
 
 #>
+
+
